@@ -9,6 +9,7 @@
   "author": "Marc Barrowclift",
   "license": "ISC",
   "dependencies": {
-    "mongodb": "^3.0.0-rc0"
+    "mongodb": "^3.0.0-rc0",
+    "nodemailer": "^4.4.1"
   }
 }
