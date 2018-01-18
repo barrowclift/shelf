@@ -1,0 +1,19 @@
+{
+	"records": {
+		"replacements": {
+			"titles": {},
+			"artists": {
+				"Wings (2)": "Wings"
+			}	
+		},
+		"searchAssistance": {
+			"titles": {
+				"The Beatles": "The Beatles (White Album)",
+				"Scum Fuck Flower Boy": "Flower Boy",
+				"My Way": "My Way (40th Anniversary Edition)",
+				"Shut Down Volume 2": "Shut Down, Vol. 2"
+			},
+			"artists": {}
+		}
+	}
+}

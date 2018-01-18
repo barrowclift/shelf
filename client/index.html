@@ -1,0 +1,140 @@
+<!doctype html>
+<html class="no-js" lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="x-ua-compatible" content="ie=edge">
+        <title>Shelf</title>
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+        <link rel="apple-touch-icon" href="icon.png">
+        <!-- Place favicon.ico in the root directory -->
+
+        <link rel="stylesheet" href="/css/reset.css">
+        <link rel="stylesheet" href="/css/core.css">
+    </head>
+    <body ng-app="shelf" ng-controller="collectionController">
+        <menu class="no-select with-search-bar">
+            <h3>
+                <a class="active" href="/">
+                    <svg class="logo" viewBox="0 0 72 77" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+                        <defs>
+                            <linearGradient x1="50%" y1="0%" x2="50%" y2="100%" id="linearGradient-1">
+                                <stop stop-color="#D6336C" offset="0%"></stop>
+                                <stop stop-color="#A61E4D" offset="100%"></stop>
+                            </linearGradient>
+                            <linearGradient x1="50%" y1="0%" x2="50%" y2="100%" id="linearGradient-2">
+                                <stop stop-color="#AE3EC9" offset="0%"></stop>
+                                <stop stop-color="#862E9C" offset="100%"></stop>
+                            </linearGradient>
+                            <linearGradient x1="50%" y1="0%" x2="50%" y2="100%" id="linearGradient-3">
+                                <stop stop-color="#4263EB" offset="0%"></stop>
+                                <stop stop-color="#364FC7" offset="100%"></stop>
+                            </linearGradient>
+                            <linearGradient x1="50%" y1="0%" x2="50%" y2="100%" id="linearGradient-4">
+                                <stop stop-color="#37B24D" offset="0%"></stop>
+                                <stop stop-color="#2B8A3E" offset="100%"></stop>
+                            </linearGradient>
+                            <linearGradient x1="50%" y1="0%" x2="50%" y2="100%" id="linearGradient-5">
+                                <stop stop-color="#1C7ED6" offset="0%"></stop>
+                                <stop stop-color="#1864AB" offset="97.7419483%"></stop>
+                            </linearGradient>
+                            <linearGradient x1="50%" y1="0%" x2="50%" y2="100%" id="linearGradient-6">
+                                <stop stop-color="#F59F00" offset="0%"></stop>
+                                <stop stop-color="#E67700" offset="100%"></stop>
+                            </linearGradient>
+                            <linearGradient x1="50%" y1="0%" x2="50%" y2="100%" id="linearGradient-7">
+                                <stop stop-color="#F76707" offset="0%"></stop>
+                                <stop stop-color="#D9480F" offset="100%"></stop>
+                            </linearGradient>
+                            <linearGradient x1="50%" y1="0%" x2="50%" y2="100%" id="linearGradient-8">
+                                <stop stop-color="#F03E3E" offset="0%"></stop>
+                                <stop stop-color="#C92A2A" offset="100%"></stop>
+                            </linearGradient>
+                        </defs>
+                        <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+                            <g id="Lines-Copy">
+                                <rect id="Rectangle-Copy-7" fill="url(#linearGradient-1)" x="63" y="1" width="9" height="76"></rect>
+                                <rect id="Rectangle-Copy-6" fill="url(#linearGradient-2)" x="54" y="2" width="9" height="75"></rect>
+                                <rect id="Rectangle-Copy-5" fill="url(#linearGradient-3)" x="45" y="1" width="9" height="76"></rect>
+                                <rect id="Rectangle-Copy-4" fill="url(#linearGradient-4)" x="36" y="0" width="9" height="77"></rect>
+                                <rect id="Rectangle-Copy-3" fill="url(#linearGradient-5)" x="27" y="2" width="9" height="75"></rect>
+                                <rect id="Rectangle-Copy-2" fill="url(#linearGradient-6)" x="18" y="1" width="9" height="76"></rect>
+                                <rect id="Rectangle-Copy" fill="url(#linearGradient-7)" x="9" y="2" width="9" height="75"></rect>
+                                <rect id="Rectangle" fill="url(#linearGradient-8)" x="0" y="1" width="9" height="76"></rect>
+                            </g>
+                        </g>
+                    </svg>
+                    <span>Shelf</span>
+                </a>
+            </h3>
+            <ul>
+                <li><h4><a class="active" href="/"><span>Collection</span></a></h4></li>
+                <li><h4><a href="/wishlist/"><span>Wishlist</span></a></h4></li>
+                <li><h4><a href="/about/"><span>About</span></a></h4></li>
+            </ul>
+            <input type="text" placeholder="Search" ng-model="searchBox">
+        </menu>
+        <div id="browserNotSupported" class="content writing">
+            <p id="errorMessage"></p>
+        </div>
+        <div id="browserSupported" class="content">
+            <span ng-show="showLoadingSpinner" ng-hide="hideLoadingSpinner" class="sk-fading-circle-text">Slowly loading records from Discogs... (requests are severely rate limited)</span>
+            <div ng-show="showLoadingSpinner" ng-hide="hideLoadingSpinner" class="sk-fading-circle">
+                <div class="sk-circle1 sk-circle"></div>
+                <div class="sk-circle2 sk-circle"></div>
+                <div class="sk-circle3 sk-circle"></div>
+                <div class="sk-circle4 sk-circle"></div>
+                <div class="sk-circle5 sk-circle"></div>
+                <div class="sk-circle6 sk-circle"></div>
+                <div class="sk-circle7 sk-circle"></div>
+                <div class="sk-circle8 sk-circle"></div>
+                <div class="sk-circle9 sk-circle"></div>
+                <div class="sk-circle10 sk-circle"></div>
+                <div class="sk-circle11 sk-circle"></div>
+                <div class="sk-circle12 sk-circle"></div>
+            </div>
+            <ul class="records">
+                <li ng-repeat="r in records | orderBy:r:false:artistNameAndYearOfRelease | searchFor:searchBox" class="record">
+                    <a ng-href="{{ r.discogsUrl }}">
+                        <div class="wrapper">
+                            <img class="album-art" ng-src='{{ r.iTunesAlbumArtFilePath == "/images/records/UNTITLED/missing-artwork.png" ? r.discogsAlbumArtFilePath : r.iTunesAlbumArtFilePath }}' alt='"{{ r.title }}" album art'>
+                        </div>
+                        <div class="metadata">
+                            <p class="title">{{ r.title }}</p>
+                            <p class="artist">{{ r.artist }}</p>
+                        </div>
+                    </a>
+                </li>
+            </ul>
+            <p class="footer">{{ recordCount }} records in {{ type }}</p>
+        </div>
+
+        <script src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+        <script>window.jQuery || document.write('<script src="js/vendor/jquery-3.2.1.min.js"><\/script>')</script>
+        
+        <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.6/angular.min.js"></script>
+        <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.6/angular-route.min.js"></script>
+        <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.6/angular-resource.min.js"></script>
+        <!-- <script src="/lib/angular.min.js"></script> -->
+
+        <script src="https://code.angularjs.org/1.6.6/angular-animate.min.js"></script>
+        <!-- <script src="lib/angular-animate.min.js"></script> -->
+
+        <script src="https://cdn.jsdelivr.net/npm/js-cookie@2/src/js.cookie.min.js"></script>
+        <!-- <script src="/lib/cookie.min.js"></script> -->
+
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.0.4/socket.io.slim.js"></script>
+        <!-- <script src="/lib/socket.io.min.js"></script> -->
+
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/3.0.4/fuse.min.js"></script>
+        <!-- <script src="/lib/fuse.min.js"></script> -->
+
+        <script src="/shared/cache.js"></script>
+        <script src="/shared/logger.js"></script>
+
+        <script src="/controllers/collectionController.js"></script>
+
+        <script src="/util/browserBouncer.js"></script>
+    </body>
+</html>
