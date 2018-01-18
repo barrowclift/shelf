@@ -9,6 +9,7 @@
 1. [FAQ](#faq)
 	* [Why use shelf?](#why-use-shelf)
 	* [Doesn't Discogs already do this?](#doesnt-discogs-already-do-this)
+	* [How does Shelf handle different pressings of the same record?](#how-does-shelf-handle-different-pressings-of-the-same-record)
 	* [Can I help?](#can-i-help)
 2. [Setup](#setup)
 	* [Installation](#installation)
@@ -35,6 +36,10 @@ While Discogs is a *fantastic* data service and remains the de facto standard fo
 Not with Shelf. Since Discogs shoulders the burden of maintaining your collection's data, Shelf can instead focus on the collection itself, the "form" that Discogs chose to ignore. In this way, Shelf is __not__ a Discogs replacement, merely a supplement.
 
 Discogs is for indexing and managing metadata about your particular pressings, Shelf is for displaying and sharing your collection with friends.
+
+## How does Shelf handle different pressings of the same record?
+
+As stated above, [Discogs](https://www.discogs.com) perfectly serves displaying information at the *pressing* level, Shelf is about the *music*. If you have an original 1966 pressing of *Pet Sounds* by The Beach Boys as well as Analogue Productions's 2015 pressing, you'll still just have one record show up in Shelf to represent that you own *Pet Sounds*, since both pressings are the same album.
 
 ## Can I help?
 
