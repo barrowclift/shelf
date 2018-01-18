@@ -1,10 +1,8 @@
 <a href="#">
 <img height="50" src="https://raw.githubusercontent.com/barrowclift/shelf/master/client/images/logo/shelf.png" />
-<br>
 </a>
-<br>
 
-### Shelf is a beautiful way to proudly display your record collection on the Internet.
+### *Beautifully display your record collection on the Internet*
 
 <img src="https://raw.githubusercontent.com/barrowclift/shelf/master/screenshots/collection.png" />
 
