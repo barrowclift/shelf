@@ -1,16 +1,23 @@
+<a href="#">
+<img height="50" src="https://raw.githubusercontent.com/barrowclift/shelf/master/client/images/logo/shelf.png" />
+<br />
+</a>
+
 Shelf is a beautiful way to proudly display your record collection on the Internet.
 
-1. [FAQ](#)
-	* [Why use shelf?](#)
-	* [Doesn't Discogs already do this?](#)
-	* [Can I help?](#)
-2. [Setup](#)
-	* [Installation](#)
-	* [How do I add my collection to Shelf?](#)
-	* [Can I add new records into Shelf directly?](#)
-3. [Roadmap](#)
-	* [Do you plan to later support other media in Shelf?](#)
-	* ["X doesn't look right in Firefox/Chrome/Opera, will you fix it?"](#)
+<img https://raw.githubusercontent.com/barrowclift/shelf/master/client/images/screenshots/collection.png />
+
+1. [FAQ](#faq)
+	* [Why use shelf?](#why-use-shelf)
+	* [Doesn't Discogs already do this?](#doesnt-discogs-already-do-this)
+	* [Can I help?](#can-i-help)
+2. [Setup](#setup)
+	* [Installation](#installation)
+	* [How do I add my collection to Shelf?](#how-do-i-add-my-collection-to-shelf)
+	* [Can I add new records into Shelf directly?](#can-i-add-new-records-into-shelf-directly)
+3. [Roadmap](#roadmap)
+	* [Do you plan to later support other media in Shelf?](#do-you-plan-to-add-support-for-other-media-collections-in-shelf)
+	* ["X doesn't look right in Firefox/Chrome/Opera, will you fix it?"](#x-doesnt-look-right-in-firefoxchromeopera-will-you-fix-it)
 
 # FAQ
 
