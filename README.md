@@ -1,11 +1,10 @@
 <a href="#">
 <img height="50" src="https://raw.githubusercontent.com/barrowclift/shelf/master/client/images/logo/shelf.png" />
-<br />
 </a>
-
+<br>
 Shelf is a beautiful way to proudly display your record collection on the Internet.
 
-<img https://raw.githubusercontent.com/barrowclift/shelf/master/client/images/screenshots/collection.png />
+<img https://raw.githubusercontent.com/barrowclift/shelf/master/screenshots/collection.png />
 
 1. [FAQ](#faq)
 	* [Why use shelf?](#why-use-shelf)
