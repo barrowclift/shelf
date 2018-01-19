@@ -57,3 +57,5 @@ typings/
 # dotenv environment variables file
 .env
 
+# Ignore record image cache
+/client/images/records/record*

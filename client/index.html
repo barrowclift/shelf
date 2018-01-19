@@ -107,7 +107,7 @@
                     </a>
                 </li>
             </ul>
-            <p class="footer">{{ recordCount }} records in {{ type }}</p>
+            <p ng-show="!searchBox" class="footer">{{ recordCount }} records in {{ type }}</p>
         </div>
 
         <script src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
@@ -132,6 +132,8 @@
 
         <script src="/shared/cache.js"></script>
         <script src="/shared/logger.js"></script>
+        <script src="/shared/socketCodes.js"></script>
+        <script src="/shared/mediaTypes.js"></script>
 
         <script src="/controllers/collectionController.js"></script>
 
