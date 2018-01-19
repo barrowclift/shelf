@@ -1,4 +1,4 @@
-const SEARCH_OPTIONS = {
+const FUZZY_SEARCH_OPTIONS = {
 	shouldSort: true,
 	includeScore: false,
 	tokenize: true,
@@ -32,12 +32,11 @@ angular
     });
 
     // Request the server send the client the "records" cache
-    socket.emit("recordCollection");
+    socket.emit(socketCodes.RECORD_COLLECTION);
     // Listen for the server response to the "records" cache request
-    socket.on("recordCollection", function(data) {
+    socket.on(socketCodes.RECORD_COLLECTION, function(data) {
 		// If data's an array, assume they're sending us ALL records
-		if (data.constructor === Array) {
-			console.log(data);
+		if (Array === data.constructor) {
 			logger.logInfo(CLASS_NAME, "The client sent array of records for collection, refreshing entire record frontend");
 			$scope.records = data;
 			$scope.recordCount = data.length;
@@ -49,9 +48,9 @@ angular
 		}
     	$scope.$apply();
     });
-    socket.emit("getPollingStatus");
+    socket.emit(socketCodes.UPDATE_POLLER_STATUS);
     // Listen for the server to tell us the poller has finished so we know to hide the spinner
-    socket.on("pollingStatus", function(pollingStatus) {
+    socket.on(socketCodes.UPDATE_POLLER_STATUS, function(pollingStatus) {
     	logger.logInfo(CLASS_NAME, "The client sent collection polling status, refreshing frontend spinner if necessary");
     	var priorValue = $scope.hideLoadingSpinner;
     	$scope.hideLoadingSpinner = pollingStatus.records.collectionDone;
@@ -85,7 +84,7 @@ angular
 		}
 
 		// If fuse doesn't work out, https://ciphertrick.com/2015/02/07/live-search-using-custom-filter-in-angular-js/
-		var fuse = new Fuse(records, SEARCH_OPTIONS);
+		var fuse = new Fuse(records, FUZZY_SEARCH_OPTIONS);
 		return fuse.search(searchString);
 	};
 });

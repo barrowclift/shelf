@@ -20,7 +20,7 @@ function stopMongoDb {
 		wait $starterProcess
 	fi
 
-	node mongoCleaner.js > "$LOG_DIRECTORY"/clean-mongodb.log 2>&1 &
+	node server/mongoCleaner.js > "$LOG_DIRECTORY"/clean-mongodb.log 2>&1 &
 	cleanerProcess=$!
 	wait $cleanerProcess
 

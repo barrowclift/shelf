@@ -7,9 +7,10 @@ MONGODB_COMMAND=$(ps -ef | grep "mongod" | grep -v grep)
 if command -v service; then
 	MONGODB_SERVICE=$(service mongod status | grep -F "is running")
 fi
-SERVER=$(ps -ef | grep "node server.js" | grep -v grep)
+SERVER=$(ps -ef | grep "node server/server.js" | grep -v grep)
+ALBUM_POLLER=$(ps -ef | grep "node server/albumPoller.js" | grep -v grep)
 
-if [ -z "$SERVER" ] && { [ -z "$MONGODB_COMMAND" ] && [ -z "$MONGODB_SERVICE" ]; }; then
+if [ -z "$SERVER" ] && [ -z "$ALBUM_POLLER" ] && { [ -z "$MONGODB_COMMAND" ] && [ -z "$MONGODB_SERVICE" ]; }; then
 	echo -e "${RED}Shelf is not running${RESET}"
 	exit 0
 fi
