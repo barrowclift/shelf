@@ -23,11 +23,12 @@ const RELATIVE_PATH = "./client";
 const ALBUM_ART_CACHE = "/images/records/";
 const DISCOGS_ALBUM_ART_FILE_NAME = "discogs-album-art.jpg";
 const ITUNES_ALBUM_ART_FILE_NAME = "itunes-album-art.jpg";
-const USER_AGENT = "Shelf/0.1 +https://github.com/barrowclift/shelf"
+const USER_AGENT = config.discogsUserId+"Shelf/0.1 +https://github.com/barrowclift/shelf" // Unique user agent for each Shelf user
 const MAX_ITUNES_ALBUM_ART_SIZE = 512;
 const MAX_RECORDS_PER_PAGE = 20;
-const MAX_DISCOGS_REQUESTS_PER_MINUTE = 5;
-const DISCOGS_RATE_LIMIT_WAIT_TIME = 90000;
+const REMAINING_REQUESTS_WHEN_SLEEP_SHOULD_OCCUR = 10;
+const DISCOGS_RATE_LIMIT_MET_WAIT_TIME = 60000;
+const DISCOGS_RATE_LIMIT_MET_FUDGE_FACTOR = 3000;
 const DEFAULT_DISCOGS_COLLECTOR_SETTINGS = {
     refreshTimeInMinutes : 30
 };
@@ -46,7 +47,7 @@ const FUZZY_SEARCH_OPTIONS = {
 var discogs = new Discogs({ userToken: config.discogsUserToken });
 var client = null;
 var socket = null;
-var discogsRequestsInCurrentMinute = 0;
+var sleepDiscogsRequests = false;
 var pageTracker = {
     currentPage: 1,
     isLastPage: false,
@@ -83,20 +84,11 @@ var downloadImage = function(isDiscogs, uri, filepath, filename, callback) {
             "User-Agent": USER_AGENT
         }
     };
-
     if (isDiscogs) {
-        discogsRequestsInCurrentMinute += 1;
+        requestData.headers["Authorization"] = "Discogs token=" + config.discogsUserToken;
     }
-    if (isDiscogs && discogsRequestsInCurrentMinute >= MAX_DISCOGS_REQUESTS_PER_MINUTE) {
-        logger.logWarning(CLASS_NAME, "downloadImage", "Discogs rate limit met, sleeping for a minute before trying " + uri + " again...");
-        setTimeout(function() {
-            logger.logInfo(CLASS_NAME, "Sleep complete, trying " + uri + " again...");
-            discogsRequestsInCurrentMinute = 0;
-            sub_downloadImage(requestData, filepath, filename, callback);
-        }, randomWaitTime());
-    } else {
-        sub_downloadImage(requestData, filepath, filename, callback);
-    }
+
+    sub_downloadImage(requestData, filepath, filename, callback);
 };
 
 var sanitizeTitleForiTunesApi = function(title) {
@@ -108,13 +100,19 @@ var createiTunesAlbumUrl = function(title) {
     return encodeURI("https://itunes.apple.com/search?entity=album&country=US&limit=5&lang=en_us&explicit=Yes&media=music&attribute=albumTerm&term="+sanitizeTitleForiTunesApi(title));
 };
 
-var randomWaitTime = function() {
-    return Math.floor(Math.random() * ((DISCOGS_RATE_LIMIT_WAIT_TIME + 25000) - DISCOGS_RATE_LIMIT_WAIT_TIME + 1) + DISCOGS_RATE_LIMIT_WAIT_TIME);
+var randomWaitTime = function(baseTime, fudgeFactor) {
+    return Math.floor(Math.random() * ((baseTime + fudgeFactor) - baseTime + 1) + baseTime);
 };
 
 var sub_getDiscogsLink = function(requestData, callback) {
     logger.logInfo(CLASS_NAME, "GET " + requestData.url + " for true Discogs link");
     var subGetDiscogsLinkCallback = function(error, response, body) {
+        if (response &&
+            response.headers &&
+            response.headers["x-discogs-ratelimit-remaining"] <= REMAINING_REQUESTS_WHEN_SLEEP_SHOULD_OCCUR) {
+            sleepDiscogsRequests = true;
+        }
+
         if (error) {
             var stream = request(requestData);
             var body = "";
@@ -133,14 +131,15 @@ var sub_getDiscogsLink = function(requestData, callback) {
             });
             stream.on("end", function() {
                 body = JSON.parse(body);
+                // Protecting any calls that `sleepDiscogsRequests` didn't catch
                 if (body.message === "You are making requests too quickly.") {
                     logger.logWarning(CLASS_NAME, "subGetDiscogsLinkCallback", "Discogs tells us the rate limit has been met, sleeping for a minute before trying " + requestData.url + " again...");
-                    discogsRequestsInCurrentMinute = MAX_DISCOGS_REQUESTS_PER_MINUTE;
+                    sleepDiscogsRequests = true;
                     setTimeout(function() {
                         logger.logInfo(CLASS_NAME, "Sleep complete, trying " + requestData.url + " again.");
-                        discogsRequestsInCurrentMinute = 0;
+                        sleepDiscogsRequests = false;
                         sub_getDiscogsLink(requestData, callback);
-                    }, randomWaitTime());
+                    }, randomWaitTime(DISCOGS_RATE_LIMIT_MET_WAIT_TIME, DISCOGS_RATE_LIMIT_MET_FUDGE_FACTOR));
                 } else {
                     callback(body.uri);
                 }
@@ -154,21 +153,29 @@ var getDiscogsLink = function(link, callback) {
     var requestData = {
         url: link,
         headers: {
-            "User-Agent": USER_AGENT
+            "User-Agent": USER_AGENT,
+            "Authorization": "Discogs token=" + config.discogsUserToken
         }
     };
 
-    discogsRequestsInCurrentMinute += 1;
-    if (discogsRequestsInCurrentMinute >= MAX_DISCOGS_REQUESTS_PER_MINUTE) {
-        logger.logWarning(CLASS_NAME, "getDiscogsLink", "Discogs rate limit met, sleeping for a minute before trying " + requestData.url + " again...");
-        setTimeout(function() {
-            logger.logInfo(CLASS_NAME, "Sleep complete, trying " + requestData.url + " again.");
-            discogsRequestsInCurrentMinute = 0;
+    /**
+     * Randomly, minorly applying wait times to ALL Discogs individual record
+     * requests in an effort to space requests out enough so we don't exceed
+     * rate limit before `sleepDiscogsRequests` has time to actually take
+     * effect.
+     */
+    setTimeout(function() {
+        if (sleepDiscogsRequests) {
+            logger.logWarning(CLASS_NAME, "getDiscogsLink", "Discogs rate limit met, sleeping for a minute before trying " + requestData.url + " again...");
+            setTimeout(function() {
+                logger.logInfo(CLASS_NAME, "Sleep complete, trying " + requestData.url + " again.");
+                sleepDiscogsRequests = false;
+                sub_getDiscogsLink(requestData, callback);
+            }, randomWaitTime(DISCOGS_RATE_LIMIT_MET_WAIT_TIME, DISCOGS_RATE_LIMIT_MET_FUDGE_FACTOR));
+        } else {
             sub_getDiscogsLink(requestData, callback);
-        }, randomWaitTime());
-    } else {
-        sub_getDiscogsLink(requestData, callback);
-    }
+        }
+    }, randomWaitTime(1000, 4000));
 };
 
 var getiTunesAlbum = function(title, artist, callback) {
@@ -232,7 +239,11 @@ var getiTunesAlbum = function(title, artist, callback) {
             });
         }
     };
-    request.head(requestData, getiTunesAlbumCallback);
+    try {
+        request.head(requestData, getiTunesAlbumCallback);
+    } catch (error) {
+        logger.logError(CLASS_NAME, "getiTunesAlbum", "iTunes API request wasn't accepted: " + error);
+    }
 }
 
 var getSortableText = function(text) {
@@ -392,12 +403,11 @@ var pollDiscogsPage = function(client, isWishlist, parentCallback) {
         logger.logInfo(CLASS_NAME, "Polling Discogs user collection, page " + pageTracker.currentPage);
     }
 
-    discogsRequestsInCurrentMinute += 1;
-    if (discogsRequestsInCurrentMinute >= MAX_DISCOGS_REQUESTS_PER_MINUTE) {
+    if (sleepDiscogsRequests) {
         logger.logWarning(CLASS_NAME, "pollDiscogsPage", "Discogs rate limit met, sleeping for a minute before continuing...");
         setTimeout(function() {
             logger.logInfo(CLASS_NAME, "Sleep complete, continuing...");
-            discogsRequestsInCurrentMinute = 0;
+            sleepDiscogsRequests = false;
             sub_pollDiscogsPage(client, isWishlist, parentCallback);
         }, randomWaitTime());
     } else {
