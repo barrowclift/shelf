@@ -17,7 +17,8 @@
             iTunesAlbumArtFilePath: "/images/records/UNTITLED/missing-artwork.png",
             discogsAddedOn: 0, // date_added,
             isWishlist: false,
-            addedOn: 0
+            addedOn: 0,
+            updatedOn: 0
         }
     };
 
@@ -125,4 +126,62 @@
 
         return didCacheNewItem;
     };
+
+    exports.removeData = function(mediaType, itemToRemove) {
+        var didRemoveCacheItem = false;
+        var cache = exports.getCacheFor(mediaType);
+
+        if (itemToRemove.isWishlist) {
+            var indexToRemove = null;
+            for (var i = 0; i < cache.wishlist.length; i++) {
+                if (cache.wishlist[i].id === itemToRemove.id) {
+                    indexToRemove = i;
+                    break;
+                }
+            }
+            if (indexToRemove) {
+                didRemoveCacheItem = true;
+                cache.wishlist.splice(indexToRemove, 1);
+            }
+        } else {
+            var indexToRemove = null;
+            for (var i = 0; i < cache.collection.length; i++) {
+                if (cache.collection[i].id === itemToRemove.id) {
+                    indexToRemove = i;
+                    break;
+                }
+            }
+            if (indexToRemove) {
+                didRemoveCacheItem = true;
+                cache.collection.splice(indexToRemove, 1);
+            }
+        }
+
+        return didRemoveCacheItem;
+    }
+
+    exports.updateData = function(mediaType, itemToUpdate) {
+        var didUpdateCacheItem = false;
+        var cache = exports.getCacheFor(mediaType);
+
+        if (itemToUpdate.isWishlist) {
+            for (var i = 0; i < cache.wishlist.length; i++) {
+                if (cache.wishlist[i].id === itemToUpdate.id) {
+                    itemToUpdate.updatedOn = Date.now();
+                    cache.wishlist[i] = itemToUpdate;
+                    break;
+                }
+            }
+        } else {
+            for (var i = 0; i < cache.collection.length; i++) {
+                if (cache.collection[i].id === itemToUpdate.id) {
+                    itemToUpdate.updatedOn = Date.now();
+                    cache.collection[i] = itemToUpdate;
+                    break;
+                }
+            }
+        }
+
+        return didUpdateCacheItem;
+    }
 })(typeof exports === 'undefined' ? this['cache'] = {} : exports);

@@ -104,6 +104,24 @@ var upsert = function(tableName, data, callback) {
     }
 };
 
+var remove = function(tableName, id, callback) {
+    if (connection) {
+        var table = connection.collection(tableName);
+        if (table) {
+            table.deleteOne({_id: id}, function(error, result) {
+                if (error) {
+                    logger.logError(CLASS_NAME, "remove", "Failed to remove _id=\"" + id + "\": " + error);
+                }
+                if (callback) {
+                    callback(error);
+                }
+            });
+        }
+    } else {
+        logger.logError(CLASS_NAME, "remove", "Cannot remove _id=\"" + id + "\", MongoDB connection not open");
+    }
+}
+
 var search = function(tableName, query, callback) {
     find(tableName, query, function(documents) {
         if (callback) {
@@ -146,5 +164,6 @@ module.exports = {
     cleanDb: cleanDb,
     search: search,
     upsert: upsert,
+    remove: remove,
     dropTable: dropTable
 };

@@ -21,8 +21,8 @@ const DEFAULT_SERVER_SETTINGS = {
 var pollerStatuses = {};
 var setPollerStatuses = function(mediaType, isComplete) {
     pollerStatuses[mediaType] = {};
-    pollerStatuses[mediaType].wishlistDone = true;
-    pollerStatuses[mediaType].collectionDone = true;
+    pollerStatuses[mediaType].wishlistDone = isComplete;
+    pollerStatuses[mediaType].collectionDone = isComplete;
 };
 /**
  * Assume by default we already have the data until proven otherwise. This is
@@ -107,10 +107,6 @@ var cacheRefresher = function() {
     for (var i = 0; i < mediaTypes.SUPPORTED_TYPES.length; i++) {
         refreshCacheForClient(mediaTypes.SUPPORTED_TYPES[i], time, broadcastDataToClient);
     }
-
-    // setInterval(function() {
-    //     refreshCacheForClient(mediaTypes.RECORDS, new Date().getTime() - (DEFAULT_SERVER_SETTINGS.cacheRefreshTimeInMinutes * 60 * 1000), broadcastChanges);
-    // }, DEFAULT_SERVER_SETTINGS.cacheRefreshTimeInMinutes * 60 * 1000);
 };
 mongoConnection.open(mongoConnection.DEFAULT_MONGO_CONFIG, cacheRefresher);
 
@@ -157,6 +153,51 @@ var socketOpened = function(socket) {
         }
     );
 
+    // Remove a specific item from its respective cache and notify the frontend of the removal
+    socket.on(socketCodes.REMOVE_FROM_CACHE,
+        function(mediaWrapper) {
+            var mediaType = mediaWrapper.mediaType;
+            var data = mediaWrapper.data;
+
+            logger.logInfo(CLASS_NAME, "Received socket request to remove item \"" + data.title + "\" from the \"" + mediaType + "\" cache");
+            
+            cache.removeData(mediaType, data);
+
+            if (mediaTypes.RECORDS === mediaType) {
+                if (data.isWishlist) {
+                    broadcastDataToClient(socketCodes.REMOVE_RECORD_WISHLIST_ITEM, data);
+                } else {
+                    broadcastDataToClient(socketCodes.REMOVE_RECORD_COLLECTION_ITEM, data);
+                }
+            } // TODO when more media types are added, expand on that conditional here
+        },
+        function() {
+            logger.logError(CLASS_NAME, "socketOpened." + socketCodes.REMOVE_FROM_CACHE, "Failed to send the removal of \"" + mediaType + "\" item \"" + data.title + "\" to the client");
+        }
+    );
+
+    socket.on(socketCodes.UPDATE_CACHE_ITEM,
+        function(mediaWrapper) {
+            var mediaType = mediaWrapper.mediaType;
+            var data = mediaWrapper.data;
+
+            logger.logInfo(CLASS_NAME, "Received socket request to update item \"" + data.title + "\" in the \"" + mediaType + "\" cache");
+            
+            cache.updateData(mediaType, data);
+
+            if (mediaTypes.RECORDS === mediaType) {
+                if (data.isWishlist) {
+                    broadcastDataToClient(socketCodes.UPDATE_RECORD_WISHLIST_ITEM, data);
+                } else {
+                    broadcastDataToClient(socketCodes.UPDATE_RECORD_COLLECTION_ITEM, data);
+                }
+            } // TODO when more media types are added, expand on that conditional here
+        },
+        function() {
+            logger.logError(CLASS_NAME, "socketOpened." + socketCodes.UPDATE_CACHE_ITEM, "Failed to send the update of \"" + mediaType + "\" item \"" + data.title + "\" to the client");
+        }
+    );
+
     // Update a specific poller's status and notify the frontend of the change
     socket.on(socketCodes.UPDATE_POLLER_STATUS,
         function(mediaWrapper) {
@@ -167,7 +208,7 @@ var socketOpened = function(socket) {
                 isWishlist = mediaWrapper.isWishlist;
             }
 
-            if (mediaTypes.RECORDS === mediaType) {
+            if (mediaTypes.RECORDS === mediaType && isWishlist != null) {
                 if (isWishlist) {
                     pollerStatuses[mediaType].wishlistDone = true;
                     logger.logInfo(CLASS_NAME, "Received socket notification that polling is complete for the \"" + mediaType + "\" wishlist");
@@ -175,7 +216,11 @@ var socketOpened = function(socket) {
                     pollerStatuses[mediaType].collectionDone = true;
                     logger.logInfo(CLASS_NAME, "Received socket notification that polling is complete for the \"" + mediaType + "\" collection");
                 }
-            } // TODO when more media types are added, expand on that conditional here
+            // TODO when more media types are added, expand on that conditional here
+            } else {
+                logger.logInfo(CLASS_NAME, "Received socket request for polling status, sending...");
+                console.log(pollerStatuses);
+            }
             
             broadcastDataToClient(socketCodes.UPDATE_POLLER_STATUS, pollerStatuses);
         },
@@ -183,15 +228,6 @@ var socketOpened = function(socket) {
             logger.logError(CLASS_NAME, "socketOpened." + socketCodes.UPDATE_POLLER_STATUS, "Failed to send poller status updates for \"" + mediaType + "\" to the client");
         }
     );
-
-    // socket.on(socketCodes.GET_POLLER_STATUS,
-    //     function() {
-    //         logger.logInfo(CLASS_NAME, "Received socket request for polling status");
-    //         socket.emit("pollerStatuses", pollerStatuses);
-
-    //         logger.logInfo(CLASS_NAME, "Sent polling statuses to the client");
-    //     }
-    // );
 
     // RECORDS SOCKET IO
     // ####################################################

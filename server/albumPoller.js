@@ -26,11 +26,13 @@ const ITUNES_ALBUM_ART_FILE_NAME = "itunes-album-art.jpg";
 const USER_AGENT = config.discogsUserId+"Shelf/0.1 +https://github.com/barrowclift/shelf" // Unique user agent for each Shelf user
 const MAX_ITUNES_ALBUM_ART_SIZE = 512;
 const MAX_RECORDS_PER_PAGE = 20;
+const MAX_NUMBER_OF_RETRIES = 5;
 const REMAINING_REQUESTS_WHEN_SLEEP_SHOULD_OCCUR = 10;
-const DISCOGS_RATE_LIMIT_MET_WAIT_TIME = 60000;
+const DISCOGS_RATE_LIMIT_MET_WAIT_TIME = 70000;
 const DISCOGS_RATE_LIMIT_MET_FUDGE_FACTOR = 3000;
+const TIMEOUT_WAIT_TIME = 120000; // 12 seconds
 const DEFAULT_DISCOGS_COLLECTOR_SETTINGS = {
-    refreshTimeInMinutes : 30
+    refreshTimeInMinutes : 60
 };
 const FUZZY_SEARCH_OPTIONS = {
     shouldSort: true,
@@ -44,7 +46,7 @@ const FUZZY_SEARCH_OPTIONS = {
     ]
 };
 
-var discogs = new Discogs({ userToken: config.discogsUserToken });
+var discogs = new Discogs(USER_AGENT, { userToken: config.discogsUserToken });
 var client = null;
 var socket = null;
 var sleepDiscogsRequests = false;
@@ -74,12 +76,14 @@ var sub_downloadImage = function(requestData, filepath, filename, callback) {
             }
         }
     };
-    request.head(requestData, subDownloadImageCallback);
+    
+    request.get(requestData, subDownloadImageCallback);
 };
 
 var downloadImage = function(isDiscogs, uri, filepath, filename, callback) {
     var requestData = {
         url: uri,
+        timeout: TIMEOUT_WAIT_TIME,
         headers: {
             "User-Agent": USER_AGENT
         }
@@ -146,12 +150,14 @@ var sub_getDiscogsLink = function(requestData, callback) {
             });
         }
     };
-    request.head(requestData, subGetDiscogsLinkCallback);
+
+    request.get(requestData, subGetDiscogsLinkCallback);
 };
 
 var getDiscogsLink = function(link, callback) {
     var requestData = {
         url: link,
+        timeout: TIMEOUT_WAIT_TIME,
         headers: {
             "User-Agent": USER_AGENT,
             "Authorization": "Discogs token=" + config.discogsUserToken
@@ -175,27 +181,25 @@ var getDiscogsLink = function(link, callback) {
         } else {
             sub_getDiscogsLink(requestData, callback);
         }
-    }, randomWaitTime(1000, 4000));
+    }, randomWaitTime(1000, 10000));
 };
 
-var getiTunesAlbum = function(title, artist, callback) {
-    if (overrides.records.searchAssistance.titles[title]) {
-        title = overrides.records.searchAssistance.titles[title];
-    }
-    var requestData = {
-        url: createiTunesAlbumUrl(title),
-        headers: {
-            "User-Agent": USER_AGENT
-        }
-    };
-
+var sub_getiTunesAlbum = function(requestData, title, artist, retriesTried, callback) {
     logger.logInfo(CLASS_NAME, "GET " + requestData.url + " from iTunes for \"" + title + "\"...");
 
     // Attempt 5 times before giving up, if receive 403
     var getiTunesAlbumCallback = function(error, response, body) {
+        if (retriesTried > MAX_NUMBER_OF_RETRIES) {
+            callback("Max number of retries met");
+        }
+
         if (error) {
-            logger.logError(CLASS_NAME, "getiTunesAlbumCallback", error);
-            callback(null, null, error);
+            if (error.code === "ETIMEDOUT") {
+                logger.logWarning(CLASS_NAME, "getiTunesAlbumCallback", "iTunes connection to get \"" + requestData.url + "\" timed out, trying again...");
+            } else {
+                logger.logError(CLASS_NAME, "getiTunesAlbumCallback", error);
+                callback(null, null, error);
+            }
         } else {
             var stream = request(requestData);
             var body = "";
@@ -239,11 +243,24 @@ var getiTunesAlbum = function(title, artist, callback) {
             });
         }
     };
-    try {
-        request.head(requestData, getiTunesAlbumCallback);
-    } catch (error) {
-        logger.logError(CLASS_NAME, "getiTunesAlbum", "iTunes API request wasn't accepted: " + error);
+    
+    request.get(requestData, getiTunesAlbumCallback);
+}
+
+var getiTunesAlbum = function(title, artist, callback) {
+    if (overrides.records.searchAssistance.titles[title]) {
+        title = overrides.records.searchAssistance.titles[title];
     }
+
+    var requestData = {
+        url: createiTunesAlbumUrl(title),
+        timeout: TIMEOUT_WAIT_TIME,
+        headers: {
+            "User-Agent": USER_AGENT
+        }
+    };
+
+    sub_getiTunesAlbum(requestData, title, artist, 0, callback);
 }
 
 var getSortableText = function(text) {
@@ -262,8 +279,7 @@ var sub_pollDiscogsPage = function(client, isWishlist, parentCallback) {
         } else {
             var numberOfPages = data.pagination.pages;
             pageTracker.currentPage = data.pagination.page;
-            // pageTracker.isLastPage = pageTracker.currentPage >= numberOfPages;
-            pageTracker.isLastPage = true;
+            pageTracker.isLastPage = pageTracker.currentPage >= numberOfPages;
             var processedRecords = 0;
             var recordsInPage = data[listKey].length;
             
@@ -299,14 +315,45 @@ var sub_pollDiscogsPage = function(client, isWishlist, parentCallback) {
                 record.discogsAddedOn = new Date(data[listKey][i].date_added).getTime();
                 record.isWishlist = isWishlist;
                 record.addedOn = Date.now();
+                record.updatedOn = record.addedOn;
 
                 var potentialAlbumArtFilePath = ALBUM_ART_CACHE + record.id + '/';
                 (function(recordToSave, potentialAlbumArtFilePath2, isLastItemOfPage2, isLastPage2, discogsRoutingLink) {
                     var query = {
-                        id: recordToSave.id
+                        title: recordToSave.title,
+                        artist: recordToSave.artist
                     };
                     mongoConnection.search(mediaTypes.RECORDS, query, function(data) {
-                        if (!data || data.length == 0) {
+                        /**
+                         * If a new record in their *collection* is found, but
+                         * it also already exists in their wishlist, reassign
+                         * that wishlist item to the collection.
+                         *
+                         * This logic is NOT applied the other way (an item in
+                         * the collection goes back into the wishlist), as
+                         * that path doesn't make any sense.
+                         */
+                        var newlyObtainedItemWasFromWishlist = false;
+                        if (data && data.length > 0 && data[0].isWishlist && !isWishlist) {
+                            newlyObtainedItemWasFromWishlist = true;
+                            data[0].isWishlist = false;
+                            mongoConnection.upsert(mediaTypes.RECORDS, data[0]);
+                            if (socket) {
+                                socket.emit(socketCodes.UPDATE_CACHE_ITEM, { mediaType:mediaTypes.RECORDS, data:data[0]});
+                            }
+                            processedRecords += 1;
+                            var isFinalItemOfPage = processedRecords >= recordsInPage;
+                            if (isFinalItemOfPage) {
+                                parentCallback(pageTracker);
+                            } else {
+                                return;
+                            }
+                        }
+
+                        /**
+                         * If a new record OR we have a new collection item originally from the wishlist
+                         */
+                        if (!data || data.length == 0 || newlyObtainedItemWasFromWishlist) {
                             logger.logInfo(CLASS_NAME, "Found new record, \"" + recordToSave.title + "\"");
                             // Download Discogs Album Art
                             downloadImage(true, recordToSave.discogsAlbumArtUrl, RELATIVE_PATH+potentialAlbumArtFilePath2, DISCOGS_ALBUM_ART_FILE_NAME, function(error) {
@@ -344,10 +391,7 @@ var sub_pollDiscogsPage = function(client, isWishlist, parentCallback) {
                                                             socket.emit(socketCodes.ADD_TO_CACHE, { mediaType:mediaTypes.RECORDS, data:recordToSave });
                                                         }
                                                     }
-                                                    if (socket && isLastPage2 && isFinalItemOfPage) {
-                                                        socket.emit(socketCodes.UPDATE_POLLER_STATUS, { mediaType:mediaTypes.RECORDS, isWishlist:isWishlist });
-                                                    }
-                                                    if (isLastPage2 && isFinalItemOfPage) {
+                                                    if (isFinalItemOfPage) {
                                                         parentCallback(pageTracker);
                                                     }
                                                 });
@@ -367,10 +411,7 @@ var sub_pollDiscogsPage = function(client, isWishlist, parentCallback) {
                                                         socket.emit(socketCodes.ADD_TO_CACHE, { mediaType:mediaTypes.RECORDS, data:recordToSave });
                                                     }
                                                 }
-                                                if (socket && isLastPage2 && isFinalItemOfPage) {
-                                                    socket.emit(socketCodes.UPDATE_POLLER_STATUS, { mediaType:mediaTypes.RECORDS, isWishlist:isWishlist });
-                                                }
-                                                if (isLastPage2 && isFinalItemOfPage) {
+                                                if (isFinalItemOfPage) {
                                                     parentCallback(pageTracker);
                                                 }
                                             });
@@ -379,7 +420,12 @@ var sub_pollDiscogsPage = function(client, isWishlist, parentCallback) {
                                 });
                             });
                         } else {
+                            processedRecords += 1;
                             pageTracker.recordsAlreadySaved += 1;
+                            var isFinalItemOfPage = processedRecords >= recordsInPage;
+                            if (isFinalItemOfPage) {
+                                parentCallback(pageTracker);
+                            }
                         }
                     });
                 })(record, potentialAlbumArtFilePath, isLastItemOfPage, pageTracker.isLastPage, data[listKey][i].basic_information.resource_url);
@@ -387,12 +433,16 @@ var sub_pollDiscogsPage = function(client, isWishlist, parentCallback) {
         }
     };
 
+    var discogsSettings = {
+        page: pageTracker.currentPage
+        // per_page: MAX_RECORDS_PER_PAGE
+    }
     if (isWishlist) {
         var listKey = "wants";
-        client.getReleases(config.discogsUserId, {page: pageTracker.currentPage, per_page: MAX_RECORDS_PER_PAGE}, pollDiscogsPageCallback);
+        client.getReleases(config.discogsUserId, discogsSettings, pollDiscogsPageCallback);
     } else {
         var listKey = "releases";
-        client.getReleases(config.discogsUserId, ALL_RECORDS_FOLDER_ID, {page: pageTracker.currentPage, per_page: MAX_RECORDS_PER_PAGE}, pollDiscogsPageCallback);
+        client.getReleases(config.discogsUserId, ALL_RECORDS_FOLDER_ID, discogsSettings, pollDiscogsPageCallback);
     }
 }
 
@@ -416,8 +466,12 @@ var pollDiscogsPage = function(client, isWishlist, parentCallback) {
 }
 
 var pollDiscogsClient = function(client, isWishlist, rootCallback) {
-    var pollDiscogsClientCallback = function() {
+    var pollDiscogsClientCallback = function(currentPageTracker) {
         if (pageTracker.isLastPage) {
+            if (socket) {
+                socket.emit(socketCodes.UPDATE_POLLER_STATUS, { mediaType:mediaTypes.RECORDS, isWishlist:isWishlist });
+            }
+
             if (pageTracker.recordsAlreadySaved > 0) {
                 logger.logInfo(CLASS_NAME, pageTracker.recordsAlreadySaved + " records polled were already saved from a previous poll and were skipped, " + pageTracker.recordsSavedThisPage + " new were found");
             } else {
@@ -427,7 +481,9 @@ var pollDiscogsClient = function(client, isWishlist, rootCallback) {
                 rootCallback();
             }
         } else {
+            logger.logInfo(CLASS_NAME, "Page complete, polling next page...");
             pageTracker.recordsSavedThisPage = 0;
+            pageTracker.currentPage += 1;
             pollDiscogsPage(client, isWishlist, pollDiscogsClientCallback);
         }
     }
@@ -436,6 +492,13 @@ var pollDiscogsClient = function(client, isWishlist, rootCallback) {
 
 var pollDiscogs = function() {
     // Polling the collection the user ALREADY HAS
+    pageTracker = {
+        currentPage: 1,
+        isLastPage: false,
+        recordsAlreadySaved: 0,
+        recordsSavedThisPage: 0,
+        totalRecordsSaved: 0
+    };
 	client = discogs.user().collection();
     var isWishlist = false;
     pollDiscogsClient(client, isWishlist, function() {

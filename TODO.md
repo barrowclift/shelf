@@ -1,7 +1,13 @@
 # TODO
 
-* Rewrite Discogs rate limit handling (smarter rate limiting using Discogs response headers)
-* When new items are identified, do a check to see if they're in the wishlist. If they are, remove the from the wishlist database and cache, and update the frontend of the change.
+## v1.0
+
+* "What if I remove an item from my wishlist without having added it to my collection?"
 * Create `INSTALL.md` setup and config documentation based on getting Shelf set up on a DigitalOcean Droplet running CentOS.
 * Create `favicon.ico` and `apple-touch-icon` logos
 * Create Pinned Tab icon for Safari
+
+## v1.1
+
+* Improve socket communication with action codes (so there's not separate calls for Get, Add, Remove, Update, etc., just one unified call for data manipulations/retrievals).
+* Light refactoring of controllers, server, and albumPoller (particularly with the page poller when iterating through records)
