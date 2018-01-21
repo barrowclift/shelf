@@ -12,6 +12,10 @@
 	 */
 	exports.RECORD_COLLECTION = "recordCollection";
 	exports.RECORD_WISHLIST = "recordWishlist";
+	exports.REMOVE_RECORD_COLLECTION_ITEM = "removeRecordCollectionItem";
+	exports.REMOVE_RECORD_WISHLIST_ITEM = "removeRecordWishlistItem";
+	exports.UPDATE_RECORD_COLLECTION_ITEM = "updateRecordCollectionItem";
+	exports.UPDATE_RECORD_WISHLIST_ITEM = "updateRecordWishlistItem";
 
 	/**
 	 * Generically add any item to its respective cache (dictated by the
@@ -19,6 +23,18 @@
 	 * Only accepts a single data item, not an array.
 	 */
 	exports.ADD_TO_CACHE = "addToCache";
+	/**
+	 * Generically remove any item from its respective cache (dictated by the
+	 * provided mediaType) and notify the frontend about the removal. Only
+	 * accepts a single data item, not an array.
+	 */
+	exports.REMOVE_FROM_CACHE = "removeFromCache";
+	/**
+	 * Generically update any item from its respective cache (dictacted by the
+	 * provided mediaType) and notify the frontend about the update. Only
+	 * accepts a single data item, not an array.
+	 */
+	exports.UPDATE_CACHE_ITEM = "updateCacheItem";
 
 	/**
 	 * Generically update a particular poller by media type and sub type (for
@@ -26,9 +42,5 @@
 	 * and a "wishlist" component) and notify the frontend about the change.
 	 */
 	exports.UPDATE_POLLER_STATUS = "updatePollerStatus";
-	/**
-	 * A means for the client to request the current poller status be sent.
-	 */
-	// exports.GET_POLLER_STATUS = "getPollerStatus";
 
 })(typeof exports === 'undefined' ? this['socketCodes'] = {} : exports);

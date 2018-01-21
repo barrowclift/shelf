@@ -338,100 +338,12 @@ menu {
 	text-align: center;
 }
 
-@media (min-width: 414px) {
-	.record {
-		width: 27vw;
-	}
-	.record .wrapper {
-		width: 27vw;
-		height: 27vw;
-	}
-}
-/* Medium devices (iPads) */
-@media (min-width: 525px) {
-	.record {
-		width: 27vw;
-	}
-		.record .wrapper {
-			width: 27vw;
-			height: 27vw;
-		}
-
-	menu {
-		padding-left: 1em;
-		padding-right: 1em;
-	}
-		menu input {
-			width: 17vw;
-			margin-top: 4px;
-		}
-	
-	menu,
-	menu.with-search-bar {
-		height: auto;
-	}
-		menu li {
-			margin-left: 0.25em;
-			margin-right: 0.25em;
-		}
-		menu ul {
-			margin-left: 1em;
-			display: inline-block;
-			text-align: left;
-			margin-bottom: 0.5em;
-		}
-		menu h3 {
-			display: inline-block;
-			text-align: left;
-		}
-		menu ul a {
-			padding-left: 0.25em;
-			padding-right: 0.25em;
-			width: 5em;
-			text-align: center;
-		}
-}
-
-/* Medium devices (iPads) */
-@media (min-width: 700px) {
-	html {
-		font-size: 19px;
-	}
-
-	menu {
-		height: auto;
-	}
-		menu ul a {
-			padding-left: 0.5em;
-			padding-right: 0.5em;
-			width: 15vw;
-			max-width: 6em;
-		}
-		menu input {
-			max-width: 16em;
-			width: 17vw;
-		}
-
-	.record {
-		width: 193px;
-	}
-		.record .wrapper {
-			width: 193px;
-			height: 193px;
-		}
-}
-
-/* Large devices (Macs) */
-@media (min-width: 900px) {
-
-}
-
 .sk-fading-circle {
-	margin: 100px auto;
-	width: 40px;
-	height: 40px;
+	margin: 25px auto;
+	width: 20px;
+	height: 20px;
 	position: relative;
-	margin-top: 150px;
+	margin-top: 75px;
 }
 .sk-fading-circle-text {
 	position: absolute;
@@ -441,6 +353,7 @@ menu {
 	width: 100%;
 	margin-top: -50px;
 	color: #868e96;
+	margin-left: -50vw;
 }
 .sk-fading-circle.ng-enter,
 .sk-fading-circle-text.ng-enter {
@@ -584,4 +497,99 @@ menu {
 @keyframes sk-circleFadeDelay {
   0%, 39%, 100% { opacity: 0; }
   40% { opacity: 1; } 
+}
+
+@media (min-width: 414px) {
+	.record {
+		width: 27vw;
+	}
+	.record .wrapper {
+		width: 27vw;
+		height: 27vw;
+	}
+}
+/* Medium devices (iPads) */
+@media (min-width: 525px) {
+	.sk-fading-circle {
+		margin: 100px auto;
+		width: 40px;
+		height: 40px;
+		position: relative;
+		margin-top: 150px;
+	}
+	.record {
+		width: 27vw;
+	}
+		.record .wrapper {
+			width: 27vw;
+			height: 27vw;
+		}
+
+	menu {
+		padding-left: 1em;
+		padding-right: 1em;
+	}
+		menu input {
+			width: 17vw;
+			margin-top: 4px;
+		}
+	
+	menu,
+	menu.with-search-bar {
+		height: auto;
+	}
+		menu li {
+			margin-left: 0.25em;
+			margin-right: 0.25em;
+		}
+		menu ul {
+			margin-left: 1em;
+			display: inline-block;
+			text-align: left;
+			margin-bottom: 0.5em;
+		}
+		menu h3 {
+			display: inline-block;
+			text-align: left;
+		}
+		menu ul a {
+			padding-left: 0.25em;
+			padding-right: 0.25em;
+			width: 5em;
+			text-align: center;
+		}
+}
+
+/* Medium devices (iPads) */
+@media (min-width: 700px) {
+	html {
+		font-size: 19px;
+	}
+
+	menu {
+		height: auto;
+	}
+		menu ul a {
+			padding-left: 0.5em;
+			padding-right: 0.5em;
+			width: 15vw;
+			max-width: 6em;
+		}
+		menu input {
+			max-width: 16em;
+			width: 17vw;
+		}
+
+	.record {
+		width: 193px;
+	}
+		.record .wrapper {
+			width: 193px;
+			height: 193px;
+		}
+}
+
+/* Large devices (Macs) */
+@media (min-width: 900px) {
+
 }
