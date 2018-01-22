@@ -2,10 +2,7 @@
 
 ## v1.0
 
-* Update `README.md`: "What if I remove an item from my wishlist without having added it to my collection?"
 * Create `INSTALL.md` setup and config documentation based on getting Shelf set up on a DigitalOcean Droplet running CentOS.
-* Create `favicon.ico` and `apple-touch-icon` logos
-* Create Pinned Tab icon for Safari
 
 ## v1.1
 
