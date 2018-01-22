@@ -49,7 +49,7 @@ Absolutely! Shelf is open source under the [MIT License](https://github.com/barr
 
 ## Installation
 
-See [INSTALL.md](#)
+See [INSTALL.md](https://github.com/barrowclift/shelf/blob/master/INSTALL.md)
 
 ## How do I add my collection to Shelf?
 
@@ -72,6 +72,8 @@ I keep mentioning "various pollers", but currently there's only one: `albumPolle
 It might seem like a bit much for what's currently just a glorified baton pass of information from Discogs, but with this architecture all the various components (data store, collectors, cache, frontend) are all neatly separated and allow great flexibility for future changes. Not to mention, it will make adding pollers for more services a __lot__ easier down the road.
 
 # Roadmap
+
+See [TODO.md](https://github.com/barrowclift/shelf/blob/master/TODO.md) for requirement candidates for future releases.
 
 ## Do you plan to add support for other media collections in Shelf?
 
