@@ -37,7 +37,7 @@ angular
         }
     }
 
-    var socket = io.connect("http://localhost:10800");
+    var socket = io.connect(config.PUBLIC_WEB_ADDRESS);
     socket.on("connect", function() {
         logger.logInfo(CLASS_NAME, "Client has connected to the server");
     });
