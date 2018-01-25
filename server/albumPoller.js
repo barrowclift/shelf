@@ -237,7 +237,7 @@ var sub_getiTunesAlbum = function(requestData, title, artist, retriesTried, call
                         }
                     }
                 } catch (exception) {
-                    logger.logError(CLASS_NAME, "getiTunesAlbumCallback", "Unable to parse iTunes response for \"" + title + "\", exception=" + exception + ", response=" + response, + ", error="+error);
+                    logger.logError(CLASS_NAME, "getiTunesAlbumCallback", "Unable to parse iTunes response for \"" + title + "\", exception=" + exception + ", response=" + response + ", error="+error);
                     callback(null, null, error);
                 }
             });
