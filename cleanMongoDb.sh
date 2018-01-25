@@ -2,14 +2,19 @@
 
 source config.sh
 
-# MONGODB_COMMAND=$(ps -ef | grep "mongod --dbpath $MONGO_DB_DIRECTORY" | grep -v grep)
-MONGODB_COMMAND=$(ps -ef | grep "mongod" | grep -v grep)
-if command -v service; then
-	MONGODB_SERVICE=$(service mongod status | grep -F "is running")
+MONGODB_COMMAND_RUNNING=$(ps -ef | grep "mongod --dbpath $MONGO_DB_DIRECTORY" | grep -v grep)
+HAS_SERVICE_COMMAND=$(command -v service)
+if [ -n "$HAS_SERVICE_COMMAND" ]; then
+    HAS_MONGODB_SERVICE=$(service --status-all | grep -F "mongod")
+    if [ -n "$HAS_MONGODB_SERVICE" ]; then
+        MONGODB_SERVICE_RUNNING=$(service mongod status | grep 'is running\|active (running)')
+    fi
 fi
 
+# MongoDB may not be currently running. If that's the case, we want to briefly start
+# it for the cleaning process, then immediately turn it off again
 START_THEN_STOP=0
-if [ -z "$MONGODB_COMMAND" ] && [ -z "$MONGODB_SERVICE" ]; then
+if [ -z "$MONGODB_COMMAND_RUNNING" ] && [ -z "$MONGODB_SERVICE_RUNNING" ]; then
 	START_THEN_STOP=1
 fi
 

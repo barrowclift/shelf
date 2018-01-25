@@ -2,33 +2,20 @@
 
 source config.sh
 
-# MONGODB_COMMAND=$(ps -ef | grep "mongod --dbpath $MONGO_DB_DIRECTORY" | grep -v grep)
-MONGODB_COMMAND=$(ps -ef | grep "mongod" | grep -v grep)
-if command -v service; then
-	MONGODB_SERVICE=$(service mongod status | grep -F "is running")
+MONGODB_COMMAND_RUNNING=$(ps -ef | grep "mongod --dbpath $MONGO_DB_DIRECTORY" | grep -v grep)
+HAS_SERVICE_COMMAND=$(command -v service)
+if [ -n "$HAS_SERVICE_COMMAND" ]; then
+	HAS_MONGODB_SERVICE=$(service --status-all | grep -F "mongod")
+	if [ -n "$HAS_MONGODB_SERVICE" ]; then
+		MONGODB_SERVICE_RUNNING=$(service mongod status | grep 'is running\|active (running)')
+	fi
 fi
 
-# Ask to Stop MongoDB
-if [ -n "$MONGODB_COMMAND" ] || [ -n "$MONGODB_SERVICE" ]; then
-	# read -p "Do you also want to clean MongoDB? (y/n): " -r
-	# if [[ $REPLY =~ ^[Yy]$ ]]
-	# then
-	# 	node mongoCleaner.js > "$LOG_DIRECTORY"/clean-mongodb.log 2>&1 &
-	# 	cleanerProcess=$!
-	# 	wait $cleanerProcess
-	# 	echo -e "${RED}Cleaned MongoDB${RESET}"
-	# fi
-
-	# Try stopping mongod as a service, if the service command exists and mongod
-	# is already set up with it. Otherwise, fallback on standard kill command.
-	KILLED=0
-	if command -v service; then
-		if service mongod status | grep -F "is running"; then    
-			sudo service mongod stop
-			KILLED=1
-		fi
-	fi
-	if [ $KILLED -eq 0 ]; then
+# If either way of running MongoDB is active, stop MongoDB
+if [ -n "$MONGODB_COMMAND_RUNNING" ] || [ -n "$MONGODB_SERVICE_RUNNING" ]; then
+	if [ -n "$MONGODB_SERVICE_RUNNING" ]; then    
+		sudo service mongod stop
+	else	
 		ps -ef | grep "mongod --dbpath $MONGO_DB_DIRECTORY" | grep -v grep | awk '{print $2}' | xargs kill -9
 	fi
 	echo -e "${RED}MongoDB stopped${RESET}"

@@ -2,13 +2,17 @@
 
 source config.sh
 
-MONGODB_COMMAND=$(ps -ef | grep "mongod --dbpath $MONGO_DB_DIRECTORY" | grep -v grep)
-if command -v service; then
-	MONGODB_SERVICE=$(service mongod status | grep -F "is running")
+MONGODB_COMMAND_RUNNING=$(ps -ef | grep "mongod --dbpath $MONGO_DB_DIRECTORY" | grep -v grep)
+HAS_SERVICE_COMMAND=$(command -v service)
+if [ -n "$HAS_SERVICE_COMMAND" ]; then
+	HAS_MONGODB_SERVICE=$(service --status-all | grep -F "mongod")
+	if [ -n "$HAS_MONGODB_SERVICE" ]; then
+		MONGODB_SERVICE_RUNNING=$(service mongod status | grep 'is running\|active (running)')
+	fi
 fi
 
-# Start MongoDB
-if [ -z "$MONGODB_COMMAND" ] && [ -z "$MONGODB_SERVICE" ]; then
+# If neither way of running MongoDB is running, start MongoDB
+if [ -z "$MONGODB_COMMAND_RUNNING" ] && [ -z "$MONGODB_SERVICE_RUNNING" ]; then
 	if [ ! -d "$MONGO_DB_DIRECTORY" ]; then
 		mkdir -p "$MONGO_DB_DIRECTORY"
 	fi
@@ -18,19 +22,19 @@ if [ -z "$MONGODB_COMMAND" ] && [ -z "$MONGODB_SERVICE" ]; then
 
 	rm "$LOG_DIRECTORY"/mongodb.log 2> /dev/null
 
-	# Try starting mongod as a service, if the service command exists and mongod
-	# is already set up with it. Otherwise, fallback on the standard mongod command.
-	STARTED=0
-	if command -v service; then
-		if service mongod status | grep -F "is running"; then
-			sudo service mongod start
-			STARTED=1
-		fi
-	fi
-	if [ $STARTED -eq 0 ]; then
+	if [ -n "$HAS_MONGODB_SERVICE" ]; then
+		sudo service mongod start
+		SUCCESS=$?
+	else	
 		nohup mongod --dbpath "$MONGO_DB_DIRECTORY" > "$LOG_DIRECTORY"/mongodb.log 2>&1 &
+		SUCCESS=$?
 	fi
-	echo -e "${GREEN}MongoDB started${RESET}"
+	
+	if [ $SUCCESS -eq 0 ]; then
+		echo -e "${GREEN}MongoDB started${RESET}"
+	else
+		echo -e "${RED}MongoDB failed to start${RESET}"
+	fi
 else
 	echo -e "${GREEN}MongoDB already running${RESET}"
 fi

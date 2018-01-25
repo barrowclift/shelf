@@ -2,14 +2,19 @@
 
 source config.sh
 
-MONGODB_COMMAND=$(ps -ef | grep "mongod --dbpath $MONGO_DB_DIRECTORY" | grep -v grep)
-if command -v service; then
-	MONGODB_SERVICE=$(service mongod status | grep -F "is running")
+MONGODB_COMMAND_RUNNING=$(ps -ef | grep "mongod --dbpath $MONGO_DB_DIRECTORY" | grep -v grep)
+HAS_SERVICE_COMMAND=$(command -v service)
+if [ -n "$HAS_SERVICE_COMMAND" ]; then
+	HAS_MONGODB_SERVICE=$(service --status-all | grep -F "mongod")
+	if [ -n "$HAS_MONGODB_SERVICE" ]; then
+		MONGODB_SERVICE_RUNNING=$(service mongod status | grep 'is running\|active (running)')
+	fi
 fi
-SERVER=$(ps -ef | grep "node server/server.js" | grep -v grep)
-ALBUM_POLLER=$(ps -ef | grep "node server/albumPoller.js" | grep -v grep)
+SERVER_RUNNING=$(ps -ef | grep "node server/server.js" | grep -v grep)
+ALBUM_POLLER_RUNNING=$(ps -ef | grep "node server/albumPoller.js" | grep -v grep)
 
-if [ -n "$SERVER" ] && [ -n "$ALBUM_POLLER" ] && { [ -n "$MONGODB_COMMAND" ] || [ -n "$MONGODB_SERVICE" ]; }; then
+# If all necessary ingredients are running successfully, nothing to do
+if [ -n "$SERVER_RUNNING" ] && [ -n "$ALBUM_POLLER_RUNNING" ] && { [ -n "$MONGODB_COMMAND_RUNNING" ] || [ -n "$MONGODB_SERVICE_RUNNING" ]; }; then
 	echo -e "${GREEN}Shelf already running${RESET}"
 	exit 0
 fi
@@ -19,6 +24,9 @@ fi
 echo -e "\nStarting services:"
 
 ./startMongoDb.sh
+startMongoProcess=$!
+wait $startMongoProcess
+
 ./startServer.sh
 ./startAlbumPoller.sh
 
