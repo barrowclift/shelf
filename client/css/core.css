@@ -50,9 +50,15 @@ h2 {
 h3 {
 	font-size: 1.44em;
 }
+	menu h3 { /* Only on mobile, increase the font size a little */
+		font-size: 2.074em;
+	}
 h4 {
 	font-size: 1.2em;
 }
+	menu h4 { /* Only on mobile, increase the font size a little */
+		font-size: 1.44em;
+	}
 h5 {
 	font-size: 1em;
 }
@@ -81,6 +87,13 @@ strong {
 	font-weight: bold;
 }
 
+input {
+	-webkit-appearance: none !important;
+	-moz-appearance: none !important;
+	appearance: none !important;
+	box-shadow: none !important
+}
+
 .no-select {
 	-webkit-touch-callout: none; /* iOS Safari */
 	  -webkit-user-select: none; /* Safari */
@@ -100,16 +113,17 @@ strong {
 menu {
 	background-color: white;
 	box-shadow: 0 .325em .6em 0 rgba(0, 0, 0, .04), 0 .6em 1.3em 0 rgba(0, 0, 0, .02);
+	border-bottom: 1px solid rgba(199, 199, 199, 0.5);
 
 	padding-top: 1em;
 	padding-left: 3%;
 	padding-right: 3%;
-	height: 5em;
+	height: 6.5em;
 
 	cursor: default;
 }
 	menu.with-search-bar {
-		height: 7.25em;
+		height: 9.5em;
 	}
 	menu * {
 		display: inline-block;
@@ -171,26 +185,26 @@ menu {
 		padding: 0.375em 0.375em 0.375em 1em;
 		letter-spacing: 1px;
 		box-sizing: border-box;
-		border-top-left-radius: 1em;
-		border-top-right-radius: 1em;
-		border-bottom-right-radius: 1em;
-		border-bottom-left-radius: 1em;
-		font-size: 0.75rem;
+		border-radius: 1em;
+		font-size: 1em;
 
 		margin-top: 0;
 		width: 100%;
 		max-width: unset;
-		transition: box-shadow 0.25s ease;
+		transition: border-color 0.25s ease;
 	}
 		menu input:focus {
-		    box-shadow: 0 0 0.5em rgba(134, 142, 150, 0.58);
+		    border-color: #adb5bd;
 		    outline: none;
 		}
 
 .logo {
-	height: 0.833em;
+	height: 0.75em;
 	margin-right: -.25em;
 	display: inline-block;
+}
+h1 .logo {
+	margin-right: -.15em;
 }
 
 .content {
@@ -217,6 +231,11 @@ menu {
 
 .writing a {
 	color: #339af0;
+	transition: color 0.25s ease;
+}
+.writing a:hover,
+.writing a:active {
+	color: #1c7ed6;
 }
 .link-button {
 	color: white !important;
@@ -239,7 +258,7 @@ menu {
 	/* W3C */
 	filter: progid: DXImageTransform.Microsoft.gradient(startColorstr='#4dabf7', endColorstr='#228be6', GradientType=0);
 	/* IE6-9 */
-	border: 1px solid #1971c2;
+	border: 1px solid #228be6;
 	box-shadow: inset 0 1px 0 rgba(255, 255, 255, .1);
 	
 	text-decoration: none;
@@ -247,7 +266,7 @@ menu {
 	padding: .5rem 1.25rem;
 	font-weight: 500;
 	border-radius: 0.25em;
-	transition: background 0.25s ease, box-shadow 0.25s ease;
+	transition: background 0.25s ease, box-shadow 0.25s ease !important;
 }
 	.link-button:hover {
 		background-position: 0 -15px;
@@ -274,6 +293,7 @@ menu {
 	margin-top: 2em;
 	margin-bottom: 2em;
 }
+
 .record {
 	width: 43vw;
 	margin: 0.325em 0.65em;
@@ -296,7 +316,7 @@ menu {
 	}
 	.record .metadata {
 		display: inline-block;
-		font-size: 0.75em;
+		font-size: 0.833em;
 		text-align: left;
 		width: 100%;
 	}
@@ -313,7 +333,7 @@ menu {
 			color: #868e96;
 
 			font-size: 0.833em;
-			margin-top: -0.75em;
+			margin-top: -0.5em;
 		}
 	.record .wrapper {
 		border: 1px solid #ECECEC;
@@ -507,6 +527,30 @@ menu {
   40% { opacity: 1; } 
 }
 
+@media (max-width: 374px) {
+	menu h3 {
+		font-size: 1.44em;
+	}
+	menu h4 { /* Only on mobile, increase the font size a little */
+		font-size: 1.2em;
+	}
+	menu input {
+		font-size: 0.75rem;
+		border-radius: 0.75rem;
+	}
+	menu {
+		height: 5em;
+	}
+		menu.with-search-bar {
+			height: 7.25em;
+		}
+	.record .metadata {
+		font-size: 0.75em;
+	}
+	.record .metadata .artist {
+		margin-top: -0.75em;
+	}
+}
 @media (min-width: 414px) {
 	.record {
 		width: 27vw;
@@ -532,39 +576,48 @@ menu {
 			width: 27vw;
 			height: 27vw;
 		}
-
-	menu {
-		padding-left: 1em;
-		padding-right: 1em;
-	}
-		menu input {
-			width: 17vw;
-			margin-top: 4px;
+		.record .metadata {
+			font-size: 0.75em;
 		}
-	
+			.record .metadata .artist {
+				margin-top: -0.75em;
+			}
+
 	menu,
 	menu.with-search-bar {
 		height: auto;
+		padding-left: 1em;
+		padding-right: 1em;
 	}
-		menu li {
-			margin-left: 0.25em;
-			margin-right: 0.25em;
-		}
 		menu ul {
 			margin-left: 1em;
 			display: inline-block;
 			text-align: left;
 			margin-bottom: 0.5em;
 		}
+		menu li {
+			margin-left: 0.25em;
+			margin-right: 0.25em;
+		}
+			menu ul a {
+				padding-left: 0.25em;
+				padding-right: 0.25em;
+				width: 5em;
+				text-align: center;
+			}
 		menu h3 {
 			display: inline-block;
 			text-align: left;
+			font-size: 1.44em;
 		}
-		menu ul a {
-			padding-left: 0.25em;
-			padding-right: 0.25em;
-			width: 5em;
-			text-align: center;
+		menu h4 {
+			font-size: 1.2em;
+		}
+		menu input {
+			width: 17vw;
+			margin-top: 4px;
+			font-size: 0.75rem;
+			border-radius: 0.75rem;
 		}
 }
 
@@ -600,4 +653,25 @@ menu {
 /* Large devices (Macs) */
 @media (min-width: 900px) {
 
+}
+
+/* Smaller than original iPhone */
+@media (max-width: 320px) {
+	menu {
+		height: 9em;
+	}
+		menu.with-search-bar {
+			height: 11.75em;
+		}
+	menu ul li {
+		display: block;
+		width: 100%;
+	}
+	menu h4 {
+		width: 95%;
+	}
+	menu ul a {
+		width: 100%;
+		padding: unset;
+	}
 }

@@ -1,13 +1,11 @@
 # TODO
 
-## v1.0
-
-* Create `INSTALL.md` setup and config documentation based on getting Shelf set up on a DigitalOcean Droplet running CentOS.
-
 ## v1.1
 
 * Improve socket communication with action codes (so there's not separate calls for Get, Add, Remove, Update, etc., just one unified call for data manipulations/retrievals).
 * Light refactoring of controllers, server, and albumPoller (particularly with the page poller when iterating through records)
+* [Liquid templates](https://shopify.github.io/liquid/) a la [Jekyll](https://jekyllrb.com) to reduce markup clone (will become increasingly important as more pages and media types are added)
+* Consolidated and simplified configuration files. Currently there's two (one for shell scripts, the other for Javascript). This configuration file should also be available for the client to leverage (for example, obtaining the collector's name for displaying in the About page).
 
 ## v2.0
 
