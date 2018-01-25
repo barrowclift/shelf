@@ -115,7 +115,6 @@ mongoConnection.open(mongoConnection.DEFAULT_MONGO_CONFIG, cacheRefresher);
 
 var app = express();
 app.use(bodyParser.json());
-console.log(__dirname + DEFAULT_SERVER_SETTINGS.clientRoot);
 app.use(express.static(__dirname + DEFAULT_SERVER_SETTINGS.clientRoot));
 
 var server = http.createServer(app);
