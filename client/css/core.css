@@ -332,6 +332,14 @@ menu {
 		box-shadow: 0 0.5em 1em -0.25em rgba(0, 0, 0, 0.2);
 		transform: scale(1.025);
 	}
+	/* Fixing strange black border around visited record links */
+	.record a .wrapper,
+	.record a:active .wrapper,
+	.record a:visited .wrapper,
+	.record a:focus .wrapper {
+		color: transparent;
+		border-color: #ECECEC;
+	}
 
 .footer {
 	color: #868e96;
