@@ -31,7 +31,7 @@ Since my record and digital music collections have only continued to deviate, I 
 
 You're absolutely right, [Discogs](https://www.discogs.com) already has this functionality. There's one problem though: Discogs is hideous.
 
-While Discogs is a *fantastic* data service and remains the de facto standard for tracking record collections, browsing the interface is as fun as scrolling through an Excel spreadsheet. It's cluttered with information most people couldn't care less about, leaving the music itself to be drowned out by the visual noise of pressing price, ratings, and other benign categories. It's an interface that puts all it's focus into function, leaving nothing to the form.
+While Discogs is a *fantastic* data service and remains the de facto standard for tracking record collections, browsing the interface is as fun as scrolling through an Excel spreadsheet. It's cluttered with information most people couldn't care less about, leaving the music itself to be drowned out by the visual noise of pressing price, ratings, and other benign categories. Not to mention, the records aren't even properly sorted in the one, true way (alphabetically by artist, then by album release date). It's an interface that puts all it's focus into function, leaving nothing to the form.
 
 Not with Shelf. Since Discogs shoulders the burden of maintaining your collection's data, Shelf can instead focus on the collection itself, the "form" that Discogs chose to ignore. In this way, Shelf is __not__ a Discogs replacement, merely a supplement.
 
