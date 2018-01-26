@@ -366,7 +366,15 @@ var sub_pollDiscogsPage = function(client, isWishlist, parentCallback) {
                                         recordToSave.discogsUrl = discogsLink;
                                     }
                                     getiTunesAlbum(recordToSave.title, recordToSave.artist, function(largeAlbumArtUrl, yearOfOriginalRelease, error) {
-                                        if (yearOfOriginalRelease) {
+                                        /**
+                                         * iTunes is *usually* correct. But in some cases, for whatever reason,
+                                         * the year they return is incorrect (see Arcade Fire's discography, at
+                                         * the moment they're stating it's all 2017.) As a safety procaution, we
+                                         * consider year of original releases only valid if they are older than or
+                                         * equal to the year of the pressing in question (makes sense, can't have
+                                         * an original release years AFTER a pressing release!)
+                                         */
+                                        if (yearOfOriginalRelease && yearOfOriginalRelease < recordToSave.yearOfPressing) {
                                             recordToSave.yearOfOriginalRelease = yearOfOriginalRelease;
                                         }
                                         
