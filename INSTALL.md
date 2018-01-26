@@ -18,8 +18,10 @@ Since this is a development environment, there's no need to setup Nginx, Shelf w
 
 * Clone the repository (`git clone git@github.com:barrowclift/shelf.git`)
 * In the cloned repo, `npm install`
-* Finally, edit `server/config.json` with your Discogs information. To generate a Discogs token, navigate to [this link](https://www.discogs.com/settings/developers) and click the "Generate new token" button.
-* `./start.sh` to spin up Shelf, check the `logs/` directory to see if there are any errors
+* Edit `server/config.json` with your Discogs information. To generate a Discogs token, navigate to [this link](https://www.discogs.com/settings/developers) and click the "Generate new token" button.
+* Finally, replace the About page placeholder with your own name and site. Be proud of your collection! :)
+
+To spin up Shelf, execute `./start.sh`. Be sure to check the `logs/` directory to see if there are any errors.
 
 ## CentOS 7.X - Production
 
@@ -55,5 +57,7 @@ server {
 
 * Clone the repository (`git clone git@github.com:barrowclift/shelf.git`)
 * In the cloned repo, `npm install`
-* Finally, edit `server/config.json` with your Discogs information. To generate a Discogs token, navigate to [this link](https://www.discogs.com/settings/developers) and click the "Generate new token" button.
-* `./start.sh` to spin up Shelf, check the `logs/` directory to see if there are any errors
+* Edit `server/config.json` with your Discogs information. To generate a Discogs token, navigate to [this link](https://www.discogs.com/settings/developers) and click the "Generate new token" button.
+* Finally, replace the About page placeholder with your own name and site. Be proud of your collection! :)
+
+To spin up Shelf, execute `./start.sh`. Be sure to check the `logs/` directory to see if there are any errors.
