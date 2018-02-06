@@ -85,4 +85,4 @@ I have no plans to display digital collections. [Apple Music](https://www.apple.
 
 ## "X doesn't look right in Firefox/Chrome/Opera, will you fix it?"
 
-I exclusively use Safari with hidden scroll bars, so I have no interest in going out of my way to support other browsers and configurations for this project. If you care, feel free to make a pull request with the necessary changes. However, changes that result in any Safari regressions will be rejected.
+Feel free to open an issue or make a pull request with the necessary changes, I'll be happy to review it! However, please note that any changes that result in Safari regressions will be rejected.
