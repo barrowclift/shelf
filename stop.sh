@@ -5,7 +5,7 @@ source config.sh
 MONGODB_COMMAND_RUNNING=$(ps -ef | grep "mongod --dbpath $MONGO_DB_DIRECTORY" | grep -v grep)
 HAS_SERVICE_COMMAND=$(command -v service)
 if [ -n "$HAS_SERVICE_COMMAND" ]; then
-    HAS_MONGODB_SERVICE=$(service --status-all | grep -F "mongod")
+    HAS_MONGODB_SERVICE=$(ls /etc/init.d/mongod 2>/dev/null)
     if [ -n "$HAS_MONGODB_SERVICE" ]; then
         MONGODB_SERVICE_RUNNING=$(service mongod status | grep 'is running\|active (running)')
     fi
