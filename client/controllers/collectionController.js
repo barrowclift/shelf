@@ -73,8 +73,8 @@ angular
         if ($scope.hideLoadingSpinner) {
             status = "OFF";
         }
-        logger.logInfo(CLASS_NAME, "The client said to turn the spinner " + status + ", refreshing frontend spinner if necessary");
         if (priorValue != $scope.hideLoadingSpinner) {
+            logger.logInfo(CLASS_NAME, "The client said to turn the spinner " + status + ", updating frontend spinner if necessary");
             $scope.$apply();
         }
     });
