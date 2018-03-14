@@ -51,9 +51,11 @@ angular
     socket.on(socketCodes.RECORD_WISHLIST, function(data) {
         // If data's an array, assume they're sending us ALL records
         if (data.constructor === Array) {
-            logger.logInfo(CLASS_NAME, "The client sent array of records for wishlist, refreshing entire record frontend");
-            $scope.records = data;
-            $scope.recordCount = data.length;
+            if ($scope.recordCount != data.length) {
+                logger.logInfo(CLASS_NAME, "The client sent array of records for wishlist, refreshing entire record frontend");
+                $scope.records = data;
+                $scope.recordCount = data.length;
+            }
         // Else, assume they're sending us just one new record
         } else {
             logger.logInfo(CLASS_NAME, "The client sent a new record for wishlist, adding to records array for displaying in frontend");
