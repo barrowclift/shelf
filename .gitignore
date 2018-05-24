@@ -59,3 +59,4 @@ typings/
 
 # Ignore record image cache
 /client/images/records/record*
+/server/config.json
