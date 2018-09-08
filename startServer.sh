@@ -6,11 +6,20 @@ if [ ! -d "$LOG_DIRECTORY" ]; then
     mkdir "$LOG_DIRECTORY";
 fi
 
-SERVER_RUNNING=$(ps -ef | grep "node server/server.js" | grep -v grep)
+SERVER_RUNNING=$(ps -ef | grep "node ""${SERVER_SCRIPTS_DIRECTORY}""/server" | grep -v grep)
 
 if [ -n "$SERVER_RUNNING" ]; then
-	echo -e "${GREEN}Server already running${RESET}"
+    echo -e "Server already running"
 else
-	nohup node server/server.js > "$LOG_DIRECTORY"/server.log 2>&1 &
-	echo -e "${GREEN}Server started${RESET}"
+    #pm2 --silent start shelf-server
+    pm2 --log "${LOG_DIRECTORY}"/server.log --name shelf-server --silent start "${SERVER_SCRIPTS_DIRECTORY}"/server.js
+    #nohup node server/server.js > "$LOG_DIRECTORY"/server.log 2>&1 &
+    SUCCESS=$?
+
+    if [ $SUCCESS -eq 0 ]; then
+        echo -e "${GREEN}Server started${RESET}"
+    else
+        echo -e "${RED}Server failed to start${RESET}"
+    fi    
 fi
+

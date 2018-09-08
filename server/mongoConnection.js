@@ -34,7 +34,7 @@ var open = function(config, accessDb) {
     var url = "mongodb://" + config.host + ':' + config.port + '/' + config.db;
 
     var mongoClient = mongodb.MongoClient;
-    mongoClient.connect(url, function(error, connectionBuilder) {
+    mongoClient.connect(url, { useNewUrlParser: true }, function(error, connectionBuilder) {
         if (error) {
             logger.logError(CLASS_NAME, "open", "Failed to connect to MongoDB at " + config.host + ':' + config.port + ". Error: " + error);
             close();
