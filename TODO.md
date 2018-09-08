@@ -10,3 +10,7 @@
 ## v2.0
 
 * Board games support with https://boardgamegeek.com
+
+## v3.0
+
+Frontend refactor to be a true Angular app with v6.

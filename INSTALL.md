@@ -18,7 +18,10 @@ Since this is a development environment, there's no need to setup Nginx, Shelf w
 
 * Clone the repository (`git clone git@github.com:barrowclift/shelf.git`)
 * In the cloned repo, `npm install`
+* If you don't already have `pm2` for node process management installed, do so with `npm install pm2 -g`
+* (Optional) Should you wish Shelf to automatically start on startup, see [this short guide](http://pm2.keymetrics.io/docs/usage/startup/) or execute `pm2 startup` to let `pm2` handle the settings for you.
 * Edit `server/config.json` with your Discogs information. To generate a Discogs token, navigate to [this link](https://www.discogs.com/settings/developers) and click the "Generate new token" button.
+* Edit `config.sh`, updating `ABSOLUTE_PATH_TO_SHELF` with the absolute path Shelf lives on in your system.
 * Finally, replace the About page placeholder with your own name and site. Be proud of your collection! :)
 
 To spin up Shelf, execute `./start.sh`. Be sure to check the `logs/` directory to see if there are any errors.
@@ -30,6 +33,7 @@ To spin up Shelf, execute `./start.sh`. Be sure to check the `logs/` directory t
 * [Follow the steps here to install Nginx](https://www.digitalocean.com/community/tutorials/how-to-install-nginx-on-centos-7)
 * [Follow the relevant steps outlined here to install MongoDB](https://www.liquidweb.com/kb/how-to-install-mongodb-on-centos-6/). It's for CentOS 6, but the steps still apply.
 * [Follow the relevant steps outlined here to install Node.js](https://www.digitalocean.com/community/tutorials/how-to-install-and-run-a-node-js-app-on-centos-6-4-64bit). Again, it's for CentOS 6, but the steps still apply. __NOTE__: Building Node from scratch takes a LONG time. Please get up to make some tea or bake a pie while it's churning. Trust me, you'll have the time.
+* Ensure `config.sh`'s `ABSOLUTE_PATH_TO_SHELF` matches the project's absolute path in the production environment.
 
 ### Nginx Configuration
 
