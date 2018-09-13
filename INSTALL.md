@@ -41,19 +41,30 @@ There's one minor tweak that needs to be made to the `/etc/nginx/nginx.conf` fil
 
 ```
 server {
-    listen 80; # Or 443 if SSL
+    # plain-old HTTP
+    listen 80;
+    # If HTTPS is desired, replace the above with the following:
+    # listen 443;
+    # listen [::]:443;
+    # ssl on;
+    # ssl_certificate /etc/nginx/ssl/server.crt; (or wherever your crt path is)
+    # ssl_certificate_key /etc/nginx/ssl/server.key; (or wherever your key path is)
 
-    # Feel free to keep the superfluous stuff in the default config like logging, etc.
+    # Feel free to keep the extra stuff in the default config like logging, etc.
 
-    server_name your_domain.com;
+    server_name your_domain.com www.your_domain.com;
+
+    # If you changed
     location / {
-        proxy_pass http://private_ip_address:8080;
+        # For the port, use whatever port value you chose in
+        # server/config.json's nodeWebsitePort field. By default, it's 10800.
+        proxy_pass http://localhost:10800;
         proxy_http_version 1.1;
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection 'upgrade';
         proxy_set_header Host $host;
         proxy_cache_bypass $http_upgrade;
-     }
+    }
 }
 ```
 
