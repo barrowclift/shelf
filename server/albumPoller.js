@@ -533,7 +533,7 @@ var pollerMain = function() {
     }
     logger.logInfo(CLASS_NAME, "Successfully connected to MongoDB, will update Discogs data every " + DEFAULT_DISCOGS_COLLECTOR_SETTINGS.refreshTimeInMinutes + " minute" + optionalCharacter);
 	
-    socket = io.connect("http://localhost:10800", {reconnect: true});
+    socket = io.connect("http://localhost:"+config.nodeWebsitePort, {reconnect: true});
     var socketOpened = function() {
         logger.logInfo(CLASS_NAME, "Client socket connection opened");
         pollDiscogs();

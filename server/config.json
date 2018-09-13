@@ -1,4 +1,5 @@
 {
 	"discogsUserId": "YOUR_USER_NAME",
-	"discogsUserToken": "YOUR_GITHUB_DEVELOPER_TOKEN"
+	"discogsUserToken": "YOUR_GITHUB_DEVELOPER_TOKEN",
+	"nodeWebsitePort": 10800
 }

@@ -5,6 +5,7 @@ var express = require("express");
 var http = require("http");
 var socketIo = require("socket.io");
 
+var config = require("./config.json");
 var mongoConnection = require("./mongoConnection");
 
 var cache = require("../client/shared/cache");
@@ -13,10 +14,7 @@ var mediaTypes = require("../client/shared/mediaTypes");
 var socketCodes = require("../client/shared/socketCodes");
 
 const CLASS_NAME = "server";
-const DEFAULT_SERVER_SETTINGS = {
-    port: 10800,
-    clientRoot: "/../client"
-};
+const CLIENT_ROOT = "/../client"
 
 var pollerStatuses = {};
 var setPollerStatuses = function(mediaType, isComplete) {
@@ -115,12 +113,12 @@ mongoConnection.open(mongoConnection.DEFAULT_MONGO_CONFIG, cacheRefresher);
 
 var app = express();
 app.use(bodyParser.json());
-app.use(express.static(__dirname + DEFAULT_SERVER_SETTINGS.clientRoot));
+app.use(express.static(__dirname + CLIENT_ROOT));
 
 var server = http.createServer(app);
 var io = socketIo(server);
 
-server.listen(DEFAULT_SERVER_SETTINGS.port);
+server.listen(config.nodeWebsitePort);
 
 var socketOpened = function(socket) {
     logger.logInfo(CLASS_NAME, "Client socket connection opened");
