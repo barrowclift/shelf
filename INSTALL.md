@@ -1,6 +1,6 @@
 # Install
 
-The following instructions have been tested on macOS (for development) and CentOS 7.X (for production). While it's certainly possible to host or test Shelf on many different environments, the below instructions will almost certainly need to be tweaked.
+The following instructions have been tested on macOS (for development) and CentOS 7.X (for production). While it's certainly possible to host or test Shelf on many different environments, it may require additional configuration.
 
 ## macOS - Development
 
@@ -67,6 +67,8 @@ server {
     }
 }
 ```
+
+Additionally, when using a reverse proxy with Node, Nginx requires SELinux to be in permissive mode, which is described in more detail [here](https://wiki.gentoo.org/wiki/SELinux/Tutorials/Permissive_versus_enforcing). As described in that article, you can either set the required processes to be in "permissive" mode, or change the global SELinux mode by setting the `SELINUX` parameter in `/etc/selinux/config` to `permissive` and restarting.
 
 ### Shelf Setup
 

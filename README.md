@@ -49,7 +49,7 @@ Absolutely! Shelf is open source under the [MIT License](https://github.com/barr
 
 ## Installation
 
-See [INSTALL.md](https://github.com/barrowclift/shelf/blob/master/INSTALL.md)
+See [INSTALL.md](https://github.com/barrowclift/shelf/blob/master/INSTALL.md).
 
 ## How do I add my collection to Shelf?
 
