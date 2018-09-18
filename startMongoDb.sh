@@ -42,6 +42,6 @@ if [ -z "$MONGODB_NOHUP_RUNNING" ] && [ -z "$MONGODB_SERVICE_RUNNING" ]; then
         echo -e "${RED}MongoDB failed to start${RESET}"
     fi
 else
-    echo -e "${GREEN}MongoDB already running${RESET}"
+    echo -e "MongoDB already running"
 fi
 
