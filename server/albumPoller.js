@@ -313,6 +313,8 @@ var sub_pollDiscogsPage = function(client, isWishlist, parentCallback) {
                     record.discogsAlbumArtUrl = data[listKey][i].basic_information.cover_image;
                 }
                 record.discogsAddedOn = new Date(data[listKey][i].date_added).getTime();
+                record.discogsAlbumArtFilePath = "/images/records/UNTITLED/missing-artwork.png";
+                record.iTunesAlbumArtFilePath = "/images/records/UNTITLED/missing-artwork.png";
                 record.isWishlist = isWishlist;
                 record.addedOn = Date.now();
                 record.updatedOn = record.addedOn;
