@@ -62,3 +62,4 @@ typings/
 /client/static/images/books/book*
 /client/static/images/board-games/boardgame*
 /server/config.json
+/replacement-art
