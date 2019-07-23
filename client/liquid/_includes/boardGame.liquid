@@ -1,0 +1,14 @@
+<li class="boardGame"
+    v-for="boardGame in sortedAndSearchedBoardGames"
+    :key="boardGame._id">
+    <a :href="boardGame.boardGameGeekUrl">
+        <div data-tilt data-tilt-scale="1.05" data-tilt-glare data-tilt-reverse="false" data-tilt-max-glare="0.5" class="wrapper">
+            <div class="center">
+                <img class="art" :src='boardGame.coverArtFilePath' :alt='boardGame.title'>
+            </div>
+        </div>
+        <div class="metadata">
+            <p class="title">${ boardGame.title }</p>
+        </div>
+    </a>
+</li>

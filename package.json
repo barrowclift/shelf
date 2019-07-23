@@ -1,34 +1,34 @@
 {
-	"name": "shelf",
-	"version": "1.0.0",
-	"description": "The Library",
-	"main": "index.js",
-	"repository": {
-		"type": "git",
-		"url": "https://github.com/barrowclift/shelf.git"
-	},
-	"scripts": {
-		"test": "echo \"Error: no test specified\" && exit 1"
-	},
-	"author": "Marc Barrowclift",
-	"license": "MIT",
-	"dependencies": {
-		"@angular/core": "^6.1.7",
-		"body-parser": "^1.18.3",
-		"disconnect": "^1.2.1",
-		"events": "^3.0.0",
-		"express": "^4.16.3",
-		"fs": "0.0.1-security",
-		"fuse.js": "^3.2.1",
-		"http": "0.0.0",
-		"https": "^1.0.0",
-		"mongodb": "^3.1.4",
-		"nodemailer": "^4.6.8",
-		"npm": "^6.4.1",
-		"request": "^2.88.0",
-		"rxjs": "^6.3.2",
-		"socket.io": "^2.1.1",
-		"socket.io-client": "^2.1.1",
-		"zone.js": "^0.8.26"
-	}
+  "name": "shelf",
+  "version": "2.0.0",
+  "description": "Beautifully display your library on the Internet",
+  "main": "main.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/barrowclift/shelf.git"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Marc Barrowclift",
+  "license": "MIT",
+  "dependencies": {
+    "bgg": "^1.0.1",
+    "compression": "^1.7.4",
+    "disconnect": "^1.2.1",
+    "express": "^4.17.1",
+    "fs": "0.0.1-security",
+    "fuse.js": "^3.4.5",
+    "goodreads-api-node": "0.0.10",
+    "he": "^1.2.0",
+    "liquidjs": "^7.5.1",
+    "mongodb": "^3.2.7",
+    "ncp": "^2.0.0",
+    "npm": "^6.10.0",
+    "properties": "^1.2.1",
+    "request-promise": "^4.2.4",
+    "sharp": "^0.22.1",
+    "socket.io": "^2.2.0",
+    "vue": "^2.6.10"
+  }
 }

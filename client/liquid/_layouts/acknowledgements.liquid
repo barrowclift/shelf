@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en-US" prefix="og: http://ogp.me/ns#">
+
+    {% include "head" %}
+
+    <body>
+        <div id="wrap">
+
+            {% include "header" %}
+
+            <div id="browserSupported" class="content clearfix">
+                <div class="writing">
+                    <h1 id="acknowledgements">Acknowledgements</h1>
+                    <p>Shelf would not exist without the data provided by these fine sites:</p>
+                    <ul>
+                        <li><a href="https://boardgamegeek.com">BoardGameGeek</a>: Board game data source</li>
+                        <li><a href="https://www.discogs.com">Discogs</a>: Record data source
+                            <ul>
+                                <li>Apple&rsquo;s <a href="https://affiliate.itunes.apple.com/resources/documentation/itunes-store-web-service-search-api/">iTunes Search API</a>: Secondary record cover art source</li>
+                            </ul>
+                        </li>
+                        <li><a href="https://www.goodreads.com">Goodreads</a>: Book data source
+                            <ul>
+                                <li>Internet Archive&rsquo;s <a href="https://openlibrary.org">Open Library</a>: Secondary book cover art source</li>
+                            </ul>
+                        </li>
+                    </ul>
+                    <p>
+                    <p>Additionally, Shelf was built on the shoulders of these open source projects:</p>
+                    <ul>
+                        <li><a href="https://github.com/monteslu/bgg">bgg</a> Boardgamegeek client for Node.js</li>
+                        <li><a href="https://github.com/expressjs/compression">Compression</a> node middleware</li>
+                        <li><a href="https://github.com/bartve/disconnect">disconnect</a> Discogs client for Node.js</li>
+                        <li><a href="http://expressjs.com">Express.js</a> web application framework</li>
+                        <li><a href="https://fusejs.io">Fuse.js</a> fuzzy-search library</li>
+                        <li><a href="https://github.com/baahrens/goodreads-api-node">goodreads-api-node</a> Goodreads client for Node.js</li>
+                        <li><a href="https://github.com/mathiasbynens/he">he</a> HTML encoder/decorder</li>
+                        <li><a href="https://www.mongodb.com">MongoDB</a></li>
+                        <li><a href="https://github.com/AvianFlu/ncp">ncp</a> asynchronous recursive file copying with Node.js</li>
+                        <li><a href="https://nodejs.org/en/">Node</a> &amp; <a href="https://www.npmjs.com">NPM</a></li>
+                        <li><a href="https://github.com/gagle/node-properties">properties</a> for Java <code>.properties</code> support in Node</li>
+                        <li><a href="https://github.com/lovell/sharp">Sharp</a> image processing</li>
+                        <li><a href="https://socket.io">Socket.io</a></li>
+                        <li>Shopify&rsquo;s <a href="https://shopify.github.io/liquid/">Liquid</a> HTML templating language</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        {% include "footer" %}
+
+    </body>
+</html>

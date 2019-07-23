@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en-US" prefix="og: http://ogp.me/ns#">
+    {% include "head" %}
+    {% include "body" %}
+    {% include "footerScripts" %}
+
+    <script type="text/javascript">
+        let fuzzySearchOptions = {
+            shouldSort: true,
+            includeScore: false,
+            tokenize: true,
+            matchAllTokens: true,
+            threshold: 0.1,
+            location: 0,
+            distance: 100,
+            maxPatternLength: 32,
+            minMatchCharLength: 1,
+            keys: [
+                "author",
+                "title"
+            ]
+        };
+
+        sortByTitle = function(book1, book2) {
+            return book1.title.localeCompare(book2.title);
+        };
+
+        let socket = io.connect();
+
+        /**
+         * Default to hidden, otherwise we'll temporarily "flash" it on screen even if
+         * there is no initial fetch occuring (which is the ONLY time we want to
+         * show a loading spinner). We'll instead immediately check with the server
+         * to see if there's initial fetch occurring. If there is, THEN we show it.
+         */
+        let books = [];
+        let fuse = null;
+        let booksApp = new Vue({
+            el: "#books",
+            delimiters: ["${", "}"],
+            data: {
+                "books": books,
+                "theSpinner": true,
+                "searchString": "",
+                initialLoadInProgress: false,
+                documentReady: false,
+                loadingSpinnerVisible: false,
+            },
+            computed: {
+                sortedAndSearchedBooks() {
+                    if (!this.searchString) {
+                        return this.books.sort(sortByTitle);
+                    } else {
+                        return fuse.search(this.searchString).sort(sortByTitle);
+                    }
+                }
+            },
+            updated: function() {
+                VanillaTilt.init(document.querySelectorAll(".wrapper"));
+            }
+        });
+
+        let bufferedSearchString = "";
+        document.getElementById("search").oninput = function(event) {
+            bufferedSearchString = event.srcElement.value.trim();
+            setTimeout(function() {
+                booksApp.searchString = bufferedSearchString;
+            }, 250);
+        };
+
+        socket.on("connect", function() {
+            /**
+             * So we don't have the collection flash when status changes.
+             */
+            let isFirstCheck = true;
+            socket.emit("{{ initialFetchInProgress }}");
+            socket.on("{{ initialFetchInProgress }}", function(inProgress) {
+                if (isFirstCheck) {
+                    booksApp.initialLoadInProgress = inProgress;
+                }
+                booksApp.loadingSpinnerVisible = inProgress;
+                isFirstCheck = false;
+            });
+
+            // Request the server send the client the "books" cache
+            socket.emit("{{ getAllItems }}");
+            socket.on("{{ getAllItems }}", function(data) {
+                if (books.length == 0 && data && data.length > 0) {
+                    for (let book of data) {
+                        books.push(book);
+                    }
+                    fuse = new Fuse(books, fuzzySearchOptions);
+                    booksApp.documentReady = true;
+                }
+            });
+
+            socket.on("{{ addItem }}", function(newBook) {
+                if (newBook) {
+                    books.push(newBook);
+                    fuse = new Fuse(books, fuzzySearchOptions);
+                }
+            });
+            socket.on("{{ updateItem }}", function(updatedBook) {
+                if (updatedBook) {
+                    let indexOfBookToUpdate = -1;
+                    for (let i = 0; i < books.length; i++) {
+                        let book = books[i];
+                        if (book._id === updatedBook._id) {
+                            indexOfBookToUpdate = i;
+                            break;
+                        }
+                    }
+                    books[indexOfBookToUpdate] = updatedBook;
+                }
+            });
+            socket.on("{{ removeItem }}", function(removedBook) {
+                if (removedBook) {
+                    let indexOfBookToRemove = -1;
+                    for (let i = 0; i < books.length; i++) {
+                        let book = books[i];
+                        if (book._id === removedBook._id) {
+                            indexOfBookToRemove = i;
+                            break;
+                        }
+                    }
+                    books.splice(indexOfBookToRemove, 1);
+                }
+            });
+        })
+    </script>
+</html>

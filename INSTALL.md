@@ -1,8 +1,8 @@
 # Install
 
-The following instructions have been tested on macOS (for development) and CentOS 7.X (for production). While it's certainly possible to host or test Shelf on many different environments, it may require additional configuration.
+The following instructions have been tested and verified on [macOS](https://www.apple.com/macos) (for development) and [CentOS](https://www.centos.org) 7.X (for production). While it's certainly possible to test and host Shelf on many different environments, it may require additional configuration.
 
-## macOS - Development
+## macOS - Installation for Development
 
 ### Install Dependencies
 
@@ -14,30 +14,29 @@ Just use [brew](https://brew.sh), trust me.
 
 ### Shelf Setup
 
-Since this is a development environment, there's no need to setup Nginx, Shelf will just be served locally.
+Since this is a development environment, there's no need to setup Nginx, Shelf can just be served directly.
 
 * Clone the repository (`git clone git@github.com:barrowclift/shelf.git`)
 * In the cloned repo, `npm install`
 * If you don't already have `pm2` for node process management installed, do so with `npm install pm2 -g`
 * (Optional) Should you wish Shelf to automatically start on startup, see [this short guide](http://pm2.keymetrics.io/docs/usage/startup/) or execute `pm2 startup` to let `pm2` handle the settings for you.
-* Edit `server/config.json` with your Discogs information. To generate a Discogs token, navigate to [this link](https://www.discogs.com/settings/developers) and click the "Generate new token" button.
-* Edit `config.sh`, updating `ABSOLUTE_PATH_TO_SHELF` with the absolute path Shelf lives on in your system.
-* Finally, replace the About page placeholder with your own name and site. Be proud of your collection! :)
+* Shelf uses MongoDB to manage its data. When starting the MongoDB server, it expects permissions to create a DB at `/var/lib/mongo`. If this location is not desired or if you have a MongoDB server already running for other projects, update the `MONGO_DB` variable in `admin/init.sh` to your desired path.
+* Edit `server/config.json` with your Discogs, Goodreads, and/or BoardGameGeek information. Shelf uses these services to display your library. See the ["Setup"](https://github.com/barrowclift/shelf/blob/master/README.md#setup) section of the [README](https://github.com/barrowclift/shelf/blob/master/README.md) for more information.
+* Finally, continue editing `server/config.json`, replacing all instances of `$PLACEHOLDER` with the appropriate information
 
 To spin up Shelf, execute `./start.sh`. Be sure to check the `logs/` directory to see if there are any errors.
 
-## CentOS 7.X - Production
+## CentOS 7.X - Installation for Production
 
 ### Install Dependencies
 
 * [Follow the steps here to install Nginx](https://www.digitalocean.com/community/tutorials/how-to-install-nginx-on-centos-7)
 * [Follow the relevant steps outlined here to install MongoDB](https://www.liquidweb.com/kb/how-to-install-mongodb-on-centos-6/). It's for CentOS 6, but the steps still apply.
 * [Follow the relevant steps outlined here to install Node.js](https://www.digitalocean.com/community/tutorials/how-to-install-and-run-a-node-js-app-on-centos-6-4-64bit). Again, it's for CentOS 6, but the steps still apply. __NOTE__: Building Node from scratch takes a LONG time. Please get up to make some tea or bake a pie while it's churning. Trust me, you'll have the time.
-* Ensure `config.sh`'s `ABSOLUTE_PATH_TO_SHELF` matches the project's absolute path in the production environment.
 
 ### Nginx Configuration
 
-There's one minor tweak that needs to be made to the `/etc/nginx/nginx.conf` file that's not mentioned in the DigitalOcean steps linked above to install Nginx. You need to have Nginx act as a reverse proxy to Shelf (which is a Node app), so you should edit your `server` block to look something like this.
+There's one minor tweak that needs to be made to the `/etc/nginx/nginx.conf` file that's not mentioned in the [DigitalOcean](https://www.digitalocean.com) guide linked above to install Nginx. You need to have Nginx act as a reverse proxy for Shelf, so you should edit your `server` block to look something like this.
 
 ```
 server {
@@ -74,7 +73,9 @@ Additionally, when using a reverse proxy with Node, Nginx requires SELinux to be
 
 * Clone the repository (`git clone git@github.com:barrowclift/shelf.git`)
 * In the cloned repo, `npm install`
+* Shelf uses MongoDB to manage its data. When starting the MongoDB server, it expects permissions to create a DB at `/var/lib/mongo`. If this location is not desired or if you have a MongoDB server already running for other projects, update the `MONGO_DB` variable in `admin/init.sh` to your desired path.
 * Edit `server/config.json` with your Discogs information. To generate a Discogs token, navigate to [this link](https://www.discogs.com/settings/developers) and click the "Generate new token" button.
-* Finally, replace the About page placeholder with your own name and site. Be proud of your collection! :)
+* Edit `server/config.json` with your Discogs, Goodreads, and/or BoardGameGeek information. Shelf uses these services to display your library. See the ["Setup"](https://github.com/barrowclift/shelf/blob/master/README.md#setup) section of the [README](https://github.com/barrowclift/shelf/blob/master/README.md) for more information.
+* Finally, continue editing `server/config.json`, replacing all instances of `$PLACEHOLDER` with the appropriate information.
 
 To spin up Shelf, execute `./start.sh`. Be sure to check the `logs/` directory to see if there are any errors.

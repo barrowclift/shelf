@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en-US" prefix="og: http://ogp.me/ns#">
+    {% include "head" %}
+    {% include "body" %}
+    {% include "footerScripts" %}
+
+    <script type="text/javascript">
+        let fuzzySearchOptions = {
+            shouldSort: true,
+            includeScore: false,
+            tokenize: true,
+            matchAllTokens: true,
+            threshold: 0.1,
+            location: 0,
+            distance: 100,
+            maxPatternLength: 32,
+            minMatchCharLength: 1,
+            keys: [
+                "artist",
+                "title"
+            ]
+        };
+
+        sortByArtistNameAndYearOfRelease = function(recordA, recordB) {
+            if (recordA.sortArtist === recordB.sortArtist) {
+                if (recordA.yearOfOriginalRelease < recordB.yearOfOriginalRelease) {
+                    return -1;
+                } else if (recordA.yearOfOriginalRelease > recordB.yearOfOriginalRelease) {
+                    return 1;
+                } else {
+                    return 0;
+                }
+            } else {
+                return recordA.sortArtist.localeCompare(recordB.sortArtist);
+            }
+        };
+
+        let socket = io.connect();
+
+        /**
+         * Default to hidden, otherwise we'll temporarily "flash" it on screen even if
+         * there is no initial fetch occuring (which is the ONLY time we want to
+         * show a loading spinner). We'll instead immediately check with the server
+         * to see if there's initial fetch occurring. If there is, THEN we show it.
+         */
+        let records = [];
+        let fuse = null;
+        let recordsApp = new Vue({
+            el: "#records",
+            delimiters: ["${", "}"],
+            data: {
+                "records": records,
+                "theSpinner": true,
+                "searchString": "",
+                initialLoadInProgress: false,
+                documentReady: false,
+                loadingSpinnerVisible: false,
+            },
+            computed: {
+                sortedAndSearchedRecords() {
+                    if (!this.searchString) {
+                        return this.records.sort(sortByArtistNameAndYearOfRelease);
+                    } else {
+                        return fuse.search(this.searchString).sort(sortByArtistNameAndYearOfRelease);
+                    }
+                }
+            },
+            methods: {
+                getAlbumArt(record) {
+                    if (record.iTunesAlbumArtFilePath.indexOf("/UNTITLED/") == -1) {
+                        return record.iTunesAlbumArtFilePath;
+                    } else {
+                        return record.discogsAlbumArtFilePath;
+                    }
+                }
+            },
+            updated: function() {
+                VanillaTilt.init(document.querySelectorAll(".wrapper"));
+            }
+        });
+
+        let bufferedSearchString = "";
+        document.getElementById("search").oninput = function(event) {
+            bufferedSearchString = event.srcElement.value.trim();
+            setTimeout(function() {
+                recordsApp.searchString = bufferedSearchString;
+            }, 250);
+        };
+
+        socket.on("connect", function() {
+            let isFirstCheck = true;
+            socket.emit("{{ initialFetchInProgress }}");
+            socket.on("{{ initialFetchInProgress }}", function(inProgress) {
+                if (isFirstCheck) {
+                    recordsApp.initialLoadInProgress = inProgress;
+                }
+                recordsApp.loadingSpinnerVisible = inProgress;
+                isFirstCheck = false;
+            });
+
+            // Request the server send the client the "records" cache
+            socket.emit("{{ getAllItems }}");
+            socket.on("{{ getAllItems }}", function(data) {
+                if (records.length == 0 && data && data.length > 0) {
+                    for (let record of data) {
+                        records.push(record);
+                    }
+                    fuse = new Fuse(records, fuzzySearchOptions);
+                    recordsApp.documentReady = true;
+                }
+            });
+
+            socket.on("{{ addItem }}", function(newRecord) {
+                if (newRecord) {
+                    records.push(newRecord);
+                    fuse = new Fuse(records, fuzzySearchOptions);
+                }
+            });
+            socket.on("{{ updateItem }}", function(updatedRecord) {
+                if (updatedRecord) {
+                    let indexOfRecordToUpdate = -1;
+                    for (let i = 0; i < records.length; i++) {
+                        let record = records[i];
+                        if (record._id === updatedRecord._id) {
+                            indexOfRecordToUpdate = i;
+                            break;
+                        }
+                    }
+                    records[indexOfRecordToUpdate] = updatedRecord;
+                }
+            });
+            socket.on("{{ removeItem }}", function(removedRecord) {
+                if (removedRecord) {
+                    let indexOfRecordToRemove = -1;
+                    for (let i = 0; i < records.length; i++) {
+                        let record = records[i];
+                        if (record._id === removedRecord._id) {
+                            indexOfRecordToRemove = i;
+                            break;
+                        }
+                    }
+                    records.splice(indexOfRecordToRemove, 1);
+                }
+            });
+        })
+    </script>
+</html>

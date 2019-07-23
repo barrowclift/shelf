@@ -1,0 +1,1310 @@
+/*
+TABLE OF CONTENTS:
+    * Container
+    * Typography
+        - Typeface
+        - Kerning
+        - Sizes, Weights, and Heights
+        - Lists
+        - Text Styles
+    * Menu
+        - Logo
+        - Navbar
+    * Elements
+        - Entities
+        - Tabs
+        - Collection Statistics
+        - Footer
+        - Vanilla Tilt
+        - Forms, Buttons, and Links
+    * Animations
+    * Default Theme (White)
+    * Misc
+    * Media Queries
+*/
+
+
+/* CONTAINER ------------------------------------------------------------------------ */
+
+
+body {
+    width: 100%;
+}
+html,
+body,
+#wrap {
+    height: 100%;
+}
+    body > #wrap {
+        height: auto;
+        min-height: 100%;
+    }
+
+.content {
+    width: 100%;
+    display: block;
+    margin: 0 auto;
+    text-align: center;
+    margin-top: 2em;
+    margin-bottom: 2em;
+}
+    .content .writing {
+        padding-left: 5%;
+        padding-right: 5%;
+        max-width: 34em;
+        width: auto;
+        text-align: left;
+        margin: 0 auto;
+        display: inline-block;
+    }
+
+#acknowledgements {
+    margin-top: 0;
+}
+
+
+/* TYPOGRAPHY ----------------------------------------------------------------------- */
+
+
+/* ----- TYPEFACE ----- */
+@font-face {
+    font-family: "Pangram";
+    src: url("/fonts/Pangram-Regular.otf");
+    font-weight: 400;
+    font-style: normal;
+}
+@font-face {
+    font-family: "Pangram";
+    src: url("/fonts/Pangram-Bold.otf");
+    font-weight: 700;
+    font-style: normal;
+}
+html,
+textarea {
+    font-family: "Pangram", "San Francisco", system, -apple-system, BlinkMacSystemFont, helvetica, roboto, segoe ui, arial, sans-serif;
+    text-rendering: optimizeLegibility;
+    -moz-osx-font-smoothing: grayscale;
+    -webkit-font-smoothing: antialiased;
+}
+
+/* ----- KERNING ----- */
+h1, h2 {
+    letter-spacing: 0.01em;
+}
+menu input {
+    letter-spacing: 1px;
+}
+
+/* ----- SIZES, WEIGHTS, AND HEIGHTS ----- */
+html {
+    font-size: 14px;
+}
+html,
+body {
+    line-height: 1.45em;
+}
+h1 {
+    font-size: 2.074em;
+}
+h2 {
+    font-size: 1.728em;
+}
+h3 {
+    font-size: 1.44em;
+}
+    menu h3 { /* Only on mobile, increase the font size a little */
+        font-size: 2.074em;
+    }
+h4 {
+    font-size: 1.2em;
+}
+    menu h4 { /* Only on mobile, increase the font size a little */
+        font-size: 1.44em;
+    }
+h5 {
+    font-size: 1em;
+}
+h6 {
+    font-size: 0.833em;
+}
+h1, h2, h3, h4, h5, h6,
+time,
+menu ul,
+#footer {
+    line-height: 1.2em;
+    margin: 1.414em 0 0.5em;
+}
+#footer,
+.stats {
+    font-size: 0.9em;
+}
+.stats {
+    line-height: 1em;
+}
+menu h3 a.active span {
+    line-height: .75em;
+}
+p, ol, ul, ol li, ul li {
+    margin-top: 0;
+    margin-bottom: 1.3em;
+}
+    menu ul li,
+    .record p,
+    .book p {
+        margin-bottom: 0;
+    }
+
+/* ----- LISTS ----- */
+.writing ol,
+.writing ul {
+    margin-left: 1.95em;
+}
+.writing ol {
+    list-style-type: decimal;
+}
+    .writing ol ol {
+        list-style-type: upper-alpha;
+    }
+        .writing ol ol ol {
+            list-style-type: upper-roman;
+        }
+.writing ol {
+    list-style-type: decimal;
+}
+    .writing ol ol {
+        list-style-type: upper-alpha;
+    }
+        .writing ol ol ol {
+            list-style-type: upper-roman;
+        }
+.writing ul {
+    list-style-type: disc;
+}
+    .writing ul ul {
+        list-style-type: none;
+    }
+        .writing ul ul li:before {
+            content: "-";
+            position: absolute;
+            margin-left: -1.3em;
+        }
+        .writing ul ul ul {
+            list-style-type: circle;
+        }
+            .writing ul ul ul li:before {
+                content: none;
+                margin-left: 0;
+            }
+.writing ul {
+    list-style-type: disc;
+}
+    .writing ul ul {
+        list-style-type: none;
+    }
+        .writing ul ul li:before {
+            content: "-";
+            position: absolute;
+            margin-left: -1.3em;
+        }
+        .writing ul ul ul {
+            list-style-type: circle;
+        }
+            .writing ul ul ul li:before {
+                content: none;
+                margin-left: 0;
+            }
+.writing li {
+    margin: 0;
+}
+.writing li,
+.writing ul,
+.writing ol {
+    margin-bottom: 0;
+    margin-top: 0;
+}
+
+/* ----- TEXT STYLES ----- */
+em {
+    font-style: italic;
+}
+strong {
+    font-weight: bold;
+}
+h1 {
+    font-weight: bold;
+}
+html {
+    font-weight: normal;
+}
+h1, h2, h3, h4, h5, h6,
+time,
+menu ul,
+#footer {
+    font-weight: bold;
+}
+
+
+/* MENU --------------------------------------------------------------------------- */
+
+
+/* ----- LOGO ----- */
+
+.logo {
+    height: 0.75em;
+    margin-right: -.25em;
+    display: inline-block;
+}
+    h1 .logo {
+        margin-right: -.15em;
+    }
+.logo-banner {
+    width: 7em;
+    margin-bottom: 1.3em;
+}
+
+/* ----- NAVBAR ----- */
+menu {
+    border-bottom: 1px solid black;
+    padding-top: 1em;
+    padding-left: 3%;
+    padding-right: 3%;
+    height: 6.5em;
+    cursor: default;
+}
+    menu * {
+        display: inline-block;
+    }
+    menu.with-search-bar {
+        height: 9.5em;
+    }
+    menu h3,
+    menu h4,
+    menu ul {
+        margin-top: 0;
+    }
+    menu input {
+        border: 1px solid black;
+        float: right;
+        padding: 0.375em 0.375em 0.375em 1em;
+        box-sizing: border-box;
+        border-radius: 0.25em;
+        font-size: 1em;
+        margin-top: 0;
+        width: 100%;
+        max-width: unset;
+    }
+        menu input:focus {
+            border-color: black;
+            outline: none;
+        }
+    menu h3 {
+        margin-left: 0;
+        text-align: center;
+        display: block;
+    }
+        menu h3 span {
+            margin-left: -0.8em;
+            padding-left: 0.9em;
+        }
+    menu ul {
+        display: block;
+        margin-left: 0;
+        text-align: center;
+        margin-bottom: 0.25em;
+    }
+        menu ul a {
+            border: 1px solid transparent;
+            padding-left: 0;
+            padding-right: 0;
+            margin-left: 0;
+            margin-right: 0;
+            width: 30vw;
+            border-radius: 0.25em;
+        }
+        menu ul a.active,
+        menu ul a.active:hover {
+            border: 1px solid black;
+        }
+        menu ul a:hover {
+            background-color: transparent;
+            border: 1px solid black;
+        }
+    menu a.active span {
+        display: inline-block;
+    }
+    menu.sub {
+        background-color: transparent;
+        text-align: center;
+        box-shadow: unset;
+        border: unset;
+        margin-top: 0;
+        padding-top: 0;
+        margin-bottom: 1em;
+        height: auto;
+    }
+        menu.sub ul a {
+            width: 46vw;
+            margin-left: 0;
+            margin-right: 0;
+        }
+        menu.sub ul a:hover {
+            background-color: transparent;
+        }
+
+
+/* ELEMENTS ------------------------------------------------------------------------- */
+
+
+/* ----- ENTITIES ----- */
+
+.records,
+.books,
+.board-games {
+    width: 100%;
+    text-align: center;
+    margin: 0 auto;
+    margin-top: 2em;
+    margin-bottom: 2em;
+}
+.record,
+.boardGame,
+.book {
+    width: 43vw;
+    max-width: 40.25em;
+    display: inline-block;
+    margin: 0.325em 0.73125em;
+}
+    .record .wrapper .center,
+    .boardGame .wrapper .center,
+    .book .wrapper .center {
+        display: inline-block;
+        text-align: center;
+        vertical-align: bottom;
+    }
+    .wrapper {
+        will-change: transform;
+        transform: perspective(1000px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1);
+    }
+    .record .metadata,
+    .boardGame .metadata,
+    .book .metadata {
+        display: inline-block;
+        font-size: 0.833em;
+        width: 100%;
+    }
+    .record .metadata {
+        text-align: left;
+    }
+    .boardGame .metadata,
+    .book .metadata {
+        text-align: center;
+    }
+        .record .metadata .title,
+        .record .metadata .artist,
+        .boardGame .metadata .title,
+        .book .metadata .title,
+        .book .metadata .author {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .record .metadata .title,
+        .boardGame .metadata .title,
+        .book .metadata .title {
+            font-weight: bold;
+        }
+        .record .metadata .artist,
+        .book .metadata .author {
+            font-size: 0.833em;
+            margin-top: -0.5em;
+        }
+    .record .art,
+    .boardGame .art,
+    .book .art {
+        border: 1px solid black;
+        border-radius: 0.25em;
+        display: block;
+        max-width: 43vw;
+        max-height: 43vw;
+        width: auto;
+        height: auto;
+    }
+
+/* ----- TABS ----- */
+
+.tab-control {
+    margin-bottom: 2.6em;
+}
+.tab {
+    width: 31.5vw;
+    display: inline-block;
+    margin-left: -2px;
+    margin-right: -2px;
+    border-radius: 0em;
+    cursor: pointer;
+    margin-bottom: 0;
+}
+.tab:focus {
+    outline: 0;
+}
+    .tab.left {
+        border-top-left-radius: 0.25em;
+        border-bottom-left-radius: 0.25em;
+    }
+    .tab.right {
+        border-top-right-radius: 0.25em;
+        border-bottom-right-radius: 0.25em;
+    }
+
+/* ----- COLLECTION STATISTICS ----- */
+
+.stats {
+    text-align: center;
+    margin-bottom: 2em;
+}
+    .stats > span {
+        display: inline-block;
+        position: relative;
+    }
+    .stats > span:before,
+    .stats > span:after {
+        content: "";
+        position: absolute;
+        height: 1px;
+        top: 0.5em;
+        width: 15vw;
+    }
+    .stats > span:before {
+        right: 100%;
+        margin-right: 1em;
+        background-image: -webkit-gradient(linear, 0 0, 100% 0, from(#F8F9FA), to(#E9ECEF));
+        background-image: -webkit-linear-gradient(left, #F8F9FA, #E9ECEF);
+        background-image: -moz-linear-gradient(left, #F8F9FA, #E9ECEF);
+        background-image: -o-linear-gradient(left, #F8F9FA, #E9ECEF);
+    }
+    .stats > span:after {
+        left: 100%;
+        margin-left: 1em;
+        background-image: -webkit-gradient(linear, 0 0, 100% 0, from(#E9ECEF), to(#F8F9FA));
+        background-image: -webkit-linear-gradient(left, #E9ECEF, #F8F9FA);
+        background-image: -moz-linear-gradient(left, #E9ECEF, #F8F9FA);
+        background-image: -o-linear-gradient(left, #E9ECEF, #F8F9FA);
+    }
+
+/* ----- FOOTER ----- */
+
+#footer {
+    border-top: 1px solid black;
+    background-color: white;
+    font-weight: normal;
+    position: relative;
+    margin-top: -28px;
+    margin-bottom: 0;
+    height: 57px;
+    clear: both;
+    text-align: center;
+}
+    #footer ul,
+    #footer ul li {
+        margin-bottom: 0;
+    }
+    #footer ul {
+        margin-top: 21px;
+    }
+    #footer li {
+        display: inline-block;
+        margin-left: 5vw;
+        margin-right: 5vw;
+        width: auto;
+        margin-bottom: 0;
+    }
+
+/* ----- VANILLA TILT ----- */
+
+.js-tilt-glare-inner {
+    background-image: linear-gradient(0deg, rgba(248, 249, 250, 0) 0%, rgb(248, 249, 250) 100%) !important;
+}
+.js-tilt-glare {
+    width: 102% !important;
+    height: 102% !important;
+    top: -1px !important;
+    left: -1px !important;
+}
+.js-tilt-glare ~ .js-tilt-glare {
+    display: none;
+}
+
+/* ----- FORMS, BUTTONS, AND LINKS ----- */
+
+input {
+    -webkit-appearance: none !important;
+    -moz-appearance: none !important;
+    appearance: none !important;
+    box-shadow: none !important
+}
+button,
+.button {
+    display: block;
+    margin-top: 0;
+    margin-bottom: 0.65rem;
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+    border-radius: 0.25em;
+    width: auto;
+    border: none;
+    text-align: center;
+    padding-left: 0.5em;
+    padding-right: 0.5em;
+    padding-top: 0.34em;
+    padding-bottom: 0.34em;
+    width: 15vw;
+    max-width: 8.4em;
+    display: inline-block;
+}
+
+.no-select {
+    -webkit-touch-callout: none;
+      -webkit-user-select: none;
+       -khtml-user-select: none;
+         -moz-user-select: none;
+          -ms-user-select: none;
+              user-select: none;
+}
+
+
+/* ANIMATIONS --------------------------------------------------------------------------- */
+
+
+@keyframes loading {
+    0% {
+        transform: rotate(0)
+    }
+    100% {
+        transform: rotate(360deg)
+    }
+}
+@keyframes colors {
+    0% {
+        border-left-color: #3A4147;
+        border-bottom-color: #3A4147;
+    }
+    12.5% {
+        border-left-color: #E23636;
+        border-bottom-color: #E23636;
+    }
+    25% {
+        border-left-color: #ED5B0A;
+        border-bottom-color: #ED5B0A;
+    }
+    37.5% {
+        border-left-color: #F19100;
+        border-bottom-color: #F19100;
+    }
+    50% {
+        border-left-color: #2EA248;
+        border-bottom-color: #2EA248;
+    }
+    62.5% {
+        border-left-color: #1474C4;
+        border-bottom-color: #1474C4;
+    }
+    75% {
+        border-left-color: #3D5FE0;
+        border-bottom-color: #3D5FE0;
+    }
+    87.5% {
+        border-left-color: #A33CBC;
+        border-bottom-color: #A33CBC;
+    }
+    100% {
+        border-left-color: #3A4147;
+        border-bottom-color: #3A4147;
+    }
+}
+#loading-spinner {
+    width: 100%;
+    z-index: -100;
+}
+.spinner {
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 1rem;
+    margin-bottom: 3rem;
+    color: transparent !important;
+    min-height: 2rem;
+    pointer-events: none;
+    position: relative;
+}
+    .spinner:after {
+        animation: loading .5s infinite linear,
+                   colors 4s ease-in-out infinite;
+        border: .15rem solid #868E96;
+        border-radius: 50%;
+        border-right-color: transparent;
+        border-top-color: transparent;
+        content: "";
+        display: block;
+        height: 1.6rem;
+        left: 50%;
+        margin-left: -.8rem;
+        margin-top: -.8rem;
+        position: absolute;
+        top: 50%;
+        width: 1.6rem;
+        z-index: 1;
+    }
+
+@-webkit-keyframes zoomIn {
+    from {
+        opacity: 0;
+        -webkit-transform: scale3d(0.3, 0.3, 0.3);
+        transform: scale3d(0.3, 0.3, 0.3);
+    }
+    50% {
+        opacity: 1;
+    }
+}
+@keyframes zoomIn {
+    from {
+        opacity: 0;
+        -webkit-transform: scale3d(0.3, 0.3, 0.3);
+        transform: scale3d(0.3, 0.3, 0.3);
+    }
+    50% {
+        opacity: 1;
+    }
+}
+@-webkit-keyframes zoomOut {
+    from {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0;
+        -webkit-transform: scale3d(0.3, 0.3, 0.3);
+        transform: scale3d(0.3, 0.3, 0.3);
+    }
+    to {
+        opacity: 0;
+    }
+}
+@keyframes zoomOut {
+    from {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0;
+        -webkit-transform: scale3d(0.3, 0.3, 0.3);
+        transform: scale3d(0.3, 0.3, 0.3);
+    }
+    to {
+        opacity: 0;
+    }
+}
+.zoom-enter-active {
+    animation: zoomIn .5s;
+}
+.zoom-leave-active,
+.zoom-leave-to {
+    animation: zoomOut .5s;
+}
+.zoom-leave-active {
+    position: absolute;
+}
+.zoom-move {
+    transition: transform 0.5s;
+}
+
+@-webkit-keyframes fadeInUp {
+    from {
+        opacity: 0;
+        -webkit-transform: translate3d(0, 100%, 0);
+        transform: translate3d(0, 100%, 0);
+    }
+    to {
+        opacity: 1;
+        -webkit-transform: translate3d(0, 0, 0);
+        transform: translate3d(0, 0, 0);
+    }
+}
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        -webkit-transform: translate3d(0, 100%, 0);
+        transform: translate3d(0, 100%, 0);
+    }
+    to {
+        opacity: 1;
+        -webkit-transform: translate3d(0, 0, 0);
+        transform: translate3d(0, 0, 0);
+    }
+}
+@-webkit-keyframes fadeOutDown {
+    from {
+        opacity: 1;
+    }
+    to {
+        opacity: 0;
+        -webkit-transform: translate3d(0, 100%, 0);
+        transform: translate3d(0, 100%, 0);
+    }
+}
+@keyframes fadeOutDown {
+    from {
+        opacity: 1;
+    }
+    to {
+        opacity: 0;
+        -webkit-transform: translate3d(0, 100%, 0);
+        transform: translate3d(0, 100%, 0);
+    }
+}
+@-webkit-keyframes fadeInDown {
+    from {
+        opacity: 0;
+        -webkit-transform: translate3d(0, -100%, 0);
+        transform: translate3d(0, -100%, 0);
+    }
+    to {
+        opacity: 1;
+        -webkit-transform: translate3d(0, 0, 0);
+        transform: translate3d(0, 0, 0);
+    }
+}
+@keyframes fadeInDown {
+    from {
+        opacity: 0;
+        -webkit-transform: translate3d(0, -100%, 0);
+        transform: translate3d(0, -100%, 0);
+    }
+    to {
+        opacity: 1;
+        -webkit-transform: translate3d(0, 0, 0);
+        transform: translate3d(0, 0, 0);
+    }
+}
+@-webkit-keyframes fadeOutUp {
+    from {
+        opacity: 1;
+    }
+    to {
+        opacity: 0;
+        -webkit-transform: translate3d(0, -100%, 0);
+        transform: translate3d(0, -100%, 0);
+    }
+}
+@keyframes fadeOutUp {
+    from {
+        opacity: 1;
+    }
+    to {
+        opacity: 0;
+        -webkit-transform: translate3d(0, -100%, 0);
+        transform: translate3d(0, -100%, 0);
+    }
+}
+.fadeOutUp {
+  -webkit-animation-name: fadeOutUp;
+  animation-name: fadeOutUp;
+}
+.fadeInDown {
+  -webkit-animation-name: fadeInDown;
+  animation-name: fadeInDown;
+}
+.fadeInVertical-enter-active {
+  animation: fadeInDown .5s;
+}
+.fadeInVertical-leave-active {
+  animation: fadeOutUp .5s;
+}
+
+.search-animation-move {
+    transition: transform 0.2s;
+}
+.search-animation-enter-to,
+.search-animation-leave-to {
+    transition: opacity 0.2s, transform 0.2s;
+}
+.search-animation-enter,
+.search-animation-leave-to {
+  opacity: 0;
+  -webkit-transform: scale3d(0.3, 0.3, 0.3);
+  transform: scale3d(0.3, 0.3, 0.3);
+}
+.search-animation-leave-active {
+  position: absolute;
+}
+
+.record a .metadata,
+.boardGame a .metadata,
+.book a .metadata,
+menu a {
+    transition: color 0.25s ease, background-color 0.25s ease, border 0.25s ease;
+}
+.writing a {
+    transition: color 0.25s ease;
+}
+button,
+.button {
+    transition: background 0.2s ease, box-shadow 0.2s ease, transform 300ms ease;
+}
+#footer a {
+    transition: color 0.25s ease;
+}
+.record .art,
+.boardGame .art,
+.book .art {
+    transition: box-shadow 338ms ease, transform 338ms ease;
+}
+menu input {
+    transition: border-color 0.25s ease;
+}
+
+
+/* DEFAULT THEME (WHITE) --------------------------------------------------------------------------- */
+
+
+menu {
+    background-color: white;
+    border-bottom-color: rgba(199, 199, 199, 0.5);
+}
+menu ul a.active,
+menu ul a.active:hover {
+    background-color: #F1F3F5;
+    border-color: #E9ECEF;
+}
+menu ul a:hover {
+    border-color: #E9ECEF;
+}
+menu h3 a:active,
+menu h3 a:hover {
+    color: #868E96;
+}
+menu input {
+    border-color: #C7C7C7;
+}
+menu input:focus {
+    border-color: #495057;
+}
+menu.sub ul a.active,
+menu.sub ul a.active:hover {
+    background-color: #E9ECEF;
+    border-color: #DEE2E6;
+}
+menu.sub ul a:hover {
+    border-color: #DEE2E6;
+}
+html {
+    color: #212529;
+    background-color: #F8F9FA;
+}
+.record a .metadata,
+.boardGame a .metadata,
+.book a .metadata,
+menu a {
+    color: #212529;
+}
+.record a .wrapper,
+.record a:active .wrapper,
+.record a:visited .wrapper,
+.record a:focus .wrapper,
+.boardGame a .wrapper,
+.boardGame a:active .wrapper,
+.boardGame a:visited .wrapper,
+.boardGame a:focus .wrapper,
+.book a .wrapper,
+.book a:active .wrapper,
+.book a:visited .wrapper,
+.book a:focus .wrapper,
+.record .art,
+.boardGame .art,
+.book .art {
+    color: transparent;
+    border-color: #ECECEC;
+}
+.record .metadata .artist,
+.book .metadata .author {
+    color: #868E96;
+}
+.writing a {
+    color: #339AF0;
+}
+.writing a:hover,
+.writing a:active {
+    color: #1C7ED6;
+}
+.stats {
+    color: #CED4DA;
+}
+#footer {
+    color: #868E96;
+    border-color: rgba(199, 199, 199, 0.5);
+}
+    #footer a {
+        color: #868E96;
+    }
+    #footer a:hover,
+    #footer a:active {
+        color: #1C7ED6;
+    }
+.tab {
+    background: linear-gradient(#FA5252, #E03131);
+}
+    .tab.active {
+        background: linear-gradient(#C92A2A, #F03E3E);
+    }
+::selection {
+    background: #E9ECEF;
+}
+::-moz-selection {
+    background: #E9ECEF;
+}
+button,
+.button {
+    color: rgba(255, 255, 255, 1);
+    background-color: hsl(210, 7%, 56%); /* HSL(210, 7%, 56%) */
+    box-shadow: inset 0 .65em 1.3em rgba(255, 255, 255, 0.1875), 0 0.43em 0.87em -0.2em hsla(210, 7%, 56%, 0.2);
+}
+    button:hover,
+    .button:hover {
+        background-color: hsl(210, 7%, 61%) !important;
+        box-shadow: inset 0 .65em 1.3em rgba(255, 255, 255, 0.1875), 0 0.43em 0.87em -0.2em hsla(210, 7%, 61%, 0.2);
+    }
+    button:active,
+    .button:active {
+        background-color: hsl(210, 7%, 51%) !important;
+        box-shadow: inset 0 .65em 1.3em rgba(0, 0, 0, 0.0625), 0 0.43em 0.87em -0.2em hsla(210, 7%, 51%, 0.2);
+    }
+
+
+/* MISC --------------------------------------------------------------------------- */
+
+
+#browserNotSupported,
+#browserSupported {
+    padding-bottom: 57px;
+}
+#browserNotSupported {
+    display: none;
+}
+
+.clearfix:after {
+    content: ".";
+    display: block;
+    height: 0;
+    clear: both;
+    visibility: hidden;
+}
+.clearfix {
+    display: inline-block;
+}
+* html .clearfix {
+    height: 1%;
+}
+.clearfix {
+    display: block;
+}
+
+.github-logo {
+    width: 1.3em;
+    margin-bottom: -0.25em;
+    padding-right: 0.25em;
+}
+    .github-logo .fill-color {
+        fill: rgba(0, 0, 0, 0.5);
+    }
+
+.progress-text,
+#errorMessage {
+    margin: 0 auto;
+    margin-top: 2rem;
+    display: inline-block;
+    text-align: center;
+    width: auto;
+    color: #868E96;
+    padding-left: 2rem;
+    padding-right: 2rem;
+}
+
+
+/* MEDIA QUERIES --------------------------------------------------------------------------- */
+
+
+@media (max-width: 374px) {
+    menu {
+        height: 5em;
+    }
+        menu.sub ul a {
+            width: 45vw;
+        }
+        menu h3 {
+            font-size: 1.44em;
+        }
+        menu h4 {
+            font-size: 1.2em;
+        }
+        menu input {
+            font-size: 0.75rem;
+            border-radius: 0.75rem;
+        }
+        menu.with-search-bar {
+            height: 7.25em;
+        }
+    .record .metadata,
+    .boardGame .metadata,
+    .book .metadata {
+        font-size: 0.75em;
+    }
+        .record .metadata .artist,
+        .book .metadata .author {
+            margin-top: -0.75em;
+        }
+}
+@media (min-width: 414px) {
+    .record,
+    .boardGame,
+    .book {
+        width: 27vw;
+    }
+        .record .art,
+        .record .wrapper,
+        .boardGame .art,
+        .boardGame .wrapper,
+        .book .art,
+        .book .wrapper {
+            max-height: 27vw;
+            max-width: 27vw;
+        }
+}
+@media (max-width: 524px) {
+    .record .wrapper,
+    .boardGame .wrapper,
+    .book .wrapper {
+        display: inline;
+    }
+    .js-tilt-glare {
+        display: none !important;
+    }
+}
+/* Medium devices (iPads) */
+@media (min-width: 525px) {
+    .sk-fading-circle {
+        margin: 100px auto;
+        width: 40px;
+        height: 40px;
+        position: relative;
+        margin-top: 150px;
+    }
+
+    .record,
+    .boardGame,
+    .book {
+        width: 29vw;
+    }
+    .record,
+    .boardGame {
+        margin: 0.75vw 1.6875vw;
+    }
+        .record a:hover .art,
+        .boardGame a:hover .art,
+        .book a:hover .art {
+            transform: scale(1.025);
+        }
+        .record .art,
+        .record .wrapper,
+        .boardGame .art,
+        .boardGame .wrapper,
+        .book .art,
+        .book .wrapper {
+            max-height: 29vw;
+            max-width: 29vw;
+        }
+        .record .metadata,
+        .boardGame .metadata,
+        .book .metadata {
+            font-size: 0.75em;
+        }
+            .record .metadata .artist,
+            .book .metadata .author {
+                margin-top: -0.75em;
+            }
+
+    menu,
+    menu.with-search-bar {
+        height: auto;
+
+        padding-left: 1em;
+        padding-right: 1em;
+        padding-top: 0.75em;
+        padding-bottom: 0.75em;
+    }
+        menu ul {
+            margin-left: 1em;
+            display: inline-block;
+            text-align: left;
+            margin-bottom: 0;
+        }
+        menu li {
+            margin-left: 0.25em;
+            margin-right: 0.25em;
+        }
+            menu ul a {
+                padding-left: 0.25em;
+                padding-right: 0.25em;
+                width: 5em;
+                text-align: center;
+            }
+            menu.sub ul a {
+                padding-left: 0.5em;
+                padding-right: 0.5em;
+                width: 6em;
+                max-width: unset;
+            }
+        menu h3 {
+            display: inline-block;
+            text-align: left;
+            font-size: 1.44em;
+            margin-bottom: 0;
+        }
+        menu h4 {
+            font-size: 1.2em;
+            margin-bottom: 0;
+        }
+        menu input {
+            width: 19vw;
+            font-size: 0.833rem;
+            border-radius: 0.25em;
+            padding-top: 0.3em;
+            padding-bottom: 0.3em;
+            margin-top: 2px;
+            margin-left: 0.25em;
+        }
+
+    #footer {
+        margin-top: -29px;
+    }
+}
+
+/* Medium devices (iPads) */
+@media (min-width: 700px) {
+    html {
+        font-size: 19px;
+    }
+    menu {
+        height: auto;
+    }
+        menu ul a {
+            padding-left: 0.5em;
+            padding-right: 0.5em;
+            padding-top: 0.25em;
+            padding-bottom: 0.25em;
+            width: 13vw;
+            min-width: 4em;
+            max-width: 5em;
+        }
+        menu input {
+            padding-top: 0.64em;
+            padding-bottom: 0.64em;
+            margin-top: 0;
+            margin-left: 0.5em;
+            width: 22vw;
+            max-width: 20em;
+            min-width: 9.5em;
+        }
+        menu.sub ul a {
+            width: 6em;
+        }
+
+    .content ul {
+        padding-left: 0;
+        padding-right: 0;
+    }
+
+    .record,
+    .boardGame,
+    .book {
+        width: 21vw;
+    }
+    .record,
+    .boardGame {
+        margin: 0.75vw 1.6875vw;
+    }
+        .record .art,
+        .record .wrapper,
+        .boardGame .art,
+        .boardGame .wrapper,
+        .book .art,
+        .book .wrapper {
+            max-height: 21vw;
+            max-width: 21vw;
+        }
+
+    #footer {
+        font-size: 0.833em;
+        margin-top: -38px;
+    }
+        #footer ul {
+            margin-top: 19px;
+        }
+        #footer li {
+            margin-left: 2em;
+            margin-right: 2em;
+        }
+
+    .tab {
+        width: 13em;
+    }
+}
+
+/* Large devices (Macs) */
+@media (min-width: 1000px) {
+    .content ul {
+        padding-left: 0.73125em;
+        padding-right: 0.73125em;
+    }
+
+    .record,
+    .boardGame {
+        margin: 0.325em 0.73125em;
+    }
+    .record,
+    .boardGame,
+    .book {
+        width: 11em;
+    }
+        .record .art,
+        .record .wrapper,
+        .boardGame .art,
+        .boardGame .wrapper,
+        .book .art,
+        .book .wrapper {
+            max-height: 11em;
+            max-width: 11em;
+        }
+
+    menu input {
+        max-width: 20em;
+        width: 20vw;
+    }
+}
+
+/* Smaller than original iPhone */
+@media (max-width: 320px) {
+    menu {
+        height: 9em;
+    }
+        menu.with-search-bar {
+            height: 11.75em;
+        }
+        menu ul li {
+            display: block;
+            width: 100%;
+        }
+        menu h4 {
+            width: 95%;
+        }
+        menu ul a {
+            width: 100%;
+            padding: unset;
+        }
+}

@@ -1,0 +1,22 @@
+<div id="records">
+    <ul v-if="initialLoadInProgress">
+        <transition-group name="zoom">
+            <div v-if="loadingSpinnerVisible" id="loading-spinner" :key="theSpinner">
+                <div class="progress-text">
+                    <span>Slowly loading records from Discogs... (requests are severely rate limited, please be patient)</span>
+                    <div class="spinner"></div>
+                </div>
+            </div>
+            {% include "record" %}
+        </transition-group>
+    </ul>
+    <ul v-else-if="documentReady">
+        <transition-group name="search-animation">
+            {% include "record" %}
+        </transition-group>
+    </ul>
+    <ul v-else>
+        {% include "record" %}
+    </ul>
+    <p v-if="searchString === ''" class="stats"><span>${ records.length } record<span v-if="records.length != 1">s</span> in {{ submenu }}</span></p>
+</div>

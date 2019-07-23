@@ -1,0 +1,14 @@
+<menu class="no-select {% if menu == 'records' or menu == 'board-games' or menu == 'books' %}with-search-bar{% endif %}">
+    <h3>
+        {% include "logo" %}
+        <span>{{ siteTitle }}</span>
+    </h3>
+    <ul>
+        {% if recordShelfEnabled %}<li><h4><a class="{% if menu == 'records' %}active{% endif %}" href="/"><span>Records</span></a></h4></li>{% endif %}
+        {% if boardGameShelfEnabled %}<li><h4><a class="{% if menu == 'board-games' %}active{% endif %}" href="/game/"><span>Games</span></a></h4></li>{% endif %}
+        {% if bookShelfEnabled %}<li><h4><a class="{% if menu == 'books' %}active{% endif %}" href="/book/"><span>Books</span></a></h4></li>{% endif %}
+    </ul>
+    {% if menu == 'records' or menu == 'books' or menu == 'board-games' %}
+        <input type="text" placeholder="Search" id="search" autocomplete="off">
+    {% endif %}
+</menu>

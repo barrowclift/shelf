@@ -2,48 +2,52 @@
 <img height="50" src="https://raw.githubusercontent.com/barrowclift/shelf/master/client/images/logo/shelf.png" />
 </a>
 
-### *Beautifully display your record collection on the Internet*
+### *Beautifully display your library on the Internet*
 
-<img src="https://raw.githubusercontent.com/barrowclift/shelf/master/screenshots/collection.png" />
+<img src="https://raw.githubusercontent.com/barrowclift/shelf/master/screenshots/shelf-records.png" />
+
+<img src="https://raw.githubusercontent.com/barrowclift/shelf/master/screenshots/shelf-games.png" />
+
+<img src="https://raw.githubusercontent.com/barrowclift/shelf/master/screenshots/shelf-books.png" />
 
 1. [FAQ](#faq)
 	* [Why use shelf?](#why-use-shelf)
-	* [Doesn't Discogs already do this?](#doesnt-discogs-already-do-this)
-	* [How does Shelf handle different pressings of the same record?](#how-does-shelf-handle-different-pressings-of-the-same-record)
+	* [Doesn't Discogs/Goodreads/BoardGameGeek already do this?](#doesnt-discogsgoodreadsboardgamegeek-already-do-this)
+	* [How does Shelf handle different issues of the same entity?](#how-does-shelf-handle-different-issues-of-the-same-entity)
 	* [Can I help?](#can-i-help)
 2. [Setup](#setup)
 	* [Installation](#installation)
-	* [How do I add my collection to Shelf?](#how-do-i-add-my-collection-to-shelf)
-	* [Can I add new records into Shelf directly?](#can-i-add-new-records-into-shelf-directly)
+	* [v1 Migration](#v1x-migration)
+	* [How do I add my library to Shelf?](#how-do-i-add-my-library-to-shelf)
+	* [How do I sync my Discogs account with Shelf to display my records?](#how-do-i-sync-my-discogs-account-with-shelf-to-display-my-records)
+	* [How do I sync my Goodreads account with Shelf to display my books?](#how-do-i-sync-my-goodreads-account-with-shelf-to-display-my-books)
+	* [How do I sync my BoardGameGeek account with Shelf to display my games?](#how-do-i-sync-my-boardgamegeek-account-with-shelf-to-display-my-games)
+	* [Can I add new entities into Shelf directly?](#can-i-add-new-entities-into-shelf-directly)
+	* [What if I only want to display a particular collection, like board games?](#what-if-i-only-want-to-display-a-particular-collection-like-board-games)
+3. [Architecture](#architecture)
 3. [Roadmap](#roadmap)
-	* [Do you plan to later support other media in Shelf?](#do-you-plan-to-add-support-for-other-media-collections-in-shelf)
+	* [Do you plan to later support other media in Shelf, like Video Games and Movies?](#do-you-plan-to-later-support-other-media-in-shelf-like-video-games-and-movies)
 	* ["X doesn't look right in Firefox/Chrome/Opera, will you fix it?"](#x-doesnt-look-right-in-firefoxchromeopera-will-you-fix-it)
 
 # FAQ
 
 ## Why use shelf?
 
-For music enthusiasts, browsing each other's collections is a delightful way to learn about the other's musical taste. There's nothing quite like swapping phones with someone and being able to bond over shared favorites and laugh together over secret guilty pleasures while we sift through each other's collections.
+Browsing a friend's library is a delightful way to learn about their taste and life experiences. There's nothing quite bonding over shared favorites or laughing over guilty pleasures while sifting through someone else's library of music, books, and board games. I often wish my library was represented digitally to expand these experiences beyond their physical confines for sharing with new friends on the go.
 
-Since my record and digital music collections have only continued to deviate, I often wish I could share my record collection as well during those times. Ideally, this would be done with the physical collection itself, but more often than not these conversations are a surprise, and occur while away. The physical library is unreachable in these cases, and having a lovely, digital representation to look at instead is the next best thing.
+## Doesn't Discogs, Goodreads, and BoardGameGeek already do this?
 
-## Doesn't Discogs already do this?
+You're absolutely right, [Discogs](https://www.discogs.com), [Goodreads](https://www.goodreads.com), and [BoardGameGeek](https://boardgamegeek.com) already have this functionality. There's a few problems though: [Discogs](https://www.discogs.com) and [BoardGameGeek](https://boardgamegeek.com) are hideous, and [Goodreads](https://www.goodreads.com) if difficult to navigate and use. Not to mention these services artificially siphon your library across numerous platforms, which makes sharing your whole library cumbersome.
 
-You're absolutely right, [Discogs](https://www.discogs.com) already has this functionality. There's one problem though: Discogs is hideous.
+Shelf addresses these shortcomings; since these services shoulder the burden of maintaining your library *data*, Shelf can instead focus on the *presentation*, the "form" that these services failed to address. In this way, Shelf is __not__ a [Discogs](https://www.discogs.com), [Goodreads](https://www.goodreads.com), or [BoardGameGeek](https://boardgamegeek.com) replacement, it's a supplement.
 
-While Discogs is a *fantastic* data service and remains the de facto standard for tracking record collections, browsing the interface is as fun as scrolling through an Excel spreadsheet. It's cluttered with information most people couldn't care less about, leaving the music itself to be drowned out by the visual noise of pressing price, ratings, and other benign categories. Not to mention, the records aren't even properly sorted in the one, true way (alphabetically by artist, then by album release date). It's an interface that puts all it's focus into function, leaving nothing to the form.
+## How does Shelf handle different issues of the same entity?
 
-Not with Shelf. Since Discogs shoulders the burden of maintaining your collection's data, Shelf can instead focus on the collection itself, the "form" that Discogs chose to ignore. In this way, Shelf is __not__ a Discogs replacement, merely a supplement.
-
-Discogs is for indexing and managing metadata about your particular pressings, Shelf is for displaying and sharing your collection with friends.
-
-## How does Shelf handle different pressings of the same record?
-
-As stated above, [Discogs](https://www.discogs.com) perfectly serves displaying information at the *pressing* level, Shelf is about the *music*. If you have an original 1966 pressing of *Pet Sounds* by The Beach Boys as well as Analogue Productions's 2015 pressing, you'll still just have one record show up in Shelf to represent that you own *Pet Sounds*, since both pressings are the same album.
+Each of Shelf's data sources already perfectly serve categorizing reissues, remasters, and other such editions, and is thus not Shelf's focus. Shelf is about the music, books, and board games themselves, not the nitty gritty details about particular issues. Thus, Shelf consolidates "duplicates" into just a single abstraction of the thing. For example, if you have an original 1966 pressing of *Pet Sounds* by The Beach Boys as well as [Analogue Production's 2015 remaster](https://store.acousticsounds.com/d/95586/The_Beach_Boys-Pet_Sounds-200_Gram_Vinyl_Record), Shelf will instead just display one "Pet Sounds" record to represent you own *Pet Sounds*, since both pressings are "the same" album. The same applies for board games and books.
 
 ## Can I help?
 
-Absolutely! Shelf is open source under the [MIT License](https://github.com/barrowclift/shelf/blob/master/LICENSE.md), and I'm happy to accept any poll requests that are in line with Shelf's goals.
+Absolutely! Shelf is open source under the [MIT License](https://github.com/barrowclift/shelf/blob/master/LICENSE.md), and I'm happy to accept any pull requests that are in line with Shelf's goals.
 
 # Setup
 
@@ -51,37 +55,69 @@ Absolutely! Shelf is open source under the [MIT License](https://github.com/barr
 
 See [INSTALL.md](https://github.com/barrowclift/shelf/blob/master/INSTALL.md).
 
-## How do I add my collection to Shelf?
+## v1.x Migration
 
-Collectors already have a website to manage record collections, and that's [Discogs](https://www.discogs.com). Most record collectors already have Discog accounts all set up, and asking them to meticulously add their entire library to another service is a non-starter (especially since Shelf only needs a minor subset of the data already available in Discogs). Shelf only maintains a local MongoDB cache of some trimmed down Discogs and iTunes data, nothing created by the app itself.
+Migrating from Shelf v1.x is easy; all you need to do is stop your currently running instance and start up a new instance with Shelf v2.0 or newer. A new version of the `records` database will be created and populated alongside your original v1.0 version, so rollbacks are as simple as stopping the service and starting your old version back up again.
 
-## Can I add new records into Shelf directly?
+## How do I add my library to Shelf?
 
-When you want to add new records to Shelf, you add them to [Discogs](https://www.discogs.com) like you always have. Shelf will pick up that addition and display in within a few minutes. You cannot add records in Shelf itself, Shelf is and always will be a read-ony website powered by *other* data collection services.
+Since [Discogs](https://www.discogs.com), [Goodreads](https://www.goodreads.com), and [BoardGameGeek](https://boardgamegeek.com) are arguably the most popular services for their respective media, odds are you already have accounts and collections maintained in these services. Asking people to meticulously add their entire library to a whole new service alongside those existing ones is a non-starter (especially since Shelf only needs a minor subset of the data freely available in these services). Thus, Shelf instead stays in sync with your accounts in these services; anything you add or remove there will automatically be reflected in Shelf. Shelf only maintains a local [MongoDB](https://www.mongodb.com) cache of some trimmed-down data from these services, no data is actually entered into Shelf by the user themselves.
+
+## How do I sync my Discogs account with Shelf to display my records?
+
+You will need to make the following changes to Shelf's properties file at `server/resources/shelf.properties`:
+
+1. Set your Discogs username in `discogs.user.id`.
+2. You'll need to generate a [Discogs](https://www.discogs.com) personal access token, which you can do at [the following link](https://www.discogs.com/settings/developers). Copy and paste that token in `discogs.user.token`.
+
+Note that only records in your collection will be fetched for your Shelf collection. Records intended to show in your Shelf wishlist should instead be present only in your Discogs wishlist.
+
+## How do I sync my Goodreads account with Shelf to display my books?
+
+You will need to make the following changes to Shelf's properties file at `server/resources/shelf.properties`:
+
+1. You'll need to identify your [Goodreads](https://www.goodreads.com) user ID. To do so, log into [Goodreads](https://www.goodreads.com) and navigate to your profile. In your browser's URL, you will see a number preceding your account's name. Take _just_ that number set it in `goodreads.user.id`.
+2. You'll need to generate an API key and secret at [the following link](https://www.goodreads.com/api/keys). Set the key in `goodreads.user.key` and the secret in `goodreads.user.token`. Additionally, set the public address where your Shelf instance will reside in the Callback URL.
+
+Note that only owned books in your "Read" bookshelf will be fetched for your Shelf collection. Books intended to show in your Shelf wishlist must be present in the "Want to Read" bookshelf.
+
+## How do I sync my BoardGameGeek account with Shelf to display my games?
+
+You will need to make the following changes to Shelf's properties file at `server/resources/shelf.properties`:
+
+1. Set your [BoardGameGeek](https://boardgamegeek.com) username in `boardgamegeek.user.id`.
+
+Note that only board games both in your collection and the "Own" checkbox checked will be fetched for your Shelf collection. Board games intended to show in your Shelf wishlist must also be in your collection but with the "Wishlist" checkbox checked.
+
+## Can I add new entities into Shelf directly?
+
+As mentioned above, if you want to add new items to Shelf, you must add them to your account in their respective service. Shelf will pick up that change and display it within a couple minutes. You cannot add or remove items in Shelf itself, Shelf is and always will be a read-only website powered by other data services.
+
+## What if I only want to display a particular collection, like board games?
+
+By default, records, books, and board games are all displayed in Shelf's menu. However, you can easily disable them via the following properties in `server/resources/shelf.properties`:
+
+```
+boardgame.shelf.enabled=true
+record.shelf.enabled=true
+book.shelf.enabled=true
+```
 
 # Architecture
 
-Shelf is a webapp built with [Node.js](https://nodejs.org/en/), [MongoDB](https://www.mongodb.com), and [AngularJS](https://angularjs.org).
+Shelf is a webapp built with [Node.js](https://nodejs.org/en/), [MongoDB](https://www.mongodb.com), and [Vue.js](https://vuejs.org). For the complete list of third-party libraries and tools used, please see Shelf's [Acknowledgements page](https://shelf.barrowclift.me/acknowledgements).
 
-On the server side, Shelf as a service is managed via a suite of bash scripts for stopping/starting the various services that make up Shelf (for example, stopping/starting the [Discogs](https://www.discogs.com) album poller). To start all services, execute `./start.sh`, you can see the logs for each service in the newly created `logs` directory in the project's root directory.
+Shelf is run server-side from a single entry point, `server/main.js`, which is started or stopped via `./start.sh` or `./stop.sh`, respectively. Since these bash scripts are powered by [pm2](https://pm2.io/runtime/), Shelf's process can alternatively be managed with [pm2](https://pm2.io/runtime/) directly, if you wish. Books, records, and board games are managed independently in their own, modular directories, so adding new external data sources or media types is a breeze.
 
-`server.js` acts as the primary javascript file, and serves as the "glue" binding historic MongoDB data and newly found data from the various pollers to the client. This "glue" is by means of a cache sent via socket connections back and forth from the server and client. On startup, `server.js` will check to see if there's any existing data in MongoDB (historic data already polled by the various pollers), cache any available data in it, and pass that cache to any available clients, as necessary. From then on, `server.js` will more or less sit waiting for messages on the socket from one of the various pollers that new data has been found. Once this happens, the server will update the cache, and pass along the new objects to the client, again with a socket message.
-
-I keep mentioning "various pollers", but currently there's only one: `albumPoller.js`. This poller hits Discogs for the provided user's collection and wishlist, and supplements that data with year of original release and album art from iTunes. This data is then saved by the poller to MongoDB, and additionally sent to `server.js` via a socket for saving to the server's cache and for the server to pass along to the client.
-
-It might seem like a bit much for what's currently just a glorified baton pass of information from Discogs, but with this architecture all the various components (data store, collectors, cache, frontend) are all neatly separated and allow great flexibility for future changes. Not to mention, it will make adding pollers for more services a __lot__ easier down the road.
+Client-side, Shelf leverages [Liquid](https://shopify.github.io/liquid/) for its HTML templates.
 
 # Roadmap
 
-See [TODO.md](https://github.com/barrowclift/shelf/blob/master/TODO.md) for requirement candidates for future releases.
+## Do you plan to later support other media in Shelf, like video games and movies?
 
-## Do you plan to add support for other media collections in Shelf?
+Additional _physical_ media types are likely to come sometime down the road. I'm open to pull requests and suggestions.
 
-Almost certainly. Board games would be next, followed by books.
-
-I have barely any physical movies or TV shows, so supporting CDs/DVDs/Blu-Rays in Shelf would unfortunately provide me practically no added value. If you want this functionality, feel free to write it yourself and I'll consider the pull request. However, be sure there's an easy way to disable the "Movies" and "TV Show" menus from appearing altogether for those that don't have those kinds of collections.
-
-I have no plans to display digital collections. [Apple Music](https://www.apple.com/music/) and [Plex](https://www.plex.tv) do just fine.
+I have no plans for Shelf to display digital content. [Apple Music](https://www.apple.com/music/) and [Plex](https://www.plex.tv) do just fine.
 
 ## "X doesn't look right in Firefox/Chrome/Opera, will you fix it?"
 
