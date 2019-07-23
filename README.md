@@ -1,14 +1,10 @@
 <a href="#">
-<img height="50" src="https://raw.githubusercontent.com/barrowclift/shelf/master/client/images/logo/shelf.png" />
+<img height="50" src="https://raw.githubusercontent.com/barrowclift/shelf/master/client/static/images/logo/shelf.png" />
 </a>
 
 ### *Beautifully display your library on the Internet*
 
-<img src="https://raw.githubusercontent.com/barrowclift/shelf/master/screenshots/shelf-records.png" />
-
-<img src="https://raw.githubusercontent.com/barrowclift/shelf/master/screenshots/shelf-games.png" />
-
-<img src="https://raw.githubusercontent.com/barrowclift/shelf/master/screenshots/shelf-books.png" />
+<img src="https://raw.githubusercontent.com/barrowclift/shelf/master/screenshots/shelf-promo.png" />
 
 1. [FAQ](#faq)
 	* [Why use shelf?](#why-use-shelf)
