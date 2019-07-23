@@ -1,0 +1,52 @@
+{
+    "records": {
+        "replacements": {
+            "titles": {
+                "The Beatles": "The White Album",
+                "Star Wars / The Empire Strikes Back": "Star Wars: The Empire Strikes Back",
+                "Firewatch (Original Score)": "Firewatch"
+            },
+            "artists": {
+                "Wings (2)": "Wings",
+                "John Williams (4)": "John Williams",
+                "Real Estate (2)": "Real Estate",
+                "Jack White (2)": "Jack White",
+                "Neko Case": "Case / Lang / Veirs"
+            }
+        },
+        "searchAssistance": {
+            "titles": {
+                "The Beatles": "The Beatles (White Album)",
+                "Scum Fuck Flower Boy": "Flower Boy",
+                "My Way": "My Way (40th Anniversary Edition)",
+                "Shut Down Volume 2": "Shut Down, Vol. 2",
+                "SMiLE": "The Smile Sessions",
+                "Tusk": "Tusk (Remastered)"
+            },
+            "artists": {
+                "John Williams": "John Williams & London Symphony Orchestra"
+            }
+        }
+    },
+    "boardGames": {
+        "replacements": {
+            "titles": {
+                "Ca$h 'n Guns &&#35;40;Second Edition&&#35;41;": "Ca$h 'n Guns",
+                "Dominion: Intrigue &&#35;40;Second Edition&&#35;41;": "Dominion: Intrigue",
+                "Dominion &&#35;40;Second Edition&&#35;41;": "Dominion"
+            }
+        }
+    },
+    "books": {
+        "replacements": {
+            "titles": {
+                "Ready Player One (Ready Player One, #1)": "Ready Player One",
+                "Philadelphia Then and Now®": "Philadelphia, Then and Now",
+                "Arcade Fire’s The Suburbs (33 1/3)": "33⅓ The Suburbs",
+                "Red Rising (Red Rising, #1)": "Red Rising",
+                "The Practice of Programming (Addison": "The Practice of Programming"
+            },
+            "authors": {}
+        }
+    }
+}

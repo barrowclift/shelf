@@ -1,0 +1,30 @@
+<body>
+    <div id="wrap">
+
+        {% include "header" %}
+
+        <div id="browserNotSupported" class="content writing clearfix">
+            <p id="errorMessage"></p>
+        </div>
+
+        <div id="browserSupported" class="content clearfix">
+            {% if menu == "records" %}
+                {% include "gridControls" %}
+                {% include "recordGrid" %}
+            {% elsif menu == "board-games" %}
+                {% include "gridControls" %}
+                {% include "boardGameGrid" %}
+            {% elsif menu == "books" %}
+                {% if submenu == "authentication" %}
+                    {% include "bookAuthentication" %}
+                {% else %}
+                    {% include "gridControls" %}
+                    {% include "bookGrid" %}
+                {% endif %}
+            {% endif %}
+        </div>
+    </div>
+
+    {% include "footer" %}
+
+</body>

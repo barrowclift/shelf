@@ -1,0 +1,15 @@
+<li class="record"
+    v-for="record in sortedAndSearchedRecords"
+    :key="record._id">
+    <a :href="record.discogsUrl">
+        <div data-tilt data-tilt-scale="1.05" data-tilt-glare data-tilt-reverse="false" data-tilt-max-glare="0.5" class="wrapper">
+            <div class="center">
+                <img class="art" :src='getAlbumArt(record)' :alt='record.title'>
+            </div>
+        </div>
+        <div class="metadata">
+            <p class="title">${ record.title }</p>
+            <p class="artist">${ record.artist }</p>
+        </div>
+    </a>
+</li>

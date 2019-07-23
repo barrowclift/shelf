@@ -1,0 +1,38 @@
+<head>
+    <title>{{ siteTitle }}</title>
+    <meta name="description" content="Beautifully display your library">
+
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <link rel="apple-touch-icon" href="/images/logo/apple-touch-icon.png">
+    <link rel="mask-icon" href="/images/logo/pinned-tab.svg" color="#212529" />
+
+    <!-- Facebook / Open Graph -->
+    <meta property="og:locale" content="en_US" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Shelf" />
+    <meta property="og:description" content="Beautifully display your library" />
+    <meta property="og:url" content="{{ siteUrl }}" />
+    <meta property="og:image" content="{{ siteUrl }}/images/logo/share-image.png"/>
+    <meta property="og:site_name" content="Shelf" />
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image" />
+    {% if twitterHandle %}
+    <meta name="twitter:site" content="{{ twitterHandle }}" />
+    {% endif %}
+    <meta name="twitter:title" content="Shelf" />
+    <meta name="twitter:description" content="Beautifully display your library" />
+    <meta name="twitter:image" content="{{ siteUrl }}/images/logo/share-image.png" />
+    <meta name="twitter:url" content="{{ siteUrl }}" />
+
+    <link rel="stylesheet" href="/css/reset.min.css">
+    <link rel="stylesheet" href="/css/core.min.css">
+
+    <!-- Development version, includes helpful console warnings -->
+    <!-- <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script> -->
+    <!-- Production version -->
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.min.js"></script>
+</head>

@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg viewBox="0 0 77 77" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <defs>
+        <rect id="path-1" x="0" y="0" width="77" height="77" rx="19"></rect>
+        <linearGradient x1="36.8131874%" y1="8.02930256%" x2="100%" y2="21.7465899%" id="linearGradient-3">
+            <stop stop-color="#343A40" offset="0%"></stop>
+            <stop stop-color="#212529" offset="100%"></stop>
+        </linearGradient>
+        <linearGradient x1="89.8514271%" y1="75.596621%" x2="87.5368448%" y2="-47.9435886%" id="linearGradient-4">
+            <stop stop-color="#343A40" offset="0%"></stop>
+            <stop stop-color="#212529" offset="100%"></stop>
+        </linearGradient>
+        <linearGradient x1="16.3464636%" y1="-83.1082102%" x2="16.3464636%" y2="80.5394693%" id="linearGradient-5">
+            <stop stop-color="#495057" offset="0%"></stop>
+            <stop stop-color="#343A40" offset="100%"></stop>
+        </linearGradient>
+        <linearGradient x1="50%" y1="0%" x2="50%" y2="100%" id="linearGradient-6">
+            <stop stop-color="#F03E3E" offset="0%"></stop>
+            <stop stop-color="#C92A2A" offset="100%"></stop>
+        </linearGradient>
+        <linearGradient x1="50%" y1="0%" x2="50%" y2="100%" id="linearGradient-7">
+            <stop stop-color="#F76707" offset="0%"></stop>
+            <stop stop-color="#D9480F" offset="100%"></stop>
+        </linearGradient>
+        <linearGradient x1="50%" y1="0%" x2="50%" y2="100%" id="linearGradient-8">
+            <stop stop-color="#F59F00" offset="0%"></stop>
+            <stop stop-color="#E67700" offset="100%"></stop>
+        </linearGradient>
+        <linearGradient x1="50%" y1="0%" x2="50%" y2="100%" id="linearGradient-9">
+            <stop stop-color="#37B24D" offset="0%"></stop>
+            <stop stop-color="#2B8A3E" offset="100%"></stop>
+        </linearGradient>
+        <linearGradient x1="50%" y1="0%" x2="50%" y2="97.7419483%" id="linearGradient-10">
+            <stop stop-color="#1C7ED6" offset="0%"></stop>
+            <stop stop-color="#1864AB" offset="100%"></stop>
+        </linearGradient>
+        <linearGradient x1="50%" y1="0%" x2="50%" y2="100%" id="linearGradient-11">
+            <stop stop-color="#4263EB" offset="0%"></stop>
+            <stop stop-color="#364FC7" offset="100%"></stop>
+        </linearGradient>
+        <linearGradient x1="50%" y1="0%" x2="50%" y2="100%" id="linearGradient-12">
+            <stop stop-color="#AE3EC9" offset="0%"></stop>
+            <stop stop-color="#862E9C" offset="100%"></stop>
+        </linearGradient>
+    </defs>
+    <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Favicon" transform="translate(0.000000, -1.000000)">
+            <mask id="mask-2" fill="white">
+                <use xlink:href="#path-1"></use>
+            </mask>
+            <g id="Mask"></g>
+            <g mask="url(#mask-2)">
+                <g transform="translate(0.000000, -5.000000)">
+                    <g id="Bookshelf-(Tight)" transform="translate(0.000000, 6.000000)">
+                        <polygon id="Rectangle-2-Copy-2" fill="url(#linearGradient-3)" points="10.8804348 0.9 22.5978261 5.10317094 22.5978261 63.4903071 10.8804348 67.693478"></polygon>
+                        <rect id="Rectangle-2-Copy-3" fill="url(#linearGradient-4)" x="10.8804348" y="60.9347826" width="66.1195652" height="8.36956522"></rect>
+                        <path d="M10.8804348,65.1195652 L77,65.1195652 L77,76 L0,76 L0,65.1195652 L0,0.9 L10.8804348,0.9 L10.8804348,65.1195652 Z" id="Combined-Shape" fill="url(#linearGradient-5)"></path>
+                    </g>
+                    <g id="Records" transform="translate(10.880435, 17.554348)">
+                        <g id="Red" transform="translate(0.000000, 0.836957)">
+                            <polygon id="Rectangle-Copy-8" fill="#E03131" points="5.85869565 0.484906328 17.576087 4.73873547 17.576087 48.6139015 5.85869565 52.7282609"></polygon>
+                            <polygon id="Rectangle" fill="url(#linearGradient-6)" points="0 0.484906328 5.85869565 0.484906328 5.85869565 52.7282609 1.6261147e-16 52.7282609"></polygon>
+                        </g>
+                        <g id="Orange" transform="translate(5.858696, 1.673913)">
+                            <polygon id="Rectangle-Copy" fill="url(#linearGradient-7)" points="0 0.499092032 5.85869565 0.499092032 5.85869565 51.8913043 1.6261147e-16 51.8913043"></polygon>
+                            <polygon id="Rectangle-Copy-9" fill="#E8590C" points="5.85869565 0.499092032 17.576087 4.7578179 17.576087 47.6275946 5.85869565 51.8913043"></polygon>
+                        </g>
+                        <g id="Yellow" transform="translate(11.717391, 0.836957)">
+                            <polygon id="Rectangle-Copy-2" fill="url(#linearGradient-8)" points="0 0.484906328 5.85869565 0.484906328 5.85869565 52.7282609 1.6261147e-16 52.7282609"></polygon>
+                            <polygon id="Rectangle-Copy-10" fill="#F08C00" points="5.85869565 0.484906328 17.576087 4.7379761 17.576087 48.614636 5.85869565 52.7282609"></polygon>
+                        </g>
+                        <g id="Green" transform="translate(17.579565, 0.000000)">
+                            <polygon id="Rectangle-Copy-4" fill="url(#linearGradient-9)" points="0 0.470720625 5.85869565 0.470720625 7.5946681 1.26145971 7.96317729 52.8046291 5.85869565 53.5652174 0 53.5652174"></polygon>
+                            <polygon id="Rectangle-Copy-15" fill="url(#linearGradient-9)" points="0 0.470720625 5.85869565 0.470720625 5.85869565 53.5652174 0 53.5652174"></polygon>
+                            <polygon id="Rectangle-Copy-12" fill="#2F9E44" points="5.85869565 0.470720625 17.576087 4.73442164 17.576087 49.3015164 5.85869565 53.5652174"></polygon>
+                        </g>
+                        <g id="Blue" transform="translate(23.439565, 1.673913)">
+                            <polygon id="Rectangle-Copy-3" fill="url(#linearGradient-10)" points="0 0.499092032 5.85869565 0.499092032 5.85869565 51.8913043 0 51.8913043"></polygon>
+                            <polygon id="Rectangle-Copy-11" fill="#1971C2" points="5.85869565 0.499092032 17.576087 4.75954117 17.576087 47.6258693 5.85869565 51.8913043"></polygon>
+                        </g>
+                        <g id="Purple" transform="translate(29.293478, 0.836957)">
+                            <polygon id="Rectangle-Copy-7" fill="url(#linearGradient-11)" points="0 0.484906328 5.85869565 0.484906328 7.34088357 1.09890261 9.08877182 51.5282797 5.85869565 52.7282609 4.87834411e-16 52.7282609"></polygon>
+                            <polygon id="Rectangle-Copy-5" fill="url(#linearGradient-11)" points="0 0.484906328 5.85869565 0.484906328 5.85869565 52.7282609 4.87834411e-16 52.7282609"></polygon>
+                            <polygon id="Rectangle-Copy-13" fill="#3B5BDB" points="5.85869565 0.484906328 17.576087 4.75069975 17.576087 48.6023295 5.85869565 52.7282609"></polygon>
+                        </g>
+                        <g id="Magenta" transform="translate(35.152174, 1.673913)">
+                            <polygon id="Rectangle-Copy-17" fill="url(#linearGradient-12)" points="0.0709799767 0.499092032 5.92967563 0.499092032 8.67561133 1.53880528 15.8575249 50.7646196 13.2385842 51.8913043 7.37988855 51.8913043"></polygon>
+                            <polygon id="Rectangle-Copy-6" fill="url(#linearGradient-12)" points="0.0709799767 0.499092032 5.92967563 0.499092032 13.2385842 51.8913043 7.37988855 51.8913043"></polygon>
+                            <polygon id="Rectangle-Copy-14" fill="#9C36B5" points="5.92961742 0.499092032 18.2522582 4.75836511 24.3596395 47.7074038 13.2325323 51.8913043"></polygon>
+                        </g>
+                    </g>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>

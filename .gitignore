@@ -58,5 +58,7 @@ typings/
 .env
 
 # Ignore record image cache
-/client/images/records/record*
+/client/static/images/records/record*
+/client/static/images/books/book*
+/client/static/images/board-games/boardgame*
 /server/config.json
