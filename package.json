@@ -24,7 +24,7 @@
     "liquidjs": "^7.5.1",
     "mongodb": "^3.2.7",
     "ncp": "^2.0.0",
-    "npm": "^6.10.0",
+    "npm": "^6.13.4",
     "properties": "^1.2.1",
     "request-promise": "^4.2.4",
     "sharp": "^0.22.1",
