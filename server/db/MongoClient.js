@@ -30,10 +30,10 @@ let log = new Logger(CLASS_NAME);
 class MongoClient {
 
     /**
-     * @param {ShelfProperties} shelfProperties
+     * @param {PropertyManager} propertyManager
      */
-    constructor(shelfProperties) {
-        this.shelfProperties = shelfProperties;
+    constructor(propertyManager) {
+        this.propertyManager = propertyManager;
         this.mongo = null;
 
         log.debug("Initialized");
@@ -48,14 +48,18 @@ class MongoClient {
     connect() {
         const THIS = this; // For referencing root-instance "this" in promises
         log.debug("Connecting to Mongo...");
-        let mongoServerUrl = "mongodb://" + this.shelfProperties.mongoHost + ":" + this.shelfProperties.mongoPort + "/" + this.shelfProperties.mongoDbName;
+        let mongoServerUrl = "mongodb://" + this.propertyManager.mongoHost + ":" + this.propertyManager.mongoPort + "/" + this.propertyManager.mongoDbName;
         return new Promise(function(resolve, reject) {
             mongodb.MongoClient.connect(
-                mongoServerUrl,{ useNewUrlParser: true }
+                mongoServerUrl,
+                {
+                    useNewUrlParser: true,
+                    useUnifiedTopology: true
+                }
             ).then(function(connection) {
-                log.info("Connection to Mongo server at " + THIS.shelfProperties.mongoHost + ":" + THIS.shelfProperties.mongoPort + " established");
+                log.info("Connection to Mongo server at " + THIS.propertyManager.mongoHost + ":" + THIS.propertyManager.mongoPort + " established");
                 THIS.connection = connection;
-                THIS.mongo = connection.db(THIS.shelfProperties.mongoDbName);
+                THIS.mongo = connection.db(THIS.propertyManager.mongoDbName);
                 resolve();
             }).catch(function(error) {
                 reject(Error(error));
@@ -86,7 +90,7 @@ class MongoClient {
     find(collectionName, query) {
         let collection = this.mongo.collection(collectionName);
         return new Promise(function(resolve, reject) {
-            if (collection && query) {
+            if (collection && query != null) {
                 collection.find(query).toArray(function(error, documents) {
                     if (error) {
                         reject(Error(error));
@@ -94,12 +98,15 @@ class MongoClient {
                         log.debug("Found no results for query='" + JSON.stringify(query) + "', collectionName=" + collectionName);
                         resolve(null);
                     } else {
-                        log.debug("Successfully found 1+ documents for query='" + JSON.stringify(query) + "', collectionName=" + collectionName);
+                        if (!query) {
+
+                        }
+                        log.debug("Found 1+ documents for query='" + JSON.stringify(query) + "', collectionName=" + collectionName);
                         resolve(documents);
                     }
                 });
             } else {
-                reject(Error("Invalid find arguments, collection=" + collection + ", query=" + JSON.stringify(query)));
+                reject(Error("Invalid find arguments, query=" + JSON.stringify(query)) + ", collectionName=" + collectionName);
             }
         });
     }
@@ -116,16 +123,16 @@ class MongoClient {
                     query
                 ).then(function(document) {
                     if (document == null) {
-                        log.debug("Found no existing document, collectionName=" + collectionName + ", query=" + JSON.stringify(query));
+                        log.debug("Found no existing document, query=" + JSON.stringify(query) + ", collectionName=" + collectionName);
                     } else {
-                        log.debug("Successfully found one document, collectionName=" + collectionName + ", _id=" + document._id);
+                        log.debug("Found one document, _id=" + document._id + ", collectionName=" + collectionName);
                     }
                     resolve(document);
                 }).catch(function(error) {
                     reject(Error(error));
                 });
             } else {
-                reject(Error("Invalid findOne arguments, collection=" + collection + ", query=" + JSON.stringify(query)));
+                reject(Error("Invalid findOne arguments, query=" + JSON.stringify(query)) + ", collectionName=" + collectionName);
             }
         });
     }
@@ -147,7 +154,7 @@ class MongoClient {
                         if (error) {
                             reject(Error(error));
                         } else {
-                            log.debug("Successfully upserted one document, collection=" + collectionName + ", _id=" + document._id);
+                            log.debug("Upserted one document, _id=" + document._id + ", collectionName=" + collectionName);
                             resolve();
                         }
                     });
@@ -155,7 +162,7 @@ class MongoClient {
                     reject(Error("Invalid document, missing required '_id' field"));
                 }
             } else {
-                reject(Error("Invalid updateOne arguments, collection=" + collection + ", document=" + document));
+                reject(Error("Invalid updateOne arguments, document=" + document + ", collectionName=" + collectionName));
             }
         });
     }
@@ -163,7 +170,7 @@ class MongoClient {
     /**
      * Like Mongo's insertOne, but wrapping up tiresome boilerplate for
      * increased safety and ease of use. This method has insert behavior ONLY,
-     * will result in conflict if existing document has the same _id
+     * will result in error if existing document has the same _id
      */
     insertOne(collectionName, document) {
         let collection = this.mongo.collection(collectionName);
@@ -175,7 +182,7 @@ class MongoClient {
                         if (error) {
                             reject(Error(error));
                         } else {
-                            log.debug("Successfully inserted one document, collection=" + collectionName + ", _id=" + document._id);
+                            log.debug("Inserted one document, _id=" + document._id + ", collectionName=" + collectionName);
                             resolve();
                         }
                     })
@@ -183,11 +190,16 @@ class MongoClient {
                     reject(Error("Invalid document, missing required '_id' field"));
                 }
             } else {
-                reject(Error("Invalid updateOne arguments, collection=" + collection + ", document=" + document));
+                reject(Error("Invalid updateOne arguments, document=" + document + ", collectionName=" + collectionName));
             }
         });
     }
 
+    /**
+     * Like Mongo's deleteOne, but wrapping up tiresome boilerplate for
+     * increased safety and ease of use. This method has delete ONE behavior
+     * ONLY, will result in error if no document exists with the provided _id
+     */
     deleteById(collectionName, id) {
         let collection = this.mongo.collection(collectionName);
         return new Promise(function(resolve, reject) {
@@ -197,14 +209,22 @@ class MongoClient {
                     if (error) {
                         reject(Error(error));
                     } else {
-                        log.debug("Successfully deleted document, collection=" + collectionName + ", _id=" + id);
+                        log.debug("Deleted document, _id=" + id + ", collectionName=" + collectionName);
                         resolve();
                     }
                 });
+            } else {
+                reject(Error("Invalid deleteById arguments, _id=" + id + ", collectionName=" + collectionName));
             }
         });
     }
 
+    /**
+     * Like Mongo's drop, but wrapping up tiresome boilerplate for increased
+     * safety and ease of use. This method will drop empty or full
+     * collections, and will consider it a success if no collection exists
+     * with the provided name.
+     */
     dropCollection(collectionName) {
         let collection = this.mongo.collection(collectionName);
         return new Promise(function(resolve, reject) {
@@ -212,16 +232,16 @@ class MongoClient {
                 collection.drop(function(error) {
                     if (error) {
                         if (error.code == 26) {
-                            resolve("Collection doesn't exist");
+                            resolve("Collection doesn't exist, collectionName=" + collectionName);
                         } else {
                             reject(Error(error));
                         }
                     } else {
-                        resolve("Successfully dropped collection=" + collectionName);
+                        resolve("Dropped collectionName=" + collectionName);
                     }
                 });
             } else {
-                reject(Error("Cannot drop collection, collection=" + collection));
+                reject(Error("Cannot drop collection, collectionName=" + collectionName));
             }
         });
     }

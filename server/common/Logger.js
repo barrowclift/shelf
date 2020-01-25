@@ -22,12 +22,9 @@ let propertiesFileName = path.join(paths.SERVER_RESOURCES_DIRECTORY_PATH, "shelf
 class Logger {
 
     /**
-     * Class variables:
-     *
-     *  - [String] className
-     *  - [String] logLevel
+     * Initializes a new Logger instance for a particular class
+     * @param  {String} className
      */
-
     constructor(className) {
         const THIS = this; // For referencing root-level "this" in promise context
         this.className = className;

@@ -59,22 +59,14 @@ exports.downloadImage = async function(url,
                                        headers,
                                        destinationDirectoryPath,
                                        destinationFilename,
-                                       shelfProperties,
+                                       propertyManager,
                                        rateLimiter) {
-    // Building the request
-    // Forcing request-promise to return both the image AND the headers (in case an image is not returned as expected)
-    let includeHeaders = function(body, response, resolveWithFullResponse) {
-        return {
-            headers: response.headers,
-            data: body
-        }
-    };
     let data = {
         method: "GET",
         encoding: "binary",
         url: url,
-        timeout: shelfProperties.connectionTimeoutInMillis,
-        transform: includeHeaders
+        timeout: propertyManager.connectionTimeoutInMillis,
+        transform: exports.includeHeaders
     };
     if (headers
      && headers instanceof Object
@@ -131,7 +123,7 @@ exports.downloadImage = async function(url,
 
         let imageBuffer = Buffer.from(response.data, "binary" );
         try {
-            await sharp(imageBuffer).resize(shelfProperties.maxArtSize, shelfProperties.maxArtSize, artOptions).toFile(filepath);
+            await sharp(imageBuffer).resize(propertyManager.maxArtSize, propertyManager.maxArtSize, artOptions).toFile(filepath);
             log.info("Downloaded image, destination=" + filepath + ", content-type=" + response.headers["content-type"] + ", content-length=" + response.headers["content-length"]);
         } catch (error) {
             log.error("sharp.resize.toFile", error);
@@ -141,6 +133,38 @@ exports.downloadImage = async function(url,
 
     return filepath;
 };
+
+exports.getMainPart = function(title) {
+    // e.g. "僕のヒーローアカデミア 3 [Boku No Hero Academia 3] (My Hero Academia, #3)"
+    if (title.indexOf("[") > 0
+     && title.indexOf("]") > 0
+     && title.indexOf("(") > 0
+     && title.indexOf(")") > 0
+     && title.indexOf("#") > 0) {
+        title = title.substring(title.indexOf("(") + 1, title.indexOf(")"));
+    }
+    // e.g. "Bitwise: A Life in Code"
+    if (title.indexOf(":") > 0) {
+        title = title.substring(0, title.indexOf(":")).trim();
+    }
+    // e.g. "Star Wars / The Empire Strikes Back"
+    if (title.indexOf("/") > 0) {
+        title = title.substring(0, title.indexOf("/")).trim();
+    }
+    // e.g. The Practice of Programming - Some Sometitle (With Subtitle)
+    if (title.indexOf("-") > 0) {
+        if (title.indexOf("(") == -1 || title.indexOf("(") >= title.indexOf("-")) {
+            title = title.substring(0, title.indexOf("-")).trim();
+        }
+    }
+    // e.g. "The Practice of Programming (Addison-Wesley Professional Computing Series)"
+    if (title.indexOf("(") > 0) {
+        if (title.indexOf("-") == -1 || title.indexOf("-") >= title.indexOf("(")) {
+            title = title.substring(0, title.indexOf("(")).trim();
+        }
+    }
+    return title;
+}
 
 exports.pageContextReportsChanges = function(pageContext) {
     return pageContext.newCount > 0

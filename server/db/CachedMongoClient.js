@@ -29,7 +29,7 @@ let log = new Logger(CLASS_NAME);
  * so any given vistor hitting a page won't directly be hitting MongoDB.
  * Instead, they'll read from the in-memory cache here.
  *
- * Additionally, this wrapper provices a lot of "quality of life" improvements
+ * Additionally, this wrapper provides a lot of "quality of life" improvements
  * by taking the low-level APIs of MongoClient and making them nicer to use
  * (for example, instead of `upsertOne("records", document)`, you can call
  * `upsertRecord(document)`).
@@ -37,11 +37,11 @@ let log = new Logger(CLASS_NAME);
 class CachedMongoClient {
 
     /**
-     * @param {ShelfProperties} shelfProperties
+     * @param {PropertyManager} propertyManager
      */
-    constructor(shelfProperties) {
-        this.shelfProperties = shelfProperties;
-        this.mongoClient = new MongoClient(shelfProperties);
+    constructor(propertyManager) {
+        this.propertyManager = propertyManager;
+        this.mongoClient = new MongoClient(propertyManager);
 
         this.recordCollectionCache = new Map();
         this.recordWishlistCache = new Map();
@@ -63,36 +63,7 @@ class CachedMongoClient {
 
     async connect() {
         await this.mongoClient.connect();
-        let recordsCache = await this.mongoClient.find(this.shelfProperties.recordsCollectionName, {});
-        if (recordsCache) {
-            for (let record of recordsCache) {
-                if (record.inWishlist) {
-                    this.recordWishlistCache.set(record._id, record);
-                } else {
-                    this.recordCollectionCache.set(record._id, record);
-                }
-            }
-        }
-        let boardGamesCache = await this.mongoClient.find(this.shelfProperties.boardGamesCollectionName, {});
-        if (boardGamesCache) {
-            for (let boardGame of boardGamesCache) {
-                if (boardGame.inWishlist) {
-                    this.boardGameWishlistCache.set(boardGame._id, boardGame);
-                } else {
-                    this.boardGameCollectionCache.set(boardGame._id, boardGame);
-                }
-            }
-        }
-        let booksCache = await this.mongoClient.find(this.shelfProperties.booksCollectionName, {});
-        if (booksCache) {
-            for (let book of booksCache) {
-                if (book.inWishlist) {
-                    this.bookWishlistCache.set(book._id, book);
-                } else {
-                    this.bookCollectionCache.set(book._id, book);
-                }
-            }
-        }
+        await this.refreshCache();
     }
 
     close() {
@@ -167,24 +138,24 @@ class CachedMongoClient {
 
     removeCollectionBookById(bookId) {
         this.bookCollectionCache.delete(bookId);
-        return this.mongoClient.deleteById(this.shelfProperties.booksCollectionName, bookId);
+        return this.mongoClient.deleteById(this.propertyManager.booksCollectionName, bookId);
     }
 
     removeWishlistBookById(bookId) {
         this.bookCollectionCache.delete(bookId);
-        return this.mongoClient.deleteById(this.shelfProperties.booksCollectionName, bookId);
+        return this.mongoClient.deleteById(this.propertyManager.booksCollectionName, bookId);
     }
 
     findBooks(query) {
-        return this.mongoClient.find(this.shelfProperties.booksCollectionName, query);
+        return this.mongoClient.find(this.propertyManager.booksCollectionName, query);
     }
 
     findBook(query) {
-        return this.mongoClient.findOne(this.shelfProperties.booksCollectionName, query);
+        return this.mongoClient.findOne(this.propertyManager.booksCollectionName, query);
     }
 
     async upsertBook(upsertedBook) {
-        await this.mongoClient.upsertOne(this.shelfProperties.booksCollectionName, upsertedBook);
+        await this.mongoClient.upsertOne(this.propertyManager.booksCollectionName, upsertedBook);
 
         /**
          * If the board game already exists in the cache, update it.
@@ -203,7 +174,7 @@ class CachedMongoClient {
     }
 
     dropBooks() {
-        return this.mongoClient.dropCollection(this.shelfProperties.booksCollectionName);
+        return this.mongoClient.dropCollection(this.propertyManager.booksCollectionName);
     }
 
     getBoardGameCollection() {
@@ -274,24 +245,24 @@ class CachedMongoClient {
 
     removeCollectionBoardGameById(boardGameId) {
         this.boardGameCollectionCache.delete(boardGameId);
-        return this.mongoClient.deleteById(this.shelfProperties.boardGamesCollectionName, boardGameId);
+        return this.mongoClient.deleteById(this.propertyManager.boardGamesCollectionName, boardGameId);
     }
 
     removeWishlistBoardGameById(boardGameId) {
         this.boardGameCollectionCache.delete(boardGameId);
-        return this.mongoClient.deleteById(this.shelfProperties.boardGamesCollectionName, boardGameId);
+        return this.mongoClient.deleteById(this.propertyManager.boardGamesCollectionName, boardGameId);
     }
 
     findBoardGames(query) {
-        return this.mongoClient.find(this.shelfProperties.boardGamesCollectionName, query);
+        return this.mongoClient.find(this.propertyManager.boardGamesCollectionName, query);
     }
 
     findBoardGame(query) {
-        return this.mongoClient.findOne(this.shelfProperties.boardGamesCollectionName, query);
+        return this.mongoClient.findOne(this.propertyManager.boardGamesCollectionName, query);
     }
 
     async upsertBoardGame(upsertedBoardGame) {
-        await this.mongoClient.upsertOne(this.shelfProperties.boardGamesCollectionName, upsertedBoardGame);
+        await this.mongoClient.upsertOne(this.propertyManager.boardGamesCollectionName, upsertedBoardGame);
 
         /**
          * If the board game already exists in the cache, update it.
@@ -310,7 +281,7 @@ class CachedMongoClient {
     }
 
     dropBoardGames() {
-        return this.mongoClient.dropCollection(this.shelfProperties.boardGamesCollectionName);
+        return this.mongoClient.dropCollection(this.propertyManager.boardGamesCollectionName);
     }
 
     getRecordCollection() {
@@ -381,24 +352,24 @@ class CachedMongoClient {
 
     removeCollectionRecordById(recordId) {
         this.recordCollectionCache.delete(recordId);
-        return this.mongoClient.deleteById(this.shelfProperties.recordsCollectionName, recordId);
+        return this.mongoClient.deleteById(this.propertyManager.recordsCollectionName, recordId);
     }
 
     removeWishlistRecordById(recordId) {
         this.recordWishlistCache.delete(recordId);
-        return this.mongoClient.deleteById(this.shelfProperties.recordsCollectionName, recordId);
+        return this.mongoClient.deleteById(this.propertyManager.recordsCollectionName, recordId);
     }
 
     findRecords(query) {
-        return this.mongoClient.find(this.shelfProperties.recordsCollectionName, query);
+        return this.mongoClient.find(this.propertyManager.recordsCollectionName, query);
     }
 
     findRecord(query) {
-        return this.mongoClient.findOne(this.shelfProperties.recordsCollectionName, query);
+        return this.mongoClient.findOne(this.propertyManager.recordsCollectionName, query);
     }
 
     async upsertRecord(upsertedRecord) {
-        await this.mongoClient.upsertOne(this.shelfProperties.recordsCollectionName, upsertedRecord);
+        await this.mongoClient.upsertOne(this.propertyManager.recordsCollectionName, upsertedRecord);
 
         /**
          * If the record already exists in the cache, update it.
@@ -417,7 +388,49 @@ class CachedMongoClient {
     }
 
     dropRecords() {
-        return this.mongoClient.dropCollection(this.shelfProperties.recordsCollectionName);
+        return this.mongoClient.dropCollection(this.propertyManager.recordsCollectionName);
+    }
+
+    async refreshCache() {
+        this.recordCollectionCache.clear();
+        this.recordWishlistCache.clear();
+
+        this.boardGameCollectionCache.clear();
+        this.boardGameWishlistCache.clear();
+
+        this.bookCollectionCache.clear();
+        this.bookWishlistCache.clear();
+
+        let recordsCache = await this.mongoClient.find(this.propertyManager.recordsCollectionName, {});
+        if (recordsCache) {
+            for (let record of recordsCache) {
+                if (record.inWishlist) {
+                    this.recordWishlistCache.set(record._id, record);
+                } else {
+                    this.recordCollectionCache.set(record._id, record);
+                }
+            }
+        }
+        let boardGamesCache = await this.mongoClient.find(this.propertyManager.boardGamesCollectionName, {});
+        if (boardGamesCache) {
+            for (let boardGame of boardGamesCache) {
+                if (boardGame.inWishlist) {
+                    this.boardGameWishlistCache.set(boardGame._id, boardGame);
+                } else {
+                    this.boardGameCollectionCache.set(boardGame._id, boardGame);
+                }
+            }
+        }
+        let booksCache = await this.mongoClient.find(this.propertyManager.booksCollectionName, {});
+        if (booksCache) {
+            for (let book of booksCache) {
+                if (book.inWishlist) {
+                    this.bookWishlistCache.set(book._id, book);
+                } else {
+                    this.bookCollectionCache.set(book._id, book);
+                }
+            }
+        }
     }
 
 }

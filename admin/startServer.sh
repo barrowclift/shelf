@@ -1,5 +1,5 @@
 #!/bin/bash
-#
+
 export ADMIN_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )"
 source "${ADMIN_DIR}"/init.sh
 

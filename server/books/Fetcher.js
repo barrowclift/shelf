@@ -51,14 +51,14 @@ class Fetcher {
      * Initializes the fetcher, but does not automatically kick off the
      * fetches. To do so, start() must be called.
      *
-     * @param {ShelfProperties} shelfProperties
+     * @param {PropertyManager} propertyManager
      * @param {CachedMongoClient} mongoClient
-     * @param {Express} app
+     * @param {Express} frontendApp
      */
-    constructor(shelfProperties, mongoClient, app) {
+    constructor(propertyManager, mongoClient, frontendApp) {
         const THIS = this; // For referencing root-instance "this" in promise context
 
-        this.shelfProperties = shelfProperties;
+        this.propertyManager = propertyManager;
         this.mongoClient = mongoClient;
 
         this.isStopping = false;
@@ -67,18 +67,18 @@ class Fetcher {
         this.checkOauthIntervalId = null;
 
         // Goodreads setup
-        this.userAgent = shelfProperties.goodreadsUserId + " " + shelfProperties.userAgentBase;
+        this.userAgent = propertyManager.goodreadsUserId + " " + propertyManager.userAgentBase;
         this.goodreadsOauthGrantedAndNotYetStarted = false;
         // Initialize the Goodreads Client
         let goodreadsCredentials = {
-            key: shelfProperties.goodreadsKey,
-            secret: shelfProperties.goodreadsToken
+            key: propertyManager.goodreadsKey,
+            secret: propertyManager.goodreadsToken
         };
         this.goodreadsClient = Goodreads(goodreadsCredentials);
-        this.goodreadsClient.initOAuth(shelfProperties.publicUrl + OAUTH_CALLBACK_PATH);
+        this.goodreadsClient.initOAuth(propertyManager.publicUrl + OAUTH_CALLBACK_PATH);
 
-        // Add in OAuth handlers to the express app
-        app.get("/auth/goodreads", async function(request, response) {
+        // Add in OAuth handlers to the express frontendApp
+        frontendApp.get("/auth/goodreads", async function(request, response) {
             try {
                 let url = await THIS.goodreadsClient.getRequestToken();
                 response.redirect(url);
@@ -86,20 +86,21 @@ class Fetcher {
                 log.error("goodreadsClient.getRequestToken", error);
             }
         });
-        app.get("/auth/goodreads/callback", async function(request, response) {
+        frontendApp.get("/auth/goodreads/callback", async function(request, response) {
             try {
                 await THIS.goodreadsClient.getAccessToken();
-                THIS.socket.emit(socketCodes.GOODREADS_OAUTH_GRANTED, true);
+                THIS.backendSocket.emit(socketCodes.GOODREADS_OAUTH_GRANTED, true);
                 THIS.goodreadsOauthGrantedAndNotYetStarted = true;
             } catch (error) {
-                THIS.socket.emit(socketCodes.GOODREADS_OAUTH_GRANTED, false);
+                THIS.backendSocket.emit(socketCodes.GOODREADS_OAUTH_GRANTED, false);
             }
             response.redirect("/book");
         });
 
-        this.socket = socketIo.connect(shelfProperties.privateUrl, { reconnect:true });
-        this.socket.on("connect", function() {
-            log.info("Socket connection to server initialized");
+        // Connect to backend server for communicating changes
+        this.backendSocket = socketIo.connect(propertyManager.backendUrl, { reconnect: true });
+        this.backendSocket.on("connect", function() {
+            log.info("Socket connection to backend server initialized");
         });
 
         log.debug("Initialized");
@@ -122,9 +123,9 @@ class Fetcher {
 
                 // Initial startup (always run fetch as soon as possible on start() call!)
                 await THIS._fetch();
-                // For initial startup ONLY, notify the client server when the fetch has completed
-                if (THIS.socket) {
-                    THIS.socket.emit(socketCodes.INITIAL_BOOK_COLLECTION_IN_PROGRESS, false);
+                // For initial startup ONLY, notify the backend server when the fetch has completed
+                if (THIS.backendSocket) {
+                    THIS.backendSocket.emit(socketCodes.INITIAL_BOOK_COLLECTION_IN_PROGRESS, false);
                 }
 
                 THIS.refreshIntervalId = setInterval(async function() {
@@ -135,7 +136,7 @@ class Fetcher {
                     } else {
                         await THIS._fetch();
                     }
-                }, THIS.shelfProperties.refreshFrequencyInMillis);
+                }, THIS.propertyManager.refreshFrequencyInMillis);
             }
         }, CHECK_OAUTH_ACCESS_SLEEP_TIME_IN_MILLIS);
     }
@@ -145,6 +146,9 @@ class Fetcher {
         this.isStopping = true;
         clearInterval(this.checkOauthIntervalId);
         clearInterval(this.refreshIntervalId);
+        if (this.backendSocket) {
+            this.backendSocket.close();
+        }
         log.info("Stopped");
     }
 
@@ -194,86 +198,90 @@ class Fetcher {
         let currentBookIds = new Set();
 
         // 2. Refetch all books in collection (adding & updating)
-        let context = {
-            knownCount: 0,
-            newCount: 0,
-            updatedCount: 0,
-            totalNumberOfPages: 0, // Total number of pages is unknown at first
-            currentPage: FIRST_PAGE,
-            isWishlist: false
-        };
-        do {
-            let goodreadsPage = await this._getGoodreadsCollectionPage(context.currentPage);
+        try {
+            let context = {
+                knownCount: 0,
+                newCount: 0,
+                updatedCount: 0,
+                totalNumberOfPages: 0, // Total number of pages is unknown at first
+                currentPage: FIRST_PAGE,
+                isWishlist: false
+            };
+            do {
+                let goodreadsPage = await this._getGoodreadsCollectionPage(context.currentPage);
 
-            /**
-             * Goodreads returns "\n" when no books are found for a particular
-             * page. As far as I'm aware, no `numpages` field is included in
-             * the ownedBooks API, so we have to just continue until they stop
-             * returning results.
-             */
-            if (goodreadsPage == null
-             || goodreadsPage.owned_books == "\n") {
-                break;
-            }
-
-            if ("owned_book" in goodreadsPage.owned_books) {
-                let ownedBooks = [];
-
-                // Goodreads tries being "smart" and only returns an array if theres > 1 item
-                if (Array.isArray(goodreadsPage.owned_books.owned_book)
-                 && goodreadsPage.owned_books.owned_book.length > 0) {
-                    ownedBooks = goodreadsPage.owned_books.owned_book;
-                // We received a single object for a single, owned book
-                } else {
-                    ownedBooks.push(goodreadsPage.owned_books.owned_book);
+                /**
+                 * Goodreads returns "\n" when no books are found for a particular
+                 * page. As far as I'm aware, no `numpages` field is included in
+                 * the ownedBooks API, so we have to just continue until they stop
+                 * returning results.
+                 */
+                if (goodreadsPage == null
+                 || goodreadsPage.owned_books == "\n") {
+                    break;
                 }
 
-                for (let goodreadsBook of ownedBooks) {
-                    currentBookIds.add("book" + goodreadsBook.id["_"]);
-                    if (!this.isStopping) {
+                if ("owned_book" in goodreadsPage.owned_books) {
+                    let ownedBooks = [];
+
+                    // Goodreads tries being "smart" and only returns an array if theres > 1 item
+                    if (Array.isArray(goodreadsPage.owned_books.owned_book)
+                     && goodreadsPage.owned_books.owned_book.length > 0) {
+                        ownedBooks = goodreadsPage.owned_books.owned_book;
+                    // We received a single object for a single, owned book
+                    } else {
+                        ownedBooks.push(goodreadsPage.owned_books.owned_book);
+                    }
+
+                    for (let goodreadsBook of ownedBooks) {
+                        currentBookIds.add("book" + goodreadsBook.id["_"]);
+                        if (!this.isStopping) {
+                            try {
+                                await this._processGoodreadsBook(goodreadsBook, context);
+                            } catch (error) {
+                                log.error("_processGoodreadsBook", error);
+                            }
+                        }
+                    }
+
+                    context.currentPage++;
+                } else {
+                    // Unexpected response (might be error). Log and break
+                    break;
+                }
+            } while(true);
+
+            context.currentPage--;
+            if (util.pageContextReportsChanges(context)) {
+                log.info("Change detected, fetch stats:");
+                log.info(context);
+            } else {
+                log.debug("No changes");
+            }
+
+            // 3. Remove any books that vanished from collection in this reprocess
+            for (let previouslyFoundBookId of previouslyFoundBookIds) {
+                if (!currentBookIds.has(previouslyFoundBookId)) {
+                    let bookToDelete = this.mongoClient.getCollectionBookById(previouslyFoundBookId);
+                    if (bookToDelete) {
+                        log.info("Removing book from collection, title=" + bookToDelete.title + ", id=" + bookToDelete._id);
+
+                        // 1. Delete the book from MongoDB
                         try {
-                            await this._processGoodreadsBook(goodreadsBook, context);
+                            await this.mongoClient.removeCollectionBookById(previouslyFoundBookId);
                         } catch (error) {
-                            log.error("_processGoodreadsBook", error);
+                            log.error("MongoClient.removeCollectionBookById", error);
+                        }
+
+                        // 2. Notify the backend server of the deleted book
+                        if (this.backendSocket) {
+                            this.backendSocket.emit(socketCodes.REMOVED_BOOK_FROM_COLLECTION, bookToDelete);
                         }
                     }
                 }
-
-                context.currentPage++;
-            } else {
-                // Unexpected response (might be error). Log and break
-                break;
             }
-        } while(true);
-
-        context.currentPage--;
-        if (util.pageContextReportsChanges(context)) {
-            log.info("Change detected, fetch stats:");
-            log.info(context);
-        } else {
-            log.debug("No changes");
-        }
-
-        // 3. Remove any books that vanished from collection in this reprocess
-        for (let previouslyFoundBookId of previouslyFoundBookIds) {
-            if (!currentBookIds.has(previouslyFoundBookId)) {
-                let bookToDelete = this.mongoClient.getCollectionBookById(previouslyFoundBookId);
-                if (bookToDelete) {
-                    log.info("Removing book from collection, title=" + bookToDelete.title + ", id=" + bookToDelete._id);
-
-                    // 1. Delete the book from MongoDB
-                    try {
-                        await this.mongoClient.removeCollectionBookById(previouslyFoundBookId);
-                    } catch (error) {
-                        log.error("MongoClient.removeCollectionBookById", error);
-                    }
-
-                    // 2. Notify the client of the deleted book
-                    if (this.socket) {
-                        this.socket.emit(socketCodes.REMOVED_BOOK_FROM_COLLECTION, bookToDelete);
-                    }
-                }
-            }
+        } catch (error) {
+            log.error("_processGoodreadsCollection", "An unrecoverable error occured while executing this fetch cycle, will try again next fetch.");
         }
     }
 
@@ -282,10 +290,15 @@ class Fetcher {
 
         let data = null;
         try {
-            data = await this.goodreadsClient.getOwnedBooks(this.shelfProperties.goodreadsUserId, pageNumber);
+            data = await this.goodreadsClient.getOwnedBooks(this.propertyManager.goodreadsUserId, pageNumber);
             log.debug("Got books from Goodreads collection, page=" + pageNumber);
         } catch (error) {
-            log.error("goodreadsClient.getOwnedBooks", error);
+            if ("statusCode" in error) {
+                log.error("_getGoodreadsCollectionPage", error.statusCode);
+            } else {
+                log.error("_getGoodreadsCollectionPage", error);
+            }
+            throw error;
         }
         return data;
     }
@@ -303,90 +316,94 @@ class Fetcher {
         let currentBookIds = new Set();
 
         // 2. Refetch all books in wishlist (adding & updating)
-        let context = {
-            knownCount: 0,
-            newCount: 0,
-            updatedCount: 0,
-            totalNumberOfPages: 0, // Total number of pages is unknown at first
-            currentPage: FIRST_PAGE,
-            isWishlist: true
-        };
-        do {
-            let goodreadsPage = await this._getGoodreadsWishlistPage(context.currentPage);
+        try {
+            let context = {
+                knownCount: 0,
+                newCount: 0,
+                updatedCount: 0,
+                totalNumberOfPages: 0, // Total number of pages is unknown at first
+                currentPage: FIRST_PAGE,
+                isWishlist: true
+            };
+            do {
+                let goodreadsPage = await this._getGoodreadsWishlistPage(context.currentPage);
 
-            /**
-             * Goodreads returns "\n" when no books are found for a particular page.
-             * This shouldn't happen for Wishlists since Goodreads tells us the total
-             * number of pages in each response, but just in case a race condition occurred
-             *
-             * For example, this would happen if a user removed a wishlist book just before
-             * the final page call and it happened to be the only book in the page.
-             */
-            if (goodreadsPage == null
-             || goodreadsPage.books == "\n"
-             || ("statusCode" in goodreadsPage && 200 != goodreadsPage.statusCode)) {
-                break;
-            }
-            context.totalNumberOfPages = goodreadsPage.books.numpages;
-
-            if ("book" in goodreadsPage.books) {
-                let wishlistBooks = [];
-
-                // Goodreads tries being "smart" and only returns an array if theres > 1 item
-                if (Array.isArray(goodreadsPage.books.book)
-                 && goodreadsPage.books.book.length > 0) {
-                    wishlistBooks = goodreadsPage.books.book;
-                // We received a single object for a single, wishlist book
-                } else {
-                    wishlistBooks.push(goodreadsPage.books.book);
+                /**
+                 * Goodreads returns "\n" when no books are found for a particular page.
+                 * This shouldn't happen for Wishlists since Goodreads tells us the total
+                 * number of pages in each response, but just in case a race condition occurred
+                 *
+                 * For example, this would happen if a user removed a wishlist book just before
+                 * the final page call and it happened to be the only book in the page.
+                 */
+                if (goodreadsPage == null
+                 || goodreadsPage.books == "\n"
+                 || ("statusCode" in goodreadsPage && 200 != goodreadsPage.statusCode)) {
+                    break;
                 }
+                context.totalNumberOfPages = goodreadsPage.books.numpages;
 
-                for (let goodreadsBook of wishlistBooks) {
-                    currentBookIds.add("book" + goodreadsBook.id["_"]);
-                    if (!this.isStopping) {
+                if ("book" in goodreadsPage.books) {
+                    let wishlistBooks = [];
+
+                    // Goodreads tries being "smart" and only returns an array if theres > 1 item
+                    if (Array.isArray(goodreadsPage.books.book)
+                     && goodreadsPage.books.book.length > 0) {
+                        wishlistBooks = goodreadsPage.books.book;
+                    // We received a single object for a single, wishlist book
+                    } else {
+                        wishlistBooks.push(goodreadsPage.books.book);
+                    }
+
+                    for (let goodreadsBook of wishlistBooks) {
+                        currentBookIds.add("book" + goodreadsBook.id["_"]);
+                        if (!this.isStopping) {
+                            try {
+                                await this._processGoodreadsBook(goodreadsBook, context);
+                            } catch (error) {
+                                log.error("_processGoodreadsBook", error);
+                            }
+                        }
+                    }
+
+                    context.currentPage++;
+                } else {
+                    // Unexpected response (might be error). Log and break
+                    break;
+                }
+            } while(context.currentPage <= context.totalNumberOfPages);
+
+            context.currentPage--;
+            if (util.pageContextReportsChanges(context)) {
+                log.info("Change detected, fetch stats:");
+                log.info(context);
+            } else {
+                log.debug("No changes");
+            }
+
+            // 3. Remove any books that vanished from wishlist in this reprocess
+            for (let previouslyFoundBookId of previouslyFoundBookIds) {
+                if (!currentBookIds.has(previouslyFoundBookId)) {
+                    let bookToDelete = this.mongoClient.getWishlistBookById(previouslyFoundBookId);
+                    if (bookToDelete) {
+                        log.info("Removing book from wishlist, title=" + bookToDelete.title + ", id=" + bookToDelete._id);
+
+                        // 1. Delete the book from MongoDB
                         try {
-                            await this._processGoodreadsBook(goodreadsBook, context);
+                            await this.mongoClient.removeWishlistBookById(previouslyFoundBookId);
                         } catch (error) {
-                            log.error("_processGoodreadsBook", error);
+                            log.error("MongoClient.removeWishlistBookById", error);
+                        }
+
+                        // 2. Notify the backend server of the deleted book
+                        if (this.backendSocket) {
+                            this.backendSocket.emit(socketCodes.REMOVED_BOOK_FROM_WISHLIST, bookToDelete);
                         }
                     }
                 }
-
-                context.currentPage++;
-            } else {
-                // Unexpected response (might be error). Log and break
-                break;
             }
-        } while(context.currentPage <= context.totalNumberOfPages);
-
-        context.currentPage--;
-        if (util.pageContextReportsChanges(context)) {
-            log.info("Change detected, fetch stats:");
-            log.info(context);
-        } else {
-            log.debug("No changes");
-        }
-
-        // 3. Remove any books that vanished from wishlist in this reprocess
-        for (let previouslyFoundBookId of previouslyFoundBookIds) {
-            if (!currentBookIds.has(previouslyFoundBookId)) {
-                let bookToDelete = this.mongoClient.getWishlistBookById(previouslyFoundBookId);
-                if (bookToDelete) {
-                    log.info("Removing book from wishlist, title=" + bookToDelete.title + ", id=" + bookToDelete._id);
-
-                    // 1. Delete the book from MongoDB
-                    try {
-                        await this.mongoClient.removeWishlistBookById(previouslyFoundBookId);
-                    } catch (error) {
-                        log.error("MongoClient.removeWishlistBookById", error);
-                    }
-
-                    // 2. Notify the client of the deleted book
-                    if (this.socket) {
-                        this.socket.emit(socketCodes.REMOVED_BOOK_FROM_WISHLIST, bookToDelete);
-                    }
-                }
-            }
+        } catch (error) {
+            log.error("_processGoodreadsWishlist", "An unrecoverable error occured while executing this fetch cycle, will try again next fetch.");
         }
     }
 
@@ -395,10 +412,15 @@ class Fetcher {
 
         let data = null;
         try {
-            data = await this.goodreadsClient.getBooksOnUserShelf(this.shelfProperties.goodreadsUserId, "to-read", pageNumber);
+            data = await this.goodreadsClient.getBooksOnUserShelf(this.propertyManager.goodreadsUserId, "to-read", pageNumber);
             log.debug("Got books from Goodreads wishlist, page=" + pageNumber);
         } catch (error) {
-            log.error("goodreadsClient.getBooksOnUserShelf", error);
+            if ("statusCode" in error) {
+                log.error("_getGoodreadsWishlistPage", error.statusCode);
+            } else {
+                log.error("_getGoodreadsWishlistPage", error);
+            }
+            throw error;
         }
         return data;
     }
@@ -481,12 +503,12 @@ class Fetcher {
                     log.error("MongoClient.upsertBook", error);
                 }
 
-                // Notify the client of the update
-                if (THIS.socket) {
+                // Notify the backend server of the update
+                if (THIS.backendSocket) {
                     if (book.inWishlist) {
-                        THIS.socket.emit(socketCodes.UPDATED_BOOK_IN_WISHLIST, book);
+                        THIS.backendSocket.emit(socketCodes.UPDATED_BOOK_IN_WISHLIST, book);
                     } else {
-                        THIS.socket.emit(socketCodes.UPDATED_BOOK_IN_COLLECTION, book);
+                        THIS.backendSocket.emit(socketCodes.UPDATED_BOOK_IN_COLLECTION, book);
                     }
                 }
             } else {
@@ -513,7 +535,7 @@ class Fetcher {
                                          CUSTOM_HEADERS,
                                          path.join(paths.CLIENT_BOOK_CACHE_DIRECTORY_PATH, book._id),
                                          BOOK_COVER_ART_FILE_NAME,
-                                         THIS.shelfProperties,
+                                         THIS.propertyManager,
                                          THIS._respectRateLimits);
                 book.coverArtFilePath = path.join(SERVER_BOOK_COVER_ART_DIRECTORY_PATH, book._id, BOOK_COVER_ART_FILE_NAME);
             } catch(error) {
@@ -528,12 +550,12 @@ class Fetcher {
                 log.error("MongoClient.upsertBook", error);
             }
 
-            // 3. Notify the client of the new book
-            if (THIS.socket) {
+            // 3. Notify the backend server of the new book
+            if (THIS.backendSocket) {
                 if (book.inWishlist) {
-                    THIS.socket.emit(socketCodes.ADDED_BOOK_TO_WISHLIST, book);
+                    THIS.backendSocket.emit(socketCodes.ADDED_BOOK_TO_WISHLIST, book);
                 } else {
-                    THIS.socket.emit(socketCodes.ADDED_BOOK_TO_COLLECTION, book);
+                    THIS.backendSocket.emit(socketCodes.ADDED_BOOK_TO_COLLECTION, book);
                 }
             }
         }

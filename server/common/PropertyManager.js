@@ -11,16 +11,17 @@ let util = require("./util");
 
 // CONSTANTS
 // ---------
-const CLASS_NAME = "ShelfProperties";
+const CLASS_NAME = "PropertyManager";
 
 // Assorted, base properties
-const DEFAULT_SITE_PORT = 10800;
+const DEFAULT_FRONTEND_PORT = 10800;
+const DEFAULT_BACKEND_PORT = 10801;
 const DEFAULT_CONNECTION_TIMEOUT_IN_SECONDS = 5;
 const DEFAULT_NAME = "Anonymous";
 const DEFAULT_MAX_ART_SIZE = 512;
 const DEFAULT_REFRESH_FREQUENCY_IN_MINUTES = 1;
 const DEFAULT_SITE_TITLE = "Shelf"
-const DEFAULT_SITE_URL = "http://localhost";
+const DEFAULT_URL = "http://localhost";
 const DEFAULT_TWITTER_HANDLE = "";
 const DEFAULT_USER_AGENT_BASE = "Shelf/2.0 +https://github.com/barrowclift/shelf";
 
@@ -61,7 +62,7 @@ let log = new Logger(CLASS_NAME);
  * calling code get back to what's *actually* important to them: their own
  * work.
  */
-class ShelfProperties {
+class PropertyManager {
 
     /**
      * Does not automatically load any properties file, but simply initializes
@@ -76,9 +77,11 @@ class ShelfProperties {
         this.refreshFrequencyInMillis = DEFAULT_REFRESH_FREQUENCY_IN_MINUTES;
         this.title = DEFAULT_SITE_TITLE;
         this.twitterHandle = DEFAULT_TWITTER_HANDLE;
-        this.privateUrl = DEFAULT_SITE_URL;
-        this.privatePort = DEFAULT_SITE_PORT;
-        this.publicUrl = DEFAULT_SITE_URL;
+        this.frontendUrl = DEFAULT_URL;
+        this.frontendPort = DEFAULT_FRONTEND_PORT;
+        this.backendUrl = DEFAULT_URL;
+        this.backendPort = DEFAULT_BACKEND_PORT;
+        this.publicUrl = DEFAULT_URL;
         this.userAgentBase = DEFAULT_USER_AGENT_BASE;
 
         // Mongo
@@ -137,11 +140,17 @@ class ShelfProperties {
         if ("public.url" in properties) {
             this.publicUrl = properties["public.url"];
         }
-        if ("private.url" in properties) {
-            this.privateUrl = properties["private.url"];
+        if ("frontend.url" in properties) {
+            this.frontendUrl = properties["frontend.url"];
         }
-        if ("private.port" in properties) {
-            this.privatePort = properties["private.port"];
+        if ("frontend.port" in properties) {
+            this.frontendPort = properties["frontend.port"];
+        }
+        if ("backend.url" in properties) {
+            this.backendUrl = properties["backend.url"];
+        }
+        if ("backend.port" in properties) {
+            this.backendPort = properties["backend.port"];
         }
         if ("twitter.handle" in properties) {
             this.twitterHandle = properties["twitter.handle"];
@@ -207,7 +216,8 @@ class ShelfProperties {
             this.boardGameGeekUserId = properties["boardgamegeek.user.id"];
         }
 
-        this.privateUrl = this.privateUrl + ":" + this.privatePort;
+        this.backendUrl = this.backendUrl + ":" + this.backendPort;
+        this.frontendUrl = this.frontendUrl + ":" + this.frontendPort;
     }
 
     /**
@@ -237,4 +247,4 @@ class ShelfProperties {
 
 }
 
-module.exports = ShelfProperties;
+module.exports = PropertyManager;

@@ -1,7 +1,7 @@
 #!/bin/bash
 
 export ADMIN_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )"
-source ${ADMIN_DIR}/init.sh
+source "${ADMIN_DIR}"/init.sh
 
 MONGODB_NOHUP_RUNNING=$(ps -ef | grep "mongod --dbpath ""$MONGO_DB" | grep -v grep)
 HAS_SERVICE_COMMAND=$(command -v service)

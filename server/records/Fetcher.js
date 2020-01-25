@@ -55,11 +55,11 @@ class Fetcher {
      * Initializes the fetcher, but does not automatically kick off the
      * fetches. To do so, start() must be called.
      *
-     * @param {ShelfProperites} shelfProperties
+     * @param {ShelfProperites} propertyManager
      * @param {CachedMongoClient} mongoClient
      */
-    constructor(shelfProperties, mongoClient) {
-        this.shelfProperties = shelfProperties;
+    constructor(propertyManager, mongoClient) {
+        this.propertyManager = propertyManager;
         this.mongoClient = mongoClient;
 
         this.isStopping = false;
@@ -67,16 +67,16 @@ class Fetcher {
         this.refreshIntervalId = null;
 
         // Discogs setup
-        this.userAgent = shelfProperties.discogsUserId + " " + shelfProperties.userAgentBase;
-        this.discogsAuthorization = "Discogs token=" + shelfProperties.discogsUserToken;
-        this.discogsClient = new Discogs(this.userAgent, { userToken: shelfProperties.discogsUserToken });
-        this.discogsUserId = shelfProperties.discogsUserId;
+        this.userAgent = propertyManager.discogsUserId + " " + propertyManager.userAgentBase;
+        this.discogsAuthorization = "Discogs token=" + propertyManager.discogsUserToken;
+        this.discogsClient = new Discogs(this.userAgent, { userToken: propertyManager.discogsUserToken });
+        this.discogsUserId = propertyManager.discogsUserId;
         this.remainingItunesCalls = ITUNES_RATE_LIMIT;
 
-        // Connect to server for sending change callbacks
-        this.socket = socketIo.connect(shelfProperties.privateUrl, { reconnect:true });
-        this.socket.on("connect", function() {
-            log.info("Socket connection to server initialized");
+        // Connect to backend server for communicating changes
+        this.backendSocket = socketIo.connect(propertyManager.backendUrl, { reconnect: true });
+        this.backendSocket.on("connect", function() {
+            log.info("Socket connection to backend server initialized");
         });
 
         log.debug("Initialized");
@@ -95,9 +95,9 @@ class Fetcher {
 
         // Initial startup (always run fetch as soon as possible on start() call!)
         await this._fetch();
-        // For initial startup ONLY, notify the client server when the fetch has completed
-        if (this.socket) {
-            this.socket.emit(socketCodes.INITIAL_RECORD_COLLECTION_IN_PROGRESS, false);
+        // For initial startup ONLY, notify the backend server when the fetch has completed
+        if (this.backendSocket) {
+            this.backendSocket.emit(socketCodes.INITIAL_RECORD_COLLECTION_IN_PROGRESS, false);
         }
 
         this.refreshIntervalId = setInterval(async function() {
@@ -108,7 +108,7 @@ class Fetcher {
             } else {
                 await THIS._fetch();
             }
-        }, this.shelfProperties.refreshFrequencyInMillis);
+        }, this.propertyManager.refreshFrequencyInMillis);
     }
 
     stop() {
@@ -164,61 +164,70 @@ class Fetcher {
         let currentRecordIds = new Set();
 
         // 2. Refetch all records in collection (adding & updating)
-        let context = {
-            knownCount: 0,
-            newCount: 0,
-            updatedCount: 0,
-            totalNumberOfPages: 0, // Total number of pages is unknown at first
-            currentPage: FIRST_PAGE,
-            recordsFieldName: COLLECTION_RECORDS_FIELD_NAME
-        };
-        do {
-            let discogsPage = await this._getDiscogsCollectionPage(context.currentPage);
-            context.totalNumberOfPages = discogsPage.pagination.pages;
+        try {
+            let context = {
+                knownCount: 0,
+                newCount: 0,
+                updatedCount: 0,
+                totalNumberOfPages: 0, // Total number of pages is unknown at first
+                currentPage: FIRST_PAGE,
+                recordsFieldName: COLLECTION_RECORDS_FIELD_NAME
+            };
+            do {
+                let discogsPage = await this._getDiscogsCollectionPage(context.currentPage);
+                if (discogsPage == null) {
+                    log.error("_processDiscogsCollection", "Received null response from Discogs client")
+                    break;
+                } else {
+                    context.totalNumberOfPages = discogsPage.pagination.pages;
 
-            let discogsRecords = discogsPage[context.recordsFieldName];
-            for (let discogsRecord of discogsRecords) {
-                currentRecordIds.add("record" + discogsRecord.id);
-                if (!this.isStopping) {
-                    try {
-                        await this._processDiscogsRecord(discogsRecord, context);
-                    } catch (error) {
-                        log.error("_processDiscogsRecord", error);
+                    let discogsRecords = discogsPage[context.recordsFieldName];
+                    for (let discogsRecord of discogsRecords) {
+                        currentRecordIds.add("record" + discogsRecord.id);
+                        if (!this.isStopping) {
+                            try {
+                                await this._processDiscogsRecord(discogsRecord, context);
+                            } catch (error) {
+                                log.error("_processDiscogsRecord", error);
+                            }
+                        }
+                    }
+
+                    context.currentPage++;
+                }
+            } while(context.currentPage <= context.totalNumberOfPages);
+
+            context.currentPage--;
+            if (util.pageContextReportsChanges(context)) {
+                log.info("Change detected, fetch stats:");
+                log.info(context);
+            } else {
+                log.debug("No changes");
+            }
+
+            // 3. Remove any records that vanished from this reprocess
+            for (let previouslyFoundRecordingId of previouslyFoundRecordIds) {
+                if (!currentRecordIds.has(previouslyFoundRecordingId)) {
+                    let recordToDelete = this.mongoClient.getCollectionRecordById(previouslyFoundRecordingId);
+                    if (recordToDelete) {
+                        log.info("Removing record from collection, title=" + recordToDelete.title + ", id=" + recordToDelete._id);
+
+                        // 1. Delete the record from MongoDB
+                        try {
+                            await this.mongoClient.removeCollectionRecordById(previouslyFoundRecordingId);
+                        } catch (error) {
+                            log.error("MongoClient.removeCollectionRecordById", error);
+                        }
+
+                        // 2. Notify the backend server of the deleted record
+                        if (this.backendSocket) {
+                            this.backendSocket.emit(socketCodes.REMOVED_RECORD_FROM_COLLECTION, recordToDelete);
+                        }
                     }
                 }
             }
-
-            context.currentPage++;
-        } while(context.currentPage <= context.totalNumberOfPages);
-
-        context.currentPage--;
-        if (util.pageContextReportsChanges(context)) {
-            log.info("Change detected, fetch stats:");
-            log.info(context);
-        } else {
-            log.debug("No changes");
-        }
-
-        // 3. Remove any records that vanished from this reprocess
-        for (let previouslyFoundRecordingId of previouslyFoundRecordIds) {
-            if (!currentRecordIds.has(previouslyFoundRecordingId)) {
-                let recordToDelete = this.mongoClient.getCollectionRecordById(previouslyFoundRecordingId);
-                if (recordToDelete) {
-                    log.info("Removing record from collection, title=" + recordToDelete.title + ", id=" + recordToDelete._id);
-
-                    // 1. Delete the record from MongoDB
-                    try {
-                        await this.mongoClient.removeCollectionRecordById(previouslyFoundRecordingId);
-                    } catch (error) {
-                        log.error("MongoClient.removeCollectionRecordById", error);
-                    }
-
-                    // 2. Notify the client of the deleted record
-                    if (this.socket) {
-                        this.socket.emit(socketCodes.REMOVED_RECORD_FROM_COLLECTION, recordToDelete);
-                    }
-                }
-            }
+        } catch (error) {
+            log.error("_processDiscogsCollection", "An unrecoverable error occured while executing this fetch cycle, will try again next fetch.");
         }
     }
 
@@ -239,6 +248,7 @@ class Fetcher {
             log.debug("Got records from discogs collection, page=" + pageNumber);
         } catch (error) {
             log.error("discogsClient.user().collection().getReleases", error);
+            throw error;
         }
         return data;
     }
@@ -256,57 +266,66 @@ class Fetcher {
         let currentRecordIds = new Set();
 
         // 2. Refetch all records in wishlist (adding & updating)
-        let context = {
-            knownCount: 0,
-            newCount: 0,
-            updatedCount: 0,
-            totalNumberOfPages: 0, // Total number of pages is unknown at first
-            currentPage: FIRST_PAGE,
-            recordsFieldName: WISHLIST_RECORDS_FIELD_NAME
-        };
-        do {
-            let discogsPage = await this._getDiscogsWishlistPage(context.currentPage);
-            context.totalNumberOfPages = discogsPage.pagination.pages;
+        try {
+            let context = {
+                knownCount: 0,
+                newCount: 0,
+                updatedCount: 0,
+                totalNumberOfPages: 0, // Total number of pages is unknown at first
+                currentPage: FIRST_PAGE,
+                recordsFieldName: WISHLIST_RECORDS_FIELD_NAME
+            };
+            do {
+                let discogsPage = await this._getDiscogsWishlistPage(context.currentPage);
+                if (discogsPage == null) {
+                    log.error("_processDiscogsWishlist", "Received null response from Discogs client")
+                    break;
+                } else {
+                    context.totalNumberOfPages = discogsPage.pagination.pages;
 
-            let discogsRecords = discogsPage[context.recordsFieldName];
-            for (let discogsRecord of discogsRecords) {
-                currentRecordIds.add("record" + discogsRecord.id);
-                if (!this.isStopping) {
-                    await this._processDiscogsRecord(discogsRecord, context);
-                }
-            }
-
-            context.currentPage++;
-        } while(context.currentPage <= context.totalNumberOfPages);
-
-        context.currentPage--;
-        if (util.pageContextReportsChanges(context)) {
-            log.info("Change detected, fetch stats:");
-            log.info(context);
-        } else {
-            log.debug("No changes");
-        }
-
-        // 3. Remove any records that vanished from this reprocess
-        for (let previouslyFoundRecordingId of previouslyFoundRecordIds) {
-            if (!currentRecordIds.has(previouslyFoundRecordingId)) {
-                let recordToDelete = this.mongoClient.getWishlistRecordById(previouslyFoundRecordingId);
-                if (recordToDelete) {
-                    log.info("Removing record from wishlist, title=" + recordToDelete.title + ", id=" + recordToDelete._id);
-
-                    // 1. Delete the record from MongoDB
-                    try {
-                        await this.mongoClient.removeWishlistRecordById(previouslyFoundRecordingId);
-                    } catch (error) {
-                        log.error("MongoClient.removeWishlistRecordById", error);
+                    let discogsRecords = discogsPage[context.recordsFieldName];
+                    for (let discogsRecord of discogsRecords) {
+                        currentRecordIds.add("record" + discogsRecord.id);
+                        if (!this.isStopping) {
+                            await this._processDiscogsRecord(discogsRecord, context);
+                        }
                     }
 
-                    // 2. Notify the client of the deleted record
-                    if (this.socket) {
-                        this.socket.emit(socketCodes.REMOVED_RECORD_FROM_WISHLIST, recordToDelete);
+                    context.currentPage++;
+                }
+            } while(context.currentPage <= context.totalNumberOfPages);
+
+            context.currentPage--;
+            if (util.pageContextReportsChanges(context)) {
+                log.info("Change detected, fetch stats:");
+                log.info(context);
+            } else {
+                log.debug("No changes");
+            }
+
+            // 3. Remove any records that vanished from this reprocess
+            for (let previouslyFoundRecordingId of previouslyFoundRecordIds) {
+                if (!currentRecordIds.has(previouslyFoundRecordingId)) {
+                    let recordToDelete = this.mongoClient.getWishlistRecordById(previouslyFoundRecordingId);
+                    if (recordToDelete) {
+                        log.info("Removing record from wishlist, title=" + recordToDelete.title + ", id=" + recordToDelete._id);
+
+                        // 1. Delete the record from MongoDB
+                        try {
+                            await this.mongoClient.removeWishlistRecordById(previouslyFoundRecordingId);
+                        } catch (error) {
+                            log.error("MongoClient.removeWishlistRecordById", error);
+                        }
+
+                        // 2. Notify the backend server of the deleted record
+                        if (this.backendSocket) {
+                            this.backendSocket.emit(socketCodes.REMOVED_RECORD_FROM_WISHLIST, recordToDelete);
+                        }
                     }
                 }
             }
+        } catch (error) {
+            log.error("_processDiscogsWishlist", "An unrecoverable error occured while executing this fetch cycle, will try again next fetch.");
         }
     }
 
@@ -326,6 +345,7 @@ class Fetcher {
             log.debug("Got records from discogs wishlist, page=" + pageNumber);
         } catch (error) {
             log.error("discogsClient.user().wantlist().getReleases()", error);
+            throw error;
         }
         return data;
     }
@@ -394,12 +414,12 @@ class Fetcher {
                     log.error("MongoClient.upsertRecord", error);
                 }
 
-                // Notify the client of the update
-                if (THIS.socket) {
+                // Notify the backend server of the update
+                if (THIS.backendSocket) {
                     if (record.inWishlist) {
-                        THIS.socket.emit(socketCodes.UPDATED_RECORD_IN_WISHLIST, record);
+                        THIS.backendSocket.emit(socketCodes.UPDATED_RECORD_IN_WISHLIST, record);
                     } else {
-                        THIS.socket.emit(socketCodes.UPDATED_RECORD_IN_COLLECTION, record);
+                        THIS.backendSocket.emit(socketCodes.UPDATED_RECORD_IN_COLLECTION, record);
                     }
                 }
             } else {
@@ -427,7 +447,7 @@ class Fetcher {
                                          customHeaders,
                                          path.join(paths.CLIENT_RECORD_CACHE_DIRECTORY_PATH, record._id),
                                          DISCOGS_ALBUM_ART_FILE_NAME,
-                                         THIS.shelfProperties,
+                                         THIS.propertyManager,
                                          THIS._respectRateLimits);
                 record.discogsAlbumArtFilePath = path.join(SERVER_ALBUM_ART_DIRECTORY_PATH, record._id, DISCOGS_ALBUM_ART_FILE_NAME);
             } catch(error) {
@@ -471,7 +491,7 @@ class Fetcher {
                                                      CUSTOM_HEADERS,
                                                      destinationDirectoryPath,
                                                      ITUNES_ALBUM_ART_FILE_NAME,
-                                                     THIS.shelfProperties.connectionTimeoutInMillis,
+                                                     THIS.propertyManager.connectionTimeoutInMillis,
                                                      THIS._respectRateLimits);
                             record.iTunesAlbumArtFilePath = path.join(SERVER_ALBUM_ART_DIRECTORY_PATH, record._id, ITUNES_ALBUM_ART_FILE_NAME);
                         } catch(error) {
@@ -491,12 +511,12 @@ class Fetcher {
                 log.error("MongoClient.upsertRecord", error);
             }
 
-            // 5. Notify the client of the new record
-            if (THIS.socket) {
+            // 5. Notify the backend server of the new record
+            if (THIS.backendSocket) {
                 if (record.inWishlist) {
-                    THIS.socket.emit(socketCodes.ADDED_RECORD_TO_WISHLIST, record);
+                    THIS.backendSocket.emit(socketCodes.ADDED_RECORD_TO_WISHLIST, record);
                 } else {
-                    THIS.socket.emit(socketCodes.ADDED_RECORD_TO_COLLECTION, record);
+                    THIS.backendSocket.emit(socketCodes.ADDED_RECORD_TO_COLLECTION, record);
                 }
             }
         }
@@ -509,7 +529,7 @@ class Fetcher {
         let data = {
             method: "GET",
             url: resourceUrl,
-            timeout: this.shelfProperties.connectionTimeoutInMillis,
+            timeout: this.propertyManager.connectionTimeoutInMillis,
             headers: {
                 "User-Agent": this.userAgent,
                 "Authorization": this.discogsAuthorization,
@@ -604,7 +624,7 @@ class Fetcher {
                     log.warn(records);
                 } else {
                     largeAlbumArtUrl = results[0].artworkUrl100;
-                    largeAlbumArtUrl = largeAlbumArtUrl.replace("100x100", THIS.shelfProperties.maxArtSize + "x" + THIS.shelfProperties.maxArtSize);
+                    largeAlbumArtUrl = largeAlbumArtUrl.replace("100x100", THIS.propertyManager.maxArtSize + "x" + THIS.propertyManager.maxArtSize);
                     yearOfOriginalRelease = new Date(results[0].releaseDate).getUTCFullYear();
                 }
             }

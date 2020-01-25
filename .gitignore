@@ -63,3 +63,5 @@ typings/
 /client/static/images/board-games/boardgame*
 /server/config.json
 /replacement-art
+/fix
+package-lock.json

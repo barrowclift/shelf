@@ -34,7 +34,7 @@ wait $result
 SUCCESS=$?
 
 if [ $SUCCESS -eq 0 ]; then
-	echo -e "${GREEN}All started successfully${RESET}"
+    echo -e "${GREEN}All started successfully${RESET}"
     exit 0
 else
     echo -e "${RED}Shelf failed to start${RESET}"

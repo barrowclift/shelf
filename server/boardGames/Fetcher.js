@@ -45,11 +45,11 @@ class Fetcher {
      * Initializes the fetcher, but does not automatically kick off the
      * fetches. To do so, start() must be called.
      *
-     * @param {ShelfProperties} shelfProperties
+     * @param {PropertyManager} propertyManager
      * @param {CachedMongoClient} mongoClient
      */
-    constructor(shelfProperties, mongoClient) {
-        this.shelfProperties = shelfProperties;
+    constructor(propertyManager, mongoClient) {
+        this.propertyManager = propertyManager;
         this.mongoClient = mongoClient;
 
         this.isStopping = false;
@@ -57,13 +57,13 @@ class Fetcher {
         this.refreshIntervalId = null;
 
         // BoardGameGeek setup
-        this.userAgent = shelfProperties.boardGameGeekUserId + " " + shelfProperties.userAgentBase;
+        this.userAgent = propertyManager.boardGameGeekUserId + " " + propertyManager.userAgentBase;
         this.boardGameGeekClient = BoardGameGeek();
 
-        // Connect to server for sending change callbacks
-        this.socket = socketIo.connect(shelfProperties.privateUrl, { reconnect:true });
-        this.socket.on("connect", function() {
-            log.info("Socket connection to server initialized");
+        // Connect to backend server for communicating changes
+        this.backendSocket = socketIo.connect(this.propertyManager.backendUrl, { reconnect: true });
+        this.backendSocket.on("connect", function() {
+            log.info("Socket connection to backend server initialized");
         });
 
         log.debug("Initialized");
@@ -82,9 +82,9 @@ class Fetcher {
 
         // Initial startup (always run fetch as soon as possible on start() call!)
         await this._fetch();
-        // For initial startup ONLY, notify the client server when the fetch has completed
-        if (this.socket) {
-            this.socket.emit(socketCodes.INITIAL_BOARD_GAME_COLLECTION_IN_PROGRESS, false);
+        // For initial startup ONLY, notify the backend server when the fetch has completed
+        if (this.backendSocket) {
+            this.backendSocket.emit(socketCodes.INITIAL_BOARD_GAME_COLLECTION_IN_PROGRESS, false);
         }
 
         this.refreshIntervalId = setInterval(async function() {
@@ -95,13 +95,16 @@ class Fetcher {
             } else {
                 await THIS._fetch();
             }
-        }, this.shelfProperties.refreshFrequencyInMillis);
+        }, this.propertyManager.refreshFrequencyInMillis);
     }
 
     stop() {
         log.info("Stopping...");
         this.isStopping = true;
         clearInterval(this.refreshIntervalId);
+        if (this.backendSocket) {
+            this.backendSocket.close();
+        }
         log.info("Stopped");
     }
 
@@ -150,105 +153,113 @@ class Fetcher {
         let currentBoardGameIds = new Set();
 
         // 2. Refetch all board games in collection (adding & updating)
-        let context = {
-            knownCount: 0,
-            newCount: 0,
-            updatedCount: 0,
-            awaitingAccessCount: 0,
-            isWishlist: false
-        };
-        do {
-            let results = await this._getBoardGameCollection();
-            if ("errors" in results) {
-                log.error("processBoardGameCollection", results.errors.error.message);
-            } else if ("message" in results && results["message"].includes("Please try again later for access")) {
-                // If we receive a "message" field back, we need to wait briefly and try again
-                log.debug("BoardGameGeek is processing the request, checking for completion in a few seconds...");
-                context.awaitingAccessCount++;
-                await util.sleepForSeconds(BOARD_GAME_GEEK_AWAITING_ACCESS_WAIT_TIME_IN_SECONDS);
-            } else if (results.items.totalitems > 0) {
-                context.awaitingAccessCount = 0;
-                let boardGames = results.items.item;
-                if (Array.isArray(boardGames)) {
-                    for (let boardGame of boardGames) {
-                        /**
-                         * We're not filtering by the "boardgame" subtype in the client query because
-                         * that apparently strips out the stats node (which contains the "rating" field,
-                         * which we need). So, we'll perform the filtering manually here.
-                         */
-                        if (boardGame.subtype != "boardgame") {
-                            continue;
-                        }
-                        /**
-                         * Same thing: If we filtered by specific collection types in the client query,
-                         * the rating field gets dropped. So, we need to filter manually here.
-                         */
-                        if (boardGame.status.own == 0) {
-                            continue;
-                        }
+        try {
+            let context = {
+                knownCount: 0,
+                newCount: 0,
+                updatedCount: 0,
+                awaitingAccessCount: 0,
+                isWishlist: false
+            };
+            do {
+                let results = await this._getBoardGameCollection();
+                if (results == null) {
+                    log.error("_processBoardGameCollection", "Received null response from BoardGameGeek client")
+                    break;
+                } else if ("errors" in results) {
+                    log.error("processBoardGameCollection", results.errors.error.message);
+                    break;
+                } else if ("message" in results && results["message"].includes("Please try again later for access")) {
+                    // If we receive a "message" field back, we need to wait briefly and try again
+                    log.debug("BoardGameGeek is processing the request, checking for completion in a few seconds...");
+                    context.awaitingAccessCount++;
+                    await util.sleepForSeconds(BOARD_GAME_GEEK_AWAITING_ACCESS_WAIT_TIME_IN_SECONDS);
+                } else if (results.items.totalitems > 0) {
+                    context.awaitingAccessCount = 0;
+                    let boardGames = results.items.item;
+                    if (Array.isArray(boardGames)) {
+                        for (let boardGame of boardGames) {
+                            /**
+                             * We're not filtering by the "boardgame" subtype in the client query because
+                             * that apparently strips out the stats node (which contains the "rating" field,
+                             * which we need). So, we'll perform the filtering manually here.
+                             */
+                            if (boardGame.subtype != "boardgame") {
+                                continue;
+                            }
+                            /**
+                             * Same thing: If we filtered by specific collection types in the client query,
+                             * the rating field gets dropped. So, we need to filter manually here.
+                             */
+                            if (boardGame.status.own == 0) {
+                                continue;
+                            }
 
-                        currentBoardGameIds.add("boardgame" + boardGame.objectid);
-                        if (!this.isStopping) {
-                            try {
-                                await this._processBggBoardGame(boardGame, context);
-                            } catch (error) {
-                                log.error("_processBggBoardGame", error);
+                            currentBoardGameIds.add("boardgame" + boardGame.objectid);
+                            if (!this.isStopping) {
+                                try {
+                                    await this._processBggBoardGame(boardGame, context);
+                                } catch (error) {
+                                    log.error("_processBggBoardGame", error);
+                                }
+                            }
+                        }
+                    } else {
+                        if (boardGames.subtype == "boardgame"
+                         && boardGames.status.own > 0) {
+                            currentBoardGameIds.add("boardgame" + boardGames.objectid);
+                            if (!this.isStopping) {
+                                try {
+                                    await this._processBggBoardGame(boardGames, context);
+                                } catch (error) {
+                                    log.error("_processBggBoardGame", error);
+                                }
                             }
                         }
                     }
-                } else {
-                    if (boardGames.subtype == "boardgame"
-                     && boardGames.status.own > 0) {
-                        currentBoardGameIds.add("boardgame" + boardGames.objectid);
-                        if (!this.isStopping) {
-                            try {
-                                await this._processBggBoardGame(boardGames, context);
-                            } catch (error) {
-                                log.error("_processBggBoardGame", error);
-                            }
-                        }
-                    }
+
+                    /**
+                     * No "pages" for BGG's API. Once we have the initial
+                     * request's response and processed it, we're done.
+                     */
+                    break;
                 }
+            } while(context.awaitingAccessCount < MAX_NUMBER_OF_AWAITING_ACCESS_CHECKS);
 
-                /**
-                 * No "pages" for BGG's API. Once we have the initial
-                 * request's response and processed it, we're done.
-                 */
-                break;
-            }
-        } while(context.awaitingAccessCount < MAX_NUMBER_OF_AWAITING_ACCESS_CHECKS);
-
-        if (context.awaitingAccessCount >= MAX_NUMBER_OF_AWAITING_ACCESS_CHECKS) {
-            log.warn("BoardGameGeek still doesn't have the request response ready, will check again next fetch time");
-        } else {
-            if (util.pageContextReportsChanges(context)) {
-                log.info("Change detected, fetch stats:");
-                log.info(context);
+            if (context.awaitingAccessCount >= MAX_NUMBER_OF_AWAITING_ACCESS_CHECKS) {
+                log.warn("BoardGameGeek still doesn't have the request response ready, will check again next fetch time");
             } else {
-                log.debug("No changes");
-            }
+                if (util.pageContextReportsChanges(context)) {
+                    log.info("Change detected, fetch stats:");
+                    log.info(context);
+                } else {
+                    log.debug("No changes");
+                }
 
-            // 3. Remove any board games that vanished from collection in this reprocess
-            for (let previouslyFoundBoardGameId of previouslyFoundBoardGameIds) {
-                if (!currentBoardGameIds.has(previouslyFoundBoardGameId)) {
-                    let boardGameToDelete = this.mongoClient.getCollectionBoardGameById(previouslyFoundBoardGameId);
-                    if (boardGameToDelete) {
-                        log.info("Removing board game from collection, title=" + boardGameToDelete.title + ", id=" + boardGameToDelete._id);
+                // 3. Remove any board games that vanished from collection in this reprocess
+                for (let previouslyFoundBoardGameId of previouslyFoundBoardGameIds) {
+                    if (!currentBoardGameIds.has(previouslyFoundBoardGameId)) {
+                        let boardGameToDelete = this.mongoClient.getCollectionBoardGameById(previouslyFoundBoardGameId);
+                        if (boardGameToDelete) {
+                            log.info("Removing board game from collection, title=" + boardGameToDelete.title + ", id=" + boardGameToDelete._id);
 
-                        // 1. Delete the board game from MongoDB
-                        try {
-                            await this.mongoClient.removeCollectionBoardGameById(previouslyFoundBoardGameId);
-                        } catch (error) {
-                            log.error("MongoClient.removeCollectionBoardGameById", error);
-                        }
+                            // 1. Delete the board game from MongoDB
+                            try {
+                                await this.mongoClient.removeCollectionBoardGameById(previouslyFoundBoardGameId);
+                            } catch (error) {
+                                log.error("MongoClient.removeCollectionBoardGameById", error);
+                            }
 
-                        // 2. Notify the client of the deleted board game
-                        if (this.socket) {
-                            this.socket.emit(socketCodes.REMOVED_BOARD_GAME_FROM_COLLECTION, boardGameToDelete);
+                            // 2. Notify the backend server of the deleted board game
+                            if (this.backendSocket) {
+                                this.backendSocket.emit(socketCodes.REMOVED_BOARD_GAME_FROM_COLLECTION, boardGameToDelete);
+                            }
                         }
                     }
                 }
             }
+        } catch (error) {
+            log.error("_processBoardGameCollection", "An unrecoverable error occured while executing this fetch cycle, will try again next fetch.");
         }
     }
 
@@ -257,7 +268,7 @@ class Fetcher {
         log.debug("Fetching BoardGameGeek collection");
 
         let query = {
-            "username": this.shelfProperties.boardGameGeekUserId,
+            "username": this.propertyManager.boardGameGeekUserId,
             "stats": 1
         };
 
@@ -266,7 +277,12 @@ class Fetcher {
             data = await this.boardGameGeekClient("collection", query);
             log.debug("Got board games from BoardGameGeek collection");
         } catch (error) {
-            log.error("boardGameGeekClient(\"collection\", query)", error);
+            if ("error" in error) {
+                log.error("_getBoardGameCollection", error.error);
+            } else {
+                log.error("_getBoardGameCollection", error);
+            }
+            throw error;
         }
         return data;
     }
@@ -285,97 +301,105 @@ class Fetcher {
         let currentBoardGameIds = new Set();
 
         // 2. Refetch all board games in wishlist (adding & updating)
-        let context = {
-            knownCount: 0,
-            newCount: 0,
-            updatedCount: 0,
-            awaitingAccessCount: 0,
-            isWishlist: true
-        };
-        do {
-            let results = await this._getBoardGameWishlist();
-            if ("errors" in results) {
-                log.error("_processBoardGameWishlist", results.errors.error.message);
-            } else if ("message" in results && results["message"].includes("Please try again later for access")) {
-                // If we receive a "message" field back, we need to wait briefly and try again
-                log.debug("BoardGameGeek is processing the request, checking for completion in a few seconds...");
-                context.awaitingAccessCount++;
-                await util.sleepForSeconds(BOARD_GAME_GEEK_AWAITING_ACCESS_WAIT_TIME_IN_SECONDS);
-            } else if (results.items.totalitems > 0) {
-                context.awaitingAccessCount = 0;
-                let boardGames = results.items.item;
-                if (Array.isArray(boardGames)) {
-                    for (let boardGame of boardGames) {
-                        /**
-                         * We're not filtering by the "boardgame" subtype in the client query because
-                         * that apparently strips out the stats node (which contains the "rating" field,
-                         * which we need). So, we'll perform the filtering manually here.
-                         */
-                        if (boardGame.subtype != "boardgame") {
-                            continue;
-                        }
-                        /**
-                         * Same thing: If we filtered by specific collection types in the client query,
-                         * the rating field gets dropped. So, we need to filter manually here.
-                         */
-                        if (boardGame.status.own > 0) {
-                            continue;
-                        }
+        try {
+            let context = {
+                knownCount: 0,
+                newCount: 0,
+                updatedCount: 0,
+                awaitingAccessCount: 0,
+                isWishlist: true
+            };
+            do {
+                let results = await this._getBoardGameWishlist();
+                if (results == null) {
+                    log.error("_processBoardGameWishlist", "Received null response from BoardGameGeek client")
+                    break;
+                } else if ("errors" in results) {
+                    log.error("_processBoardGameWishlist", results.errors.error.message);
+                    break;
+                } else if ("message" in results && results["message"].includes("Please try again later for access")) {
+                    // If we receive a "message" field back, we need to wait briefly and try again
+                    log.debug("BoardGameGeek is processing the request, checking for completion in a few seconds...");
+                    context.awaitingAccessCount++;
+                    await util.sleepForSeconds(BOARD_GAME_GEEK_AWAITING_ACCESS_WAIT_TIME_IN_SECONDS);
+                } else if (results.items.totalitems > 0) {
+                    context.awaitingAccessCount = 0;
+                    let boardGames = results.items.item;
+                    if (Array.isArray(boardGames)) {
+                        for (let boardGame of boardGames) {
+                            /**
+                             * We're not filtering by the "boardgame" subtype in the client query because
+                             * that apparently strips out the stats node (which contains the "rating" field,
+                             * which we need). So, we'll perform the filtering manually here.
+                             */
+                            if (boardGame.subtype != "boardgame") {
+                                continue;
+                            }
+                            /**
+                             * Same thing: If we filtered by specific collection types in the client query,
+                             * the rating field gets dropped. So, we need to filter manually here.
+                             */
+                            if (boardGame.status.own > 0) {
+                                continue;
+                            }
 
-                        currentBoardGameIds.add("boardgame" + boardGame.objectid);
-                        if (!this.isStopping) {
-                            await this._processBggBoardGame(boardGame, context);
+                            currentBoardGameIds.add("boardgame" + boardGame.objectid);
+                            if (!this.isStopping) {
+                                await this._processBggBoardGame(boardGame, context);
+                            }
+                        }
+                    } else {
+                        if (boardGames.subtype == "boardgame"
+                         && boardGames.status.own == 0) {
+                            currentBoardGameIds.add("boardgame" + boardGames.objectid);
+                            if (!this.isStopping) {
+                                await this._processBggBoardGame(boardGames, context);
+                            }
                         }
                     }
-                } else {
-                    if (boardGames.subtype == "boardgame"
-                     && boardGames.status.own == 0) {
-                        currentBoardGameIds.add("boardgame" + boardGames.objectid);
-                        if (!this.isStopping) {
-                            await this._processBggBoardGame(boardGames, context);
-                        }
-                    }
+
+                    /**
+                     * No "pages" for BGG's API. Once we have the initial
+                     * request's response and processed it, we're done.
+                     */
+                    break;
                 }
+            } while(context.awaitingAccessCount < MAX_NUMBER_OF_AWAITING_ACCESS_CHECKS);
 
-                /**
-                 * No "pages" for BGG's API. Once we have the initial
-                 * request's response and processed it, we're done.
-                 */
-                break;
-            }
-        } while(context.awaitingAccessCount < MAX_NUMBER_OF_AWAITING_ACCESS_CHECKS);
-
-        if (context.awaitingAccessCount >= MAX_NUMBER_OF_AWAITING_ACCESS_CHECKS) {
-            log.warn("BoardGameGeek still doesn't have the request response ready, will check again next recollection");
-        } else {
-            if (util.pageContextReportsChanges(context)) {
-                log.info("Change detected, fetch stats:");
-                log.info(context);
+            if (context.awaitingAccessCount >= MAX_NUMBER_OF_AWAITING_ACCESS_CHECKS) {
+                log.warn("BoardGameGeek still doesn't have the request response ready, will check again next recollection");
             } else {
-                log.debug("No changes");
-            }
+                if (util.pageContextReportsChanges(context)) {
+                    log.info("Change detected, fetch stats:");
+                    log.info(context);
+                } else {
+                    log.debug("No changes");
+                }
 
-            // 3. Remove any board games that vanished from wishlist in this reprocess
-            for (let previouslyFoundBoardGameId of previouslyFoundBoardGameIds) {
-                if (!currentBoardGameIds.has(previouslyFoundBoardGameId)) {
-                    let boardGameToDelete = this.mongoClient.getWishlistBoardGameById(previouslyFoundBoardGameId);
-                    if (boardGameToDelete) {
-                        log.info("Removing board game from wishlist, title=" + boardGameToDelete.title + ", id=" + boardGameToDelete._id);
+                // 3. Remove any board games that vanished from wishlist in this reprocess
+                for (let previouslyFoundBoardGameId of previouslyFoundBoardGameIds) {
+                    if (!currentBoardGameIds.has(previouslyFoundBoardGameId)) {
+                        let boardGameToDelete = this.mongoClient.getWishlistBoardGameById(previouslyFoundBoardGameId);
+                        if (boardGameToDelete) {
+                            log.info("Removing board game from wishlist, title=" + boardGameToDelete.title + ", id=" + boardGameToDelete._id);
 
-                        // 1. Delete the board game from MongoDB
-                        try {
-                            await this.mongoClient.removeWishlistBoardGameById(previouslyFoundBoardGameId);
-                        } catch (error) {
-                            log.error("MongoClient.removeWishlistBoardGameById", error);
-                        }
+                            // 1. Delete the board game from MongoDB
+                            try {
+                                await this.mongoClient.removeWishlistBoardGameById(previouslyFoundBoardGameId);
+                            } catch (error) {
+                                log.error("MongoClient.removeWishlistBoardGameById", error);
+                            }
 
-                        // 2. Notify the client of the deleted board game
-                        if (this.socket) {
-                            this.socket.emit(socketCodes.REMOVED_BOARD_GAME_FROM_WISHLIST, boardGameToDelete);
+                            // 2. Notify the backend server of the deleted board game
+                            if (this.backendSocket) {
+                                this.backendSocket.emit(socketCodes.REMOVED_BOARD_GAME_FROM_WISHLIST, boardGameToDelete);
+                            }
                         }
                     }
                 }
             }
+        } catch (error) {
+            log.error("_processBoardGameWishlist", "An unrecoverable error occured while executing this fetch cycle, will try again next fetch.");
         }
     }
 
@@ -384,7 +408,7 @@ class Fetcher {
         log.debug("Fetching BoardGameGeek wishlist");
 
         let query = {
-            "username": this.shelfProperties.boardGameGeekUserId,
+            "username": this.propertyManager.boardGameGeekUserId,
             "subtype": "boardgame",
             "wishlist": 1,
             "stats": 1
@@ -395,7 +419,12 @@ class Fetcher {
             data = await this.boardGameGeekClient("collection", query);
             log.debug("Got board games from BoardGameGeek wishlist");
         } catch (error) {
-            log.error("boardGameGeekClient(\"collection\", query)", error);
+            if ("error" in error) {
+                log.error("_getBoardGameWishlist", error.error);
+            } else {
+                log.error("_getBoardGameWishlist", error);
+            }
+            throw error;
         }
         return data;
     }
@@ -452,12 +481,12 @@ class Fetcher {
                     log.error("MongoClient.upsertBoardGame", error);
                 }
 
-                // Notify the client of the update
-                if (THIS.socket) {
+                // Notify the backend server of the update
+                if (THIS.backendSocket) {
                     if (boardGame.inWishlist) {
-                        THIS.socket.emit(socketCodes.UPDATED_BOARD_GAME_IN_WISHLIST, boardGame);
+                        THIS.backendSocket.emit(socketCodes.UPDATED_BOARD_GAME_IN_WISHLIST, boardGame);
                     } else {
-                        THIS.socket.emit(socketCodes.UPDATED_BOARD_GAME_IN_COLLECTION, boardGame);
+                        THIS.backendSocket.emit(socketCodes.UPDATED_BOARD_GAME_IN_COLLECTION, boardGame);
                     }
                 }
             } else {
@@ -483,7 +512,7 @@ class Fetcher {
                                          CUSTOM_HEADERS,
                                          path.join(paths.CLIENT_BOARD_GAME_CACHE_DIRECTORY_PATH, boardGame._id),
                                          BOARD_GAME_COVER_ART_FILE_NAME,
-                                         THIS.shelfProperties,
+                                         THIS.propertyManager,
                                          RESPECT_RATE_LIMITS_METHOD);
                 boardGame.coverArtFilePath = path.join(SERVER_BOARD_GAME_COVER_ART_DIRECTORY_PATH, boardGame._id, BOARD_GAME_COVER_ART_FILE_NAME);
             } catch(error) {
@@ -498,12 +527,12 @@ class Fetcher {
                 log.error("MongoClient.upsertBoardGame", error);
             }
 
-            // 3. Notify the client of the new board game
-            if (THIS.socket) {
+            // 3. Notify the backend server of the new board game
+            if (THIS.backendSocket) {
                 if (boardGame.inWishlist) {
-                    THIS.socket.emit(socketCodes.ADDED_BOARD_GAME_TO_WISHLIST, boardGame);
+                    THIS.backendSocket.emit(socketCodes.ADDED_BOARD_GAME_TO_WISHLIST, boardGame);
                 } else {
-                    THIS.socket.emit(socketCodes.ADDED_BOARD_GAME_TO_COLLECTION, boardGame);
+                    THIS.backendSocket.emit(socketCodes.ADDED_BOARD_GAME_TO_COLLECTION, boardGame);
                 }
             }
         }
