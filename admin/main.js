@@ -5,14 +5,14 @@
 // External
 let path = require("path");
 // Local
-let BoardGameFetcher = require("./boardGames/Fetcher");
-let BookFetcher = require("./books/Fetcher");
-let CachedMongoClient = require("./db/CachedMongoClient");
-let Logger = require("./common/Logger");
-let paths = require("./common/paths");
-let RecordFetcher = require("./records/Fetcher");
-let Server = require("./Server");
-let PropertyManager = require("./common/PropertyManager");
+let BoardGameFetcher = require("../backend/boardGames/Fetcher");
+let BookFetcher = require("../backend/books/Fetcher");
+let CachedMongoClient = require("../backend/db/CachedMongoClient");
+let Logger = require("../backend/common/Logger");
+let paths = require("../backend/common/paths");
+let RecordFetcher = require("../backend/records/Fetcher");
+let Server = require("../backend/Server");
+let PropertyManager = require("../backend/common/PropertyManager");
 
 
 // CONSTANTS
@@ -30,7 +30,7 @@ let bookFetcher = null;
 let server = null;
 
 const log = new Logger(CLASS_NAME);
-let propertiesFileName = path.join(paths.SERVER_RESOURCES_DIRECTORY_PATH, "shelf.properties");
+let propertiesFileName = path.join(paths.BACKEND_RESOURCES_DIRECTORY_PATH, "shelf.properties");
 
 
 // STARTUP

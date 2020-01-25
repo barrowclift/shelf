@@ -1,5 +1,5 @@
 <a href="#">
-<img height="50" src="https://raw.githubusercontent.com/barrowclift/shelf/master/client/static/images/logo/shelf.png" />
+<img height="50" src="https://raw.githubusercontent.com/barrowclift/shelf/master/frontend/static/images/logo/shelf.png" />
 </a>
 
 ### *Beautifully display your library on the Internet*
@@ -61,7 +61,7 @@ Since [Discogs](https://www.discogs.com), [Goodreads](https://www.goodreads.com)
 
 ## How do I sync my Discogs account with Shelf to display my records?
 
-You will need to make the following changes to Shelf's properties file at `server/resources/shelf.properties`:
+You will need to make the following changes to Shelf's properties file at `backend/resources/shelf.properties`:
 
 1. Set your Discogs username in `discogs.user.id`.
 2. You'll need to generate a [Discogs](https://www.discogs.com) personal access token, which you can do at [the following link](https://www.discogs.com/settings/developers). Copy and paste that token in `discogs.user.token`.
@@ -70,7 +70,7 @@ Note that only records in your collection will be fetched for your Shelf collect
 
 ## How do I sync my Goodreads account with Shelf to display my books?
 
-You will need to make the following changes to Shelf's properties file at `server/resources/shelf.properties`:
+You will need to make the following changes to Shelf's properties file at `backend/resources/shelf.properties`:
 
 1. You'll need to identify your [Goodreads](https://www.goodreads.com) user ID. To do so, log into [Goodreads](https://www.goodreads.com) and navigate to your profile. In your browser's URL, you will see a number preceding your account's name. Take _just_ that number set it in `goodreads.user.id`.
 2. You'll need to generate an API key and secret at [the following link](https://www.goodreads.com/api/keys). Set the key in `goodreads.user.key` and the secret in `goodreads.user.token`. Additionally, set the public address where your Shelf instance will reside in the Callback URL.
@@ -79,7 +79,7 @@ Note that only owned books in your "Read" bookshelf will be fetched for your She
 
 ## How do I sync my BoardGameGeek account with Shelf to display my games?
 
-You will need to make the following changes to Shelf's properties file at `server/resources/shelf.properties`:
+You will need to make the following changes to Shelf's properties file at `backend/resources/shelf.properties`:
 
 1. Set your [BoardGameGeek](https://boardgamegeek.com) username in `boardgamegeek.user.id`.
 
@@ -91,7 +91,7 @@ As mentioned above, if you want to add new items to Shelf, you must add them to 
 
 ## What if I only want to display a particular collection, like board games?
 
-By default, records, books, and board games are all displayed in Shelf's menu. However, you can easily disable them via the following properties in `server/resources/shelf.properties`:
+By default, records, books, and board games are all displayed in Shelf's menu. However, you can easily disable them via the following properties in `backend/resources/shelf.properties`:
 
 ```
 boardgame.shelf.enabled=true
@@ -103,7 +103,7 @@ book.shelf.enabled=true
 
 Shelf is a webapp built with [Node.js](https://nodejs.org/en/), [MongoDB](https://www.mongodb.com), and [Vue.js](https://vuejs.org). For the complete list of third-party libraries and tools used, please see Shelf's [Acknowledgements page](https://shelf.barrowclift.me/acknowledgements).
 
-Shelf is run server-side from a single entry point, `server/main.js`, which is started or stopped via `./start.sh` or `./stop.sh`, respectively. Since these bash scripts are powered by [pm2](https://pm2.io/runtime/), Shelf's process can alternatively be managed with [pm2](https://pm2.io/runtime/) directly, if you wish. Books, records, and board games are managed independently in their own, modular directories, so adding new external data sources or media types is a breeze.
+Shelf is run server-side from a single entry point, `admin/main.js`, which is started or stopped via `admin/start.sh` or `admin/stop.sh`, respectively. Since these bash scripts are powered by [pm2](https://pm2.io/runtime/), Shelf's process can alternatively be managed with [pm2](https://pm2.io/runtime/) directly, if you wish. Books, records, and board games are managed independently in their own, modular directories, so adding new external data sources or media types is a breeze.
 
 Client-side, Shelf leverages [Liquid](https://shopify.github.io/liquid/) for its HTML templates.
 

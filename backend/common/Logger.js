@@ -16,7 +16,7 @@ const DEFAULT_LOG_LEVEL = "INFO";
 
 // GLOBALS
 // -------
-let propertiesFileName = path.join(paths.SERVER_RESOURCES_DIRECTORY_PATH, "shelf.properties");
+let propertiesFileName = path.join(paths.BACKEND_RESOURCES_DIRECTORY_PATH, "shelf.properties");
 
 
 class Logger {

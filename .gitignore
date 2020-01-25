@@ -58,10 +58,9 @@ typings/
 .env
 
 # Ignore record image cache
-/client/static/images/records/record*
-/client/static/images/books/book*
-/client/static/images/board-games/boardgame*
-/server/config.json
-/replacement-art
+/frontend/static/images/records/record*
+/frontend/static/images/books/book*
+/frontend/static/images/board-games/boardgame*
+/backend/config.json
 /fix
 package-lock.json

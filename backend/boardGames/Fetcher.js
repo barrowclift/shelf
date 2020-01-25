@@ -24,7 +24,7 @@ const CLASS_NAME = "boardGames.Fetcher";
 const MAX_NUMBER_OF_AWAITING_ACCESS_CHECKS = 5;
 const BOARD_GAME_GEEK_AWAITING_ACCESS_WAIT_TIME_IN_SECONDS = 3;
 
-const SERVER_BOARD_GAME_COVER_ART_DIRECTORY_PATH = "/images/board-games/";
+const FRONTEND_BOARD_GAME_COVER_ART_DIRECTORY_PATH = "/images/board-games/";
 const BOARD_GAME_COVER_ART_FILE_NAME = "board-game-cover-art.jpg";
 
 
@@ -510,11 +510,11 @@ class Fetcher {
                 await util.downloadImage(boardGame.covertArtUrl,
                                          THIS.userAgent,
                                          CUSTOM_HEADERS,
-                                         path.join(paths.CLIENT_BOARD_GAME_CACHE_DIRECTORY_PATH, boardGame._id),
+                                         path.join(paths.FRONTEND_BOARD_GAME_CACHE_DIRECTORY_PATH, boardGame._id),
                                          BOARD_GAME_COVER_ART_FILE_NAME,
                                          THIS.propertyManager,
                                          RESPECT_RATE_LIMITS_METHOD);
-                boardGame.coverArtFilePath = path.join(SERVER_BOARD_GAME_COVER_ART_DIRECTORY_PATH, boardGame._id, BOARD_GAME_COVER_ART_FILE_NAME);
+                boardGame.coverArtFilePath = path.join(FRONTEND_BOARD_GAME_COVER_ART_DIRECTORY_PATH, boardGame._id, BOARD_GAME_COVER_ART_FILE_NAME);
             } catch(error) {
                 log.error("util.downloadImage", error);
             }

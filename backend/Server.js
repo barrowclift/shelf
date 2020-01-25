@@ -125,17 +125,17 @@ class Server {
         bookOauthLiquidVariables["initializeAuthPath"] = "/auth/goodreads";
 
         this.frontendApp = express();
-        this.frontendApp.use(express.static(paths.CLIENT_STATIC_DIRECTORY_PATH));
+        this.frontendApp.use(express.static(paths.FRONTEND_STATIC_DIRECTORY_PATH));
         const ENGINE = new Liquid({
-            root: paths.CLIENT_LIQUID_DIRECTORY_PATH,
+            root: paths.FRONTEND_LIQUID_DIRECTORY_PATH,
             extname: ".liquid",
             cache: false // Setting to "true" screws with the images, keep `false`
         });
         this.frontendApp.engine("liquid", ENGINE.express()); // Register liquid engine
         this.frontendApp.use(compression());
         this.frontendApp.set("view engine", "liquid"); // Set that engine as the default
-        this.frontendApp.set("views", [paths.CLIENT_INCLUDES_DIRECTORY_PATH,
-                               paths.CLIENT_LAYOUTS_DIRECTORY_PATH]);
+        this.frontendApp.set("views", [paths.FRONTEND_INCLUDES_DIRECTORY_PATH,
+                               paths.FRONTEND_LAYOUTS_DIRECTORY_PATH]);
         if (propertyManager.recordShelfEnabled) {
             this.frontendApp.get("/", function(request, response) {
                 response.render("records", recordCollectionLiquidVariables);

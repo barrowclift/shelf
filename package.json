@@ -2,7 +2,7 @@
   "name": "shelf",
   "version": "2.0.0",
   "description": "Beautifully display your library on the Internet",
-  "main": "main.js",
+  "main": "admin/main.js",
   "repository": {
     "type": "git",
     "url": "https://github.com/barrowclift/shelf.git"
