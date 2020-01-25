@@ -86,6 +86,7 @@ class Builder {
         this.rating = DEFAULT_RATING;
         this.sortAuthor = util.getSortText(DEFAULT_AUTHOR);
         this.sortTitle = util.getSortText(DEFAULT_TITLE);
+        this.shortenedTitle = util.getMainPart(DEFAULT_TITLE);
         this.title = DEFAULT_TITLE;
     }
 
@@ -143,7 +144,8 @@ class Builder {
         } else {
             this.author = author;
         }
-         this.sortAuthor = util.getSortText(this.author);
+        this.author = util.getMainPart(this.author);
+        this.sortAuthor = util.getSortText(this.author);
     }
     setCoverArtFilePath(coverArtFilePath) {
         this.coverArtFilePath = coverArtFilePath;
@@ -208,45 +210,21 @@ class Builder {
         this.rating = rating;
     }
     setTitle(title) {
+        title = title.replace(/®/g, '');
+
+        /**
+         * There are sometimes cases where the "true" title of a book isn't the
+         * title used in common parlance. Here's where we apply user preferences
+         * for those cases over the "true" title.
+         */
         if (overrides.books.replacements.titles[title]) {
             this.title = overrides.books.replacements.titles[title];
         } else {
             this.title = title;
         }
 
-        this.sortTitle = util.getSortText(this.title);
-        this.shortenedTitle = this._getShortenedTitle(this.title);
-    }
-
-    /**
-     * ===============
-     * PRIVATE METHODS
-     * ===============
-     */
-
-    _getShortenedTitle(title) {
-        // e.g. "僕のヒーローアカデミア 3 [Boku No Hero Academia 3] (My Hero Academia, #3)"
-        if (title.indexOf("[") > 0
-         && title.indexOf("]") > 0
-         && title.indexOf("(") > 0
-         && title.indexOf(")") > 0
-         && title.indexOf("#") > 0) {
-            title = title.substring(title.indexOf("(") + 1, title.indexOf(")"));
-        }
-        // e.g. "Bitwise: A Life in Code"
-        if (title.indexOf(":") > 0) {
-            title = title.substring(0, title.indexOf(":")).trim();
-        }
-        // e.g. "The Practice of Programming - Some Sometitle"
-        if (title.indexOf("-") > 0
-         && (title.indexOf("(") != -1 && title.indexOf("(") >= title.indexOf("-"))) {
-            title = title.substring(0, title.indexOf("-")).trim();
-        }
-        // e.g. "The Practice of Programming (Addison-Wesley Professional Computing Series)"
-        if (title.indexOf("(") != -1) {
-            title = title.substring(0, title.indexOf("(")).trim();
-        }
-        return title;
+        this.shortenedTitle = util.getMainPart(this.title);
+        this.sortTitle = util.getSortText(this.shortenedTitle);
     }
 
 }

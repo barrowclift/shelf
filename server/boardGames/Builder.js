@@ -113,6 +113,21 @@ class Builder {
     }
     setTitle(title) {
         /**
+         * BoardGameGeek Library being used completely screws up the title encoding,
+         * it literally needs to be decoded _twice_.
+         *
+         * e.g. "Dominion &&#35;40;Second Edition&&#35;41;" = "Dominion (Second Edition)"
+         */
+        var r = /\&#(\d\d);/gi;
+        // Replaces each numerical ascii character with their character representation
+        title = title.replace(r, function (match, grp) {
+            return String.fromCharCode(parseInt(grp));
+        });
+        title = title.replace(r, function (match, grp) {
+            return String.fromCharCode(parseInt(grp));
+        });
+
+        /**
          * Some of the titles Discogs has may be overly complicated or noisy.
          * In case of situations like that, the desired, simplified name can
          * be used instead by mapping the "bad" title to the desired

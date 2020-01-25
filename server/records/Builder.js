@@ -175,10 +175,9 @@ class Builder {
     }
     setTitle(title) {
         /**
-         * Some of the titles Discogs has may be overly complicated or noisy.
-         * In case of situations like that, the desired, simplified name can
-         * be used instead by mapping the "bad" title to the desired
-         * replacement title in the overrides file
+         * There are sometimes cases where the "true" title of a record isn't the
+         * title used in common parlance (e.g. "The White Album"). Here's where
+         * we apply user preferences for those cases over the "true" title.
          */
         if (overrides.records.replacements.titles[title]) {
             this.title = overrides.records.replacements.titles[title];

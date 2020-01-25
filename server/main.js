@@ -10,11 +10,9 @@ let BookFetcher = require("./books/Fetcher");
 let CachedMongoClient = require("./db/CachedMongoClient");
 let Logger = require("./common/Logger");
 let paths = require("./common/paths");
-let Properties = require("./common/ShelfProperties");
 let RecordFetcher = require("./records/Fetcher");
 let Server = require("./Server");
-let ShelfProperties = require("./common/ShelfProperties");
-let util = require("./common/util");
+let PropertyManager = require("./common/PropertyManager");
 
 
 // CONSTANTS
@@ -24,7 +22,7 @@ const CLASS_NAME = "main";
 
 // GLOBALS
 // -------
-let shelfProperties = null;
+let propertyManager = null;
 let mongoClient = null;
 let recordFetcher = null;
 let boardGameFetcher = null;
@@ -41,29 +39,29 @@ log.info("Starting up...");
 
 async function startup() {
     // 1. Load properties
-    shelfProperties = new ShelfProperties();
-    await shelfProperties.load(propertiesFileName);
+    propertyManager = new PropertyManager();
+    await propertyManager.load(propertiesFileName);
 
     // 2. Connect to MongoDB
-    mongoClient = new CachedMongoClient(shelfProperties);
+    mongoClient = new CachedMongoClient(propertyManager);
     await mongoClient.connect();
 
     // 3. Build client site
-    server = new Server(shelfProperties, mongoClient);
+    server = new Server(propertyManager, mongoClient);
     // 4. Start client server
     server.start();
 
     // 5. Start content fetch loops
-    if (shelfProperties.recordShelfEnabled) {
-        recordFetcher = new RecordFetcher(shelfProperties, mongoClient);
+    if (propertyManager.recordShelfEnabled) {
+        recordFetcher = new RecordFetcher(propertyManager, mongoClient);
         recordFetcher.start();
     }
-    if (shelfProperties.boardGameShelfEnabled) {
-        boardGameFetcher = new BoardGameFetcher(shelfProperties, mongoClient);
+    if (propertyManager.boardGameShelfEnabled) {
+        boardGameFetcher = new BoardGameFetcher(propertyManager, mongoClient);
         boardGameFetcher.start();
     }
-    if (shelfProperties.bookShelfEnabled) {
-        bookFetcher = new BookFetcher(shelfProperties, mongoClient, server.getExpressApp());
+    if (propertyManager.bookShelfEnabled) {
+        bookFetcher = new BookFetcher(propertyManager, mongoClient, server.getFrontendExpressApp());
         bookFetcher.start();
     }
 }

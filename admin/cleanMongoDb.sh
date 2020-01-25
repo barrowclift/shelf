@@ -29,7 +29,7 @@ function cleanMongoDb {
         wait $starterProcess
     fi
 
-    node "${ADMIN_DIR}"/mongoCleaner.js > "${LOGS_DIR}"/clean-mongodb.log 2>&1 &
+    node "${ADMIN_DIR}"/mongoShim.js "clean" > "${LOGS_DIR}"/clean-mongodb.log 2>&1 &
     cleanerProcess=$!
     wait $cleanerProcess
 

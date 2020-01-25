@@ -4,7 +4,8 @@
             "titles": {
                 "The Beatles": "The White Album",
                 "Star Wars / The Empire Strikes Back": "Star Wars: The Empire Strikes Back",
-                "Firewatch (Original Score)": "Firewatch"
+                "Firewatch (Original Score)": "Firewatch",
+                "Samurai Champloo - The Way Of The Samurai Vinyl Collection": "Samurai Champloo"
             },
             "artists": {
                 "Wings (2)": "Wings",
@@ -31,20 +32,14 @@
     "boardGames": {
         "replacements": {
             "titles": {
-                "Ca$h 'n Guns &&#35;40;Second Edition&&#35;41;": "Ca$h 'n Guns",
-                "Dominion: Intrigue &&#35;40;Second Edition&&#35;41;": "Dominion: Intrigue",
-                "Dominion &&#35;40;Second Edition&&#35;41;": "Dominion"
+                "Dominion (Second Edition)": "Dominion",
+                "Dominion: Intrigue (Second Edition)": "Dominion: Intrigue"
             }
         }
     },
     "books": {
         "replacements": {
             "titles": {
-                "Ready Player One (Ready Player One, #1)": "Ready Player One",
-                "Philadelphia Then and Now®": "Philadelphia, Then and Now",
-                "Arcade Fire’s The Suburbs (33 1/3)": "33⅓ The Suburbs",
-                "Red Rising (Red Rising, #1)": "Red Rising",
-                "The Practice of Programming (Addison": "The Practice of Programming"
             },
             "authors": {}
         }

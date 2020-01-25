@@ -13,22 +13,22 @@
   "author": "Marc Barrowclift",
   "license": "MIT",
   "dependencies": {
+    "sharp": "^0.24.0",
     "bgg": "^1.0.1",
     "compression": "^1.7.4",
     "disconnect": "^1.2.1",
     "express": "^4.17.1",
     "fs": "0.0.1-security",
-    "fuse.js": "^3.4.5",
+    "fuse.js": "^3.4.6",
     "goodreads-api-node": "0.0.10",
     "he": "^1.2.0",
     "liquidjs": "^7.5.1",
-    "mongodb": "^3.2.7",
+    "mongodb": "^3.5.2",
     "ncp": "^2.0.0",
-    "npm": "^6.10.0",
+    "npm": "^6.13.6",
     "properties": "^1.2.1",
-    "request-promise": "^4.2.4",
-    "sharp": "^0.22.1",
-    "socket.io": "^2.2.0",
-    "vue": "^2.6.10"
+    "request-promise": "^4.2.5",
+    "socket.io": "^2.3.0",
+    "vue": "^2.6.11"
   }
 }

@@ -30,3 +30,5 @@ exports.ADDED_BOOK_TO_COLLECTION = "addBookToCollection";
 exports.ADDED_BOOK_TO_WISHLIST = "addBookToWishlist";
 exports.UPDATED_BOOK_IN_COLLECTION = "updateBookInCollection";
 exports.UPDATED_BOOK_IN_WISHLIST = "updateBookInWishlist";
+
+exports.CLEAR_CACHE = "clearCache";

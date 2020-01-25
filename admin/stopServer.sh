@@ -6,11 +6,11 @@ source "${ADMIN_DIR}"/init.sh
 SERVER_RUNNING=$(ps -ef | grep "node ""${SERVER_DIR}" | grep -v grep)
 
 if [ -n "$SERVER_RUNNING" ]; then
-	if [ "$USE_PM2" = true ] ; then
-	    pm2 --silent stop shelf
-	else
-	    ps -ef | grep "node ""${SERVER_DIR}""/main.js" | grep -v grep | awk '{print $2}' | xargs kill -9
-	fi
+    if [ "$USE_PM2" = true ] ; then
+        pm2 --silent stop shelf
+    else
+        ps -ef | grep "node ""${SERVER_DIR}""/main.js" | grep -v grep | awk '{print $2}' | xargs kill -9
+    fi
 
     SUCCESS=$?
     if [ $SUCCESS -eq 0 ]; then
