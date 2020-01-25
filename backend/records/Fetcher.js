@@ -30,7 +30,7 @@ const DISCOGS_RATE_LIMIT_REFRESH_TIME_IN_SECONDS = 70;
 const ITUNES_RATE_LIMIT = 20;
 const ITUNES_RATE_LIMIT_REFRESH_TIME_IN_SECONDS = 60;
 
-const SERVER_ALBUM_ART_DIRECTORY_PATH = "/images/records/";
+const FRONTEND_ALBUM_ART_DIRECTORY_PATH = "/images/records/";
 const DISCOGS_ALBUM_ART_FILE_NAME = "discogs-album-art.jpg";
 const ITUNES_ALBUM_ART_FILE_NAME = "itunes-album-art.jpg";
 
@@ -445,11 +445,11 @@ class Fetcher {
                 await util.downloadImage(record.discogsAlbumArtUrl,
                                          THIS.userAgent,
                                          customHeaders,
-                                         path.join(paths.CLIENT_RECORD_CACHE_DIRECTORY_PATH, record._id),
+                                         path.join(paths.FRONTEND_RECORD_CACHE_DIRECTORY_PATH, record._id),
                                          DISCOGS_ALBUM_ART_FILE_NAME,
                                          THIS.propertyManager,
                                          THIS._respectRateLimits);
-                record.discogsAlbumArtFilePath = path.join(SERVER_ALBUM_ART_DIRECTORY_PATH, record._id, DISCOGS_ALBUM_ART_FILE_NAME);
+                record.discogsAlbumArtFilePath = path.join(FRONTEND_ALBUM_ART_DIRECTORY_PATH, record._id, DISCOGS_ALBUM_ART_FILE_NAME);
             } catch(error) {
                 log.error("util.downloadImage", error);
             }
@@ -484,7 +484,7 @@ class Fetcher {
                     }
                     if (largeAlbumArtUrl) {
                         const CUSTOM_HEADERS = {};
-                        let destinationDirectoryPath = path.join(paths.CLIENT_RECORD_CACHE_DIRECTORY_PATH, record._id);
+                        let destinationDirectoryPath = path.join(paths.FRONTEND_RECORD_CACHE_DIRECTORY_PATH, record._id);
                         try {
                             await util.downloadImage(largeAlbumArtUrl,
                                                      THIS.userAgent,
@@ -493,7 +493,7 @@ class Fetcher {
                                                      ITUNES_ALBUM_ART_FILE_NAME,
                                                      THIS.propertyManager.connectionTimeoutInMillis,
                                                      THIS._respectRateLimits);
-                            record.iTunesAlbumArtFilePath = path.join(SERVER_ALBUM_ART_DIRECTORY_PATH, record._id, ITUNES_ALBUM_ART_FILE_NAME);
+                            record.iTunesAlbumArtFilePath = path.join(FRONTEND_ALBUM_ART_DIRECTORY_PATH, record._id, ITUNES_ALBUM_ART_FILE_NAME);
                         } catch(error) {
                             log.error("util.downloadImage", error);
                         }

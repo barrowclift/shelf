@@ -29,7 +29,7 @@ const OPEN_LIBRARY_RATE_LIMIT_REFRESH_TIME_IN_SECONDS = 60;
 const OAUTH_CALLBACK_PATH = "/auth/goodreads/callback";
 const CHECK_OAUTH_ACCESS_SLEEP_TIME_IN_MILLIS = util.secondsToMillis(1);
 
-const SERVER_BOOK_COVER_ART_DIRECTORY_PATH = "/images/books/";
+const FRONTEND_BOOK_COVER_ART_DIRECTORY_PATH = "/images/books/";
 const BOOK_COVER_ART_FILE_NAME = "book-cover-art.jpg";
 
 
@@ -533,11 +533,11 @@ class Fetcher {
                 await util.downloadImage(book.coverArtUrl,
                                          THIS.userAgent,
                                          CUSTOM_HEADERS,
-                                         path.join(paths.CLIENT_BOOK_CACHE_DIRECTORY_PATH, book._id),
+                                         path.join(paths.FRONTEND_BOOK_CACHE_DIRECTORY_PATH, book._id),
                                          BOOK_COVER_ART_FILE_NAME,
                                          THIS.propertyManager,
                                          THIS._respectRateLimits);
-                book.coverArtFilePath = path.join(SERVER_BOOK_COVER_ART_DIRECTORY_PATH, book._id, BOOK_COVER_ART_FILE_NAME);
+                book.coverArtFilePath = path.join(FRONTEND_BOOK_COVER_ART_DIRECTORY_PATH, book._id, BOOK_COVER_ART_FILE_NAME);
             } catch(error) {
                 log.error("util.downloadImage", error);
             }

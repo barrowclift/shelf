@@ -9,15 +9,15 @@ let request = require("request-promise");
 let socketIo = require("socket.io-client");
 // Local
 const SHELF_ROOT_DIRECTORY_PATH = path.join(__dirname, "..");
-let CachedMongoClient = require(path.join(SHELF_ROOT_DIRECTORY_PATH, "server/db/CachedMongoClient"));
-let PropertyManager = require(path.join(SHELF_ROOT_DIRECTORY_PATH, "server/common/PropertyManager"));
-let socketCodes = require(path.join(SHELF_ROOT_DIRECTORY_PATH, "server/common/socketCodes"));
-let util = require(path.join(SHELF_ROOT_DIRECTORY_PATH, "server/common/util"));
+let CachedMongoClient = require(path.join(SHELF_ROOT_DIRECTORY_PATH, "backend/db/CachedMongoClient"));
+let PropertyManager = require(path.join(SHELF_ROOT_DIRECTORY_PATH, "backend/common/PropertyManager"));
+let socketCodes = require(path.join(SHELF_ROOT_DIRECTORY_PATH, "backend/common/socketCodes"));
+let util = require(path.join(SHELF_ROOT_DIRECTORY_PATH, "backend/common/util"));
 
 
 // CONSTANTS
 // ---------
-const PROPERTIES_FILE_NAME = path.join(SHELF_ROOT_DIRECTORY_PATH, "server/resources/shelf.properties");
+const PROPERTIES_FILE_NAME = path.join(SHELF_ROOT_DIRECTORY_PATH, "backend/resources/shelf.properties");
 
 
 // GLOBALS

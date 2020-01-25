@@ -3,13 +3,13 @@
 export ADMIN_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )"
 source "${ADMIN_DIR}"/init.sh
 
-SERVER_RUNNING=$(ps -ef | grep "node ""${SERVER_DIR}" | grep -v grep)
+SERVER_RUNNING=$(ps -ef | grep "node ""${ADMIN_DIR}" | grep -v grep)
 
 if [ -n "$SERVER_RUNNING" ]; then
     if [ "$USE_PM2" = true ] ; then
         pm2 --silent stop shelf
     else
-        ps -ef | grep "node ""${SERVER_DIR}""/main.js" | grep -v grep | awk '{print $2}' | xargs kill -9
+        ps -ef | grep "node ""${ADMIN_DIR}""/main.js" | grep -v grep | awk '{print $2}' | xargs kill -9
     fi
 
     SUCCESS=$?

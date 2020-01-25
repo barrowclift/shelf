@@ -7,15 +7,15 @@ if [ ! -d "$LOGS_DIR" ]; then
     mkdir "$LOGS_DIR";
 fi
 
-SERVER_RUNNING=$(ps -ef | grep "node ""${SERVER_DIR}" | grep -v grep)
+SERVER_RUNNING=$(ps -ef | grep "node ""${ADMIN_DIR}" | grep -v grep)
 
 if [ -n "$SERVER_RUNNING" ]; then
     echo -e "Server already running"
 else
     if [ "$USE_PM2" = true ] ; then
-        pm2 --log "${LOGS_DIR}"/server.log --name shelf --silent start "${SERVER_DIR}"/main.js
+        pm2 --log "${LOGS_DIR}"/backend.log --name shelf --silent start "${ADMIN_DIR}"/main.js
     else
-        nohup node "${SERVER_DIR}"/main.js > "$LOGS_DIR"/server.log 2>&1 &
+        nohup node "${ADMIN_DIR}"/main.js > "$LOGS_DIR"/backend.log 2>&1 &
     fi
 
     SUCCESS=$?
