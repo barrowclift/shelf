@@ -9,7 +9,7 @@ let socketIo = require("socket.io");
 let compression = require("compression");
 let filesystem = require("fs");
 let cp = require("ncp");
-let Liquid = require("liquidjs");
+let { Liquid } = require("liquidjs");
 // Local
 let Logger = require("./common/Logger");
 let paths = require("./common/paths");
