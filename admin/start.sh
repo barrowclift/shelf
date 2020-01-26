@@ -14,7 +14,7 @@ if [ -n "$HAS_SERVICE_COMMAND" ]; then
         MONGODB_SERVICE_RUNNING=$(systemctl status mongod | grep 'is running\|active (running)')
     fi
 fi
-SHELF_RUNNING=$(ps -ef | grep "node ""${BACKEND_DIR}" | grep -v grep)
+SHELF_RUNNING=$(ps -ef | grep "node ""${ADMIN_DIR}" | grep -v grep)
 
 # If all necessary ingredients are running successfully, nothing to do
 if [ -n "$SHELF_RUNNING" ] && { [ -n "$MONGODB_NOHUP_RUNNING" ] || [ -n "$MONGODB_SERVICE_RUNNING" ]; }; then
