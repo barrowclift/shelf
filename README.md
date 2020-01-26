@@ -6,6 +6,8 @@
 
 <img src="https://raw.githubusercontent.com/barrowclift/shelf/master/screenshots/shelf-promo.png" />
 
+You can download the latest release [here](https://github.com/barrowclift/shelf/releases/tag/v2.1.1)
+
 1. [FAQ](#faq)
     * [Why use shelf?](#why-use-shelf)
     * [Doesn't Discogs/Goodreads/BoardGameGeek already do this?](#doesnt-discogsgoodreadsboardgamegeek-already-do-this)
