@@ -38,7 +38,7 @@ const DEFAULT_YEAR_PUBLISHED = 0; // yearpublished
  *        "addedOn" : 1562437378992,
  *        "boardGameGeekUrl" : "https://boardgamegeek.com/boardgame/68448",
  *        "coverArtFilePath" : "/images/board-games/boardgame68448/board-game-cover-art.jpg",
- *        "covertArtUrl" : "https://cf.geekdo-images.com/original/img/3DP_RW5lTX0WrV67s8qi8CsiXoQ=/0x0/pic860217.jpg",
+ *        "coverArtUrl" : "https://cf.geekdo-images.com/original/img/3DP_RW5lTX0WrV67s8qi8CsiXoQ=/0x0/pic860217.jpg",
  *        "inWishlist" : false,
  *        "rating" : 8,
  *        "sortTitle" : "7 WONDERS",
@@ -57,7 +57,7 @@ class Builder {
         this._id = DEFAULT_ID;
         this.boardGameGeekUrl = BOARD_GAME_GEEK_URL;
         this.coverArtFilePath = DEFAULT_COVER_ART_FILE_PATH;
-        this.covertArtUrl = DEFAULT_COVER_ART_URL;
+        this.coverArtUrl = DEFAULT_COVER_ART_URL;
         this.inWishlist = DEFAULT_IN_WISHLIST;
         this.rating = this._standardizeToShelfRating(DEFAULT_RATING);
         this.sortTitle = util.getSortText(DEFAULT_TITLE);
@@ -86,7 +86,7 @@ class Builder {
             addedOn : now,
             boardGameGeekUrl : this.boardGameGeekUrl,
             coverArtFilePath : this.coverArtFilePath,
-            covertArtUrl : this.covertArtUrl,
+            coverArtUrl : this.coverArtUrl,
             inWishlist : this.inWishlist,
             rating : this.rating,
             sortTitle : this.sortTitle,
@@ -102,8 +102,8 @@ class Builder {
     setCoverArtFilePath(coverArtFilePath) {
         this.coverArtFilePath = coverArtFilePath;
     }
-    setCoverArtUrl(covertArtUrl) {
-        this.covertArtUrl = covertArtUrl;
+    setCoverArtUrl(coverArtUrl) {
+        this.coverArtUrl = coverArtUrl;
     }
     setInWishlist(inWishlist) {
         this.inWishlist = inWishlist;
