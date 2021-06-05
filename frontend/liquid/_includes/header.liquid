@@ -1,7 +1,9 @@
 <menu class="no-select {% if menu == 'records' or menu == 'board-games' or menu == 'books' %}with-search-bar{% endif %}">
     <h3>
-        {% include "logo" %}
-        <span>{{ siteTitle }}</span>
+        <a href="/">
+            {% include "logo" %}
+            <span>{{ siteTitle }}</span>
+        </a>
     </h3>
     <ul>
         {% if recordShelfEnabled %}<li><h4><a class="{% if menu == 'records' %}active{% endif %}" href="/"><span>Records</span></a></h4></li>{% endif %}

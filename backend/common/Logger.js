@@ -26,12 +26,11 @@ class Logger {
      * @param  {String} className
      */
     constructor(className) {
-        const THIS = this; // For referencing root-level "this" in promise context
         this.className = className;
 
         // Setting log level from setting in properties
         this.logLevel = DEFAULT_LOG_LEVEL;
-        new Promise(function(resolve, reject) {
+        new Promise((resolve, reject) => {
             properties.parse(propertiesFileName,
                              { path: true },
                              function(error, theProperties) {
@@ -41,11 +40,11 @@ class Logger {
                     resolve(theProperties);
                 }
             });
-        }).then(function(result) {
+        }).then((result) => {
             if ("log.level" in result) {
-                THIS.logLevel = result["log.level"].toUpperCase();
+                this.logLevel = result["log.level"].toUpperCase();
             }
-        }).catch(function(error) {
+        }).catch((error) => {
             console.log(error);
         });
     }

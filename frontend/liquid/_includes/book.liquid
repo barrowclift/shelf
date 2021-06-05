@@ -2,9 +2,11 @@
     v-for="book in sortedAndSearchedBooks"
     :key="book._id">
     <a :href="book.goodreadsUrl">
-        <div data-tilt data-tilt-scale="1.05" data-tilt-glare data-tilt-reverse="false" data-tilt-max-glare="0.5" class="wrapper">
-            <div class="center">
-                <img class="art" :src='book.coverArtFilePath' :alt='book.title'>
+        <div class="shadow">
+            <div data-tilt data-tilt-scale="1.05" data-tilt-glare data-tilt-reverse="false" data-tilt-max-glare="0.5" class="wrapper">
+                <div class="center">
+                    <img class="art" :src='book.coverArtFilePath' :alt='book.title'>
+                </div>
             </div>
         </div>
         <div class="metadata">

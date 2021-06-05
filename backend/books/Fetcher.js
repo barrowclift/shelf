@@ -56,8 +56,6 @@ class Fetcher {
      * @param {Express} frontendApp
      */
     constructor(propertyManager, mongoClient, frontendApp) {
-        const THIS = this; // For referencing root-instance "this" in promise context
-
         this.propertyManager = propertyManager;
         this.mongoClient = mongoClient;
 
@@ -78,21 +76,21 @@ class Fetcher {
         this.goodreadsClient.initOAuth(propertyManager.publicUrl + OAUTH_CALLBACK_PATH);
 
         // Add in OAuth handlers to the express frontendApp
-        frontendApp.get("/auth/goodreads", async function(request, response) {
+        frontendApp.get("/auth/goodreads", async (request, response) => {
             try {
-                let url = await THIS.goodreadsClient.getRequestToken();
+                let url = await this.goodreadsClient.getRequestToken();
                 response.redirect(url);
             } catch (error) {
                 log.error("goodreadsClient.getRequestToken", error);
             }
         });
-        frontendApp.get("/auth/goodreads/callback", async function(request, response) {
+        frontendApp.get("/auth/goodreads/callback", async (request, response) => {
             try {
-                await THIS.goodreadsClient.getAccessToken();
-                THIS.backendSocket.emit(socketCodes.GOODREADS_OAUTH_GRANTED, true);
-                THIS.goodreadsOauthGrantedAndNotYetStarted = true;
+                await this.goodreadsClient.getAccessToken();
+                this.backendSocket.emit(socketCodes.GOODREADS_OAUTH_GRANTED, true);
+                this.goodreadsOauthGrantedAndNotYetStarted = true;
             } catch (error) {
-                THIS.backendSocket.emit(socketCodes.GOODREADS_OAUTH_GRANTED, false);
+                this.backendSocket.emit(socketCodes.GOODREADS_OAUTH_GRANTED, false);
             }
             response.redirect("/book");
         });
@@ -113,32 +111,30 @@ class Fetcher {
      */
 
     async start() {
-        const THIS = this; // For referencing root-instance "this" in promise context
+        // this.checkOauthIntervalId = setInterval(async () => {
+        //     if (this.goodreadsOauthGrantedAndNotYetStarted) {
+        //         this.goodreadsOauthGrantedAndNotYetStarted = false;
 
-        this.checkOauthIntervalId = setInterval(async function() {
-            if (THIS.goodreadsOauthGrantedAndNotYetStarted) {
-                THIS.goodreadsOauthGrantedAndNotYetStarted = false;
+        //         log.info("Starting...");
 
-                log.info("Starting...");
+        //         // Initial startup (always run fetch as soon as possible on start() call!)
+        //         await this._fetch();
+        //         // For initial startup ONLY, notify the backend server when the fetch has completed
+        //         if (this.backendSocket) {
+        //             this.backendSocket.emit(socketCodes.INITIAL_BOOK_COLLECTION_IN_PROGRESS, false);
+        //         }
 
-                // Initial startup (always run fetch as soon as possible on start() call!)
-                await THIS._fetch();
-                // For initial startup ONLY, notify the backend server when the fetch has completed
-                if (THIS.backendSocket) {
-                    THIS.backendSocket.emit(socketCodes.INITIAL_BOOK_COLLECTION_IN_PROGRESS, false);
-                }
-
-                THIS.refreshIntervalId = setInterval(async function() {
-                    if (THIS.isStopped) {
-                        log.info("Preventing refresh, shutting down");
-                    } else if (THIS.currentlyFetching) {
-                        log.info("Skipping refresh, still processing previous one");
-                    } else {
-                        await THIS._fetch();
-                    }
-                }, THIS.propertyManager.refreshFrequencyInMillis);
-            }
-        }, CHECK_OAUTH_ACCESS_SLEEP_TIME_IN_MILLIS);
+        //         this.refreshIntervalId = setInterval(async () => {
+        //             if (this.isStopped) {
+        //                 log.info("Preventing refresh, shutting down");
+        //             } else if (this.currentlyFetching) {
+        //                 log.info("Skipping refresh, still processing previous one");
+        //             } else {
+        //                 await this._fetch();
+        //             }
+        //         }, this.propertyManager.refreshFrequencyInMillis);
+        //     }
+        // }, CHECK_OAUTH_ACCESS_SLEEP_TIME_IN_MILLIS);
     }
 
     stop() {
@@ -330,7 +326,7 @@ class Fetcher {
 
                 /**
                  * Goodreads returns "\n" when no books are found for a particular page.
-                 * This shouldn't happen for Wishlists since Goodreads tells us the total
+                 * this shouldn't happen for Wishlists since Goodreads tells us the total
                  * number of pages in each response, but just in case a race condition occurred
                  *
                  * For example, this would happen if a user removed a wishlist book just before
@@ -431,7 +427,6 @@ class Fetcher {
      * minor edge cases).
      */
     async _processGoodreadsBook(goodreadsBook, context) {
-        const THIS = this; // for referencing root-instance "this" in promise context
         log.debug("Processing Goodreads book...");
 
         /**
@@ -488,7 +483,7 @@ class Fetcher {
         const QUERY = {
             _id: book._id
         };
-        let existingBook = await THIS.mongoClient.findBook(QUERY);
+        let existingBook = await this.mongoClient.findBook(QUERY);
         if (existingBook) {
             let changesDetected = bookUtil.changesDetected(book, existingBook);
             if (changesDetected) {
@@ -498,17 +493,17 @@ class Fetcher {
                 // Merge and save the updated book to MongoDB
                 let updatedBook = bookUtil.merge(book, existingBook);
                 try {
-                    await THIS.mongoClient.upsertBook(updatedBook);
+                    await this.mongoClient.upsertBook(updatedBook);
                 } catch (error) {
                     log.error("MongoClient.upsertBook", error);
                 }
 
                 // Notify the backend server of the update
-                if (THIS.backendSocket) {
+                if (this.backendSocket) {
                     if (book.inWishlist) {
-                        THIS.backendSocket.emit(socketCodes.UPDATED_BOOK_IN_WISHLIST, book);
+                        this.backendSocket.emit(socketCodes.UPDATED_BOOK_IN_WISHLIST, book);
                     } else {
-                        THIS.backendSocket.emit(socketCodes.UPDATED_BOOK_IN_COLLECTION, book);
+                        this.backendSocket.emit(socketCodes.UPDATED_BOOK_IN_COLLECTION, book);
                     }
                 }
             } else {
@@ -531,12 +526,12 @@ class Fetcher {
             const CUSTOM_HEADERS = {};
             try {
                 await util.downloadImage(book.coverArtUrl,
-                                         THIS.userAgent,
+                                         this.userAgent,
                                          CUSTOM_HEADERS,
                                          path.join(paths.FRONTEND_BOOK_CACHE_DIRECTORY_PATH, book._id),
                                          BOOK_COVER_ART_FILE_NAME,
-                                         THIS.propertyManager,
-                                         THIS._respectRateLimits);
+                                         this.propertyManager,
+                                         this._respectRateLimits);
                 book.coverArtFilePath = path.join(FRONTEND_BOOK_COVER_ART_DIRECTORY_PATH, book._id, BOOK_COVER_ART_FILE_NAME);
             } catch(error) {
                 log.error("util.downloadImage", error);
@@ -545,17 +540,17 @@ class Fetcher {
             // 2. Save the completed book to MongoDB
             try {
                 log.info("Saving book to Mongo, title=" + book.title + ", id=" + book._id);
-                await THIS.mongoClient.upsertBook(book);
+                await this.mongoClient.upsertBook(book);
             } catch(error) {
                 log.error("MongoClient.upsertBook", error);
             }
 
             // 3. Notify the backend server of the new book
-            if (THIS.backendSocket) {
+            if (this.backendSocket) {
                 if (book.inWishlist) {
-                    THIS.backendSocket.emit(socketCodes.ADDED_BOOK_TO_WISHLIST, book);
+                    this.backendSocket.emit(socketCodes.ADDED_BOOK_TO_WISHLIST, book);
                 } else {
-                    THIS.backendSocket.emit(socketCodes.ADDED_BOOK_TO_COLLECTION, book);
+                    this.backendSocket.emit(socketCodes.ADDED_BOOK_TO_COLLECTION, book);
                 }
             }
         }
@@ -565,7 +560,7 @@ class Fetcher {
         if (url.indexOf("openlibrary") != -1) {
             if (remainingOpenLibraryCalls <= 1) {
                 log.info("Rate limit met for Open Library, sleeping for the required " + OPEN_LIBRARY_RATE_LIMIT_REFRESH_TIME_IN_SECONDS + " seconds before resuming...");
-                await util.sleepForMinutes(OPEN_LIBRARY_RATE_LIMIT_REFRESH_TIME_IN_SECONDS).then(function(){});
+                await util.sleepForMinutes(OPEN_LIBRARY_RATE_LIMIT_REFRESH_TIME_IN_SECONDS);
                 remainingOpenLibraryCalls = OPEN_LIBRARY_RATE_LIMIT;
             }
         }

@@ -20,12 +20,9 @@
                 "title"
             ]
         };
-
         sortByTitle = function(book1, book2) {
-            return book1.title.localeCompare(book2.title);
+            return book1.sortTitle.localeCompare(book2.sortTitle);
         };
-
-        let socket = io.connect();
 
         /**
          * Default to hidden, otherwise we'll temporarily "flash" it on screen even if
@@ -51,7 +48,7 @@
                     if (!this.searchString) {
                         return this.books.sort(sortByTitle);
                     } else {
-                        return fuse.search(this.searchString).sort(sortByTitle);
+                        return fuse.search(this.searchString).map((wrapper) => wrapper.item).sort(sortByTitle);
                     }
                 }
             },
@@ -65,10 +62,11 @@
             bufferedSearchString = event.srcElement.value.trim();
             setTimeout(function() {
                 booksApp.searchString = bufferedSearchString;
-            }, 250);
+            }, 200);
         };
 
-        socket.on("connect", function() {
+        let socket = io.connect();
+        socket.on("connect", () => {
             /**
              * So we don't have the collection flash when status changes.
              */

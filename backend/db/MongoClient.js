@@ -46,33 +46,31 @@ class MongoClient {
      */
 
     connect() {
-        const THIS = this; // For referencing root-instance "this" in promises
         log.debug("Connecting to Mongo...");
         let mongoServerUrl = "mongodb://" + this.propertyManager.mongoHost + ":" + this.propertyManager.mongoPort + "/" + this.propertyManager.mongoDbName;
-        return new Promise(function(resolve, reject) {
+        return new Promise((resolve, reject) => {
             mongodb.MongoClient.connect(
                 mongoServerUrl,
                 {
                     useNewUrlParser: true,
                     useUnifiedTopology: true
                 }
-            ).then(function(connection) {
-                log.info("Connection to Mongo server at " + THIS.propertyManager.mongoHost + ":" + THIS.propertyManager.mongoPort + " established");
-                THIS.connection = connection;
-                THIS.mongo = connection.db(THIS.propertyManager.mongoDbName);
+            ).then((connection) => {
+                log.info("Connection to Mongo server at " + this.propertyManager.mongoHost + ":" + this.propertyManager.mongoPort + " established");
+                this.connection = connection;
+                this.mongo = connection.db(this.propertyManager.mongoDbName);
                 resolve();
-            }).catch(function(error) {
+            }).catch((error) => {
                 reject(Error(error));
             });
         });
     }
 
     close() {
-        const THIS = this; // For referencing root-instance "this" in promises
         log.debug("Closing Mongo connection...");
-        return new Promise(function(resolve, reject) {
-            if (THIS.connection) {
-                THIS.connection.close();
+        return new Promise((resolve, reject) => {
+            if (this.connection) {
+                this.connection.close();
                 log.info("Closed Mongo connection");
             } else {
                 log.warn("Connection already closed");

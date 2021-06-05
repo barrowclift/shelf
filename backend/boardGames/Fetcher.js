@@ -4,9 +4,10 @@
 // ------------
 // External
 let BoardGameGeek = require("bgg"); // "bgg" is the BoardGameGeek API 2 Library
-let htmlEntityCoder = require("he");
+let htmlEntities = require("he");
 let path = require("path");
 let socketIo = require("socket.io-client");
+let sharp = require("sharp");
 // Local
 let BoardGameBuilder = require("./Builder");
 let boardGameUtil = require("./util");
@@ -78,8 +79,6 @@ class Fetcher {
     async start() {
         log.info("Starting...");
 
-        const THIS = this; // For referencing root-instance "this" in promise context
-
         // Initial startup (always run fetch as soon as possible on start() call!)
         await this._fetch();
         // For initial startup ONLY, notify the backend server when the fetch has completed
@@ -87,13 +86,13 @@ class Fetcher {
             this.backendSocket.emit(socketCodes.INITIAL_BOARD_GAME_COLLECTION_IN_PROGRESS, false);
         }
 
-        this.refreshIntervalId = setInterval(async function() {
-            if (THIS.isStopping) {
+        this.refreshIntervalId = setInterval(async () => {
+            if (this.isStopping) {
                 log.info("Preventing sync, shutting down");
-            } else if (THIS.currentlyFetching) {
+            } else if (this.currentlyFetching) {
                 log.info("Skipping refresh, still processing previous one");
             } else {
-                await THIS._fetch();
+                await this._fetch();
             }
         }, this.propertyManager.refreshFrequencyInMillis);
     }
@@ -167,7 +166,7 @@ class Fetcher {
                     log.error("_processBoardGameCollection", "Received null response from BoardGameGeek client")
                     break;
                 } else if ("errors" in results) {
-                    log.error("processBoardGameCollection", results.errors.error.message);
+                    log.error("_processBoardGameCollection", results.errors.error.message);
                     break;
                 } else if ("message" in results && results["message"].includes("Please try again later for access")) {
                     // If we receive a "message" field back, we need to wait briefly and try again
@@ -264,7 +263,6 @@ class Fetcher {
     }
 
     async _getBoardGameCollection() {
-        const THIS = this; // for referencing root-instance "this" in promise context
         log.debug("Fetching BoardGameGeek collection");
 
         let query = {
@@ -404,7 +402,6 @@ class Fetcher {
     }
 
     async _getBoardGameWishlist() {
-        const THIS = this; // for referencing root-instance "this" in promise context
         log.debug("Fetching BoardGameGeek wishlist");
 
         let query = {
@@ -435,7 +432,6 @@ class Fetcher {
      * the same (with some minor edge cases)
      */
     async _processBggBoardGame(bggBoardGame, context) {
-        const THIS = this; // for referencing root-instance "this" in promise context
         log.debug("Processing BoardGameGeek board game...");
 
         /**
@@ -446,8 +442,11 @@ class Fetcher {
 
         // Required & expected fields
         boardGameBuilder.setId(bggBoardGame.objectid);
-        boardGameBuilder.setCoverArtUrl(bggBoardGame.image);
-        let decodedTitle = htmlEntityCoder.decode(bggBoardGame.name["$t"]);
+        let decodedCoverArtUrl = htmlEntities.decode(bggBoardGame.image);
+        decodedCoverArtUrl = decodedCoverArtUrl.replace("&&#35;40;", "(");
+        decodedCoverArtUrl = decodedCoverArtUrl.replace("&&#35;41;", ")");
+        boardGameBuilder.setCoverArtUrl(decodedCoverArtUrl);
+        let decodedTitle = htmlEntities.decode(bggBoardGame.name["$t"]);
         boardGameBuilder.setTitle(decodedTitle);
         boardGameBuilder.setYearPublished(bggBoardGame.yearpublished);
 
@@ -466,7 +465,7 @@ class Fetcher {
         const QUERY = {
             _id: boardGame._id
         };
-        let existingBoardGame = await THIS.mongoClient.findBoardGame(QUERY);
+        let existingBoardGame = await this.mongoClient.findBoardGame(QUERY);
         if (existingBoardGame) {
             let changesDetected = boardGameUtil.changesDetected(boardGame, existingBoardGame);
             if (changesDetected) {
@@ -476,17 +475,17 @@ class Fetcher {
                 // Merge and save the updated board game to MongoDB
                 let updatedBoardGame = boardGameUtil.merge(boardGame, existingBoardGame);
                 try {
-                    await THIS.mongoClient.upsertBoardGame(updatedBoardGame);
+                    await this.mongoClient.upsertBoardGame(updatedBoardGame);
                 } catch (error) {
                     log.error("MongoClient.upsertBoardGame", error);
                 }
 
                 // Notify the backend server of the update
-                if (THIS.backendSocket) {
+                if (this.backendSocket) {
                     if (boardGame.inWishlist) {
-                        THIS.backendSocket.emit(socketCodes.UPDATED_BOARD_GAME_IN_WISHLIST, boardGame);
+                        this.backendSocket.emit(socketCodes.UPDATED_BOARD_GAME_IN_WISHLIST, boardGame);
                     } else {
-                        THIS.backendSocket.emit(socketCodes.UPDATED_BOARD_GAME_IN_COLLECTION, boardGame);
+                        this.backendSocket.emit(socketCodes.UPDATED_BOARD_GAME_IN_COLLECTION, boardGame);
                     }
                 }
             } else {
@@ -507,32 +506,43 @@ class Fetcher {
             const CUSTOM_HEADERS = {};
             const RESPECT_RATE_LIMITS_METHOD = null;
             try {
-                await util.downloadImage(boardGame.covertArtUrl,
-                                         THIS.userAgent,
+                await util.downloadImage(boardGame.coverArtUrl,
+                                         this.userAgent,
                                          CUSTOM_HEADERS,
                                          path.join(paths.FRONTEND_BOARD_GAME_CACHE_DIRECTORY_PATH, boardGame._id),
                                          BOARD_GAME_COVER_ART_FILE_NAME,
-                                         THIS.propertyManager,
+                                         this.propertyManager,
                                          RESPECT_RATE_LIMITS_METHOD);
                 boardGame.coverArtFilePath = path.join(FRONTEND_BOARD_GAME_COVER_ART_DIRECTORY_PATH, boardGame._id, BOARD_GAME_COVER_ART_FILE_NAME);
             } catch(error) {
                 log.error("util.downloadImage", error);
             }
 
+            try {
+                const image = sharp(`${paths.FRONTEND_STATIC_DIRECTORY_PATH}${boardGame.coverArtFilePath}`);
+                const stats = await image.stats();
+                boardGame.primaryColor = stats.dominant;
+
+                const metadata = await image.metadata();
+                boardGame.ratio = metadata.width / metadata.height;
+            } catch (error) {
+                log.error("sharp.stats", error);
+            }
+
             // 2. Save the completed board game to MongoDB
             try {
                 log.info("Saving board game to Mongo, title=" + boardGame.title + ", id=" + boardGame._id);
-                await THIS.mongoClient.upsertBoardGame(boardGame);
+                await this.mongoClient.upsertBoardGame(boardGame);
             } catch(error) {
                 log.error("MongoClient.upsertBoardGame", error);
             }
 
             // 3. Notify the backend server of the new board game
-            if (THIS.backendSocket) {
+            if (this.backendSocket) {
                 if (boardGame.inWishlist) {
-                    THIS.backendSocket.emit(socketCodes.ADDED_BOARD_GAME_TO_WISHLIST, boardGame);
+                    this.backendSocket.emit(socketCodes.ADDED_BOARD_GAME_TO_WISHLIST, boardGame);
                 } else {
-                    THIS.backendSocket.emit(socketCodes.ADDED_BOARD_GAME_TO_COLLECTION, boardGame);
+                    this.backendSocket.emit(socketCodes.ADDED_BOARD_GAME_TO_COLLECTION, boardGame);
                 }
             }
         }

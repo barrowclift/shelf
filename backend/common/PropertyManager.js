@@ -30,18 +30,19 @@ const DEFAULT_MONGO_DBNAME = "shelfDb";
 const DEFAULT_MONGO_HOST = "localhost";
 const DEFAULT_MONGO_PORT = 27017;
 
-// Discogs
+// Records
 const DEFAULT_RECORD_SHELF_ENABLED = true;
 const DEFAULT_DISCOGS_USER_ID = null;
 const DEFAULT_DISCOGS_USER_TOKEN = null;
 
-// Goodreads
+// Books
 const DEFAULT_BOOK_SHELF_ENABLED = true;
 const DEFAULT_GOODREADS_USER_ID = null;
 const DEFAULT_GOODREADS_KEY = null;
 const DEFAULT_GOODREADS_TOKEN = null;
+const DEFAULT_EXPERIMENTAL_BOX_RENDERING = false;
 
-// BoardGameGeek
+// Board Games
 const DEFAULT_BOARD_GAME_SHELF_ENABLED = true;
 const DEFAULT_BOARD_GAME_GEEK_USER_ID = null;
 
@@ -89,20 +90,21 @@ class PropertyManager {
         this.mongoDbName = DEFAULT_MONGO_DBNAME;
         this.mongoPort = DEFAULT_MONGO_PORT;
 
-        // Discogs
+        // Records
         this.recordShelfEnabled = DEFAULT_RECORD_SHELF_ENABLED;
         this.discogsUserId = DEFAULT_DISCOGS_USER_ID;
         this.discogsUserToken = DEFAULT_DISCOGS_USER_TOKEN;
 
-        // Goodreads
+        // Books
         this.bookShelfEnabled = DEFAULT_BOOK_SHELF_ENABLED;
         this.goodreadsUserId = DEFAULT_GOODREADS_USER_ID;
         this.goodreadsKey = DEFAULT_GOODREADS_KEY;
         this.goodreadsToken = DEFAULT_GOODREADS_TOKEN;
 
-        // BoardGameGeek
+        // Board Games
         this.boardGameShelfEnabled = DEFAULT_BOARD_GAME_SHELF_ENABLED;
         this.boardGameGeekUserId = DEFAULT_BOARD_GAME_GEEK_USER_ID;
+        this.experimentalBoardGameBoxRendering = DEFAULT_EXPERIMENTAL_BOX_RENDERING;
     }
 
     /**
@@ -180,7 +182,7 @@ class PropertyManager {
             this.booksCollectionName = properties["mongodb.collection.books.name"];
         }
 
-        // Discogs
+        // Records
 
         if ("record.shelf.enabled" in properties) {
             this.recordShelfEnabled = properties["record.shelf.enabled"];
@@ -192,7 +194,7 @@ class PropertyManager {
             this.discogsUserToken = properties["discogs.user.token"];
         }
 
-        // Goodreads
+        // Books
 
         if ("book.shelf.enabled" in properties) {
             this.bookShelfEnabled = properties["book.shelf.enabled"];
@@ -207,13 +209,16 @@ class PropertyManager {
             this.goodreadsToken = properties["goodreads.user.token"];
         }
 
-        // BoardGameGeek
+        // Board Games
 
         if ("boardgame.shelf.enabled" in properties) {
             this.boardGameShelfEnabled = properties["boardgame.shelf.enabled"];
         }
         if ("boardgamegeek.user.id" in properties) {
             this.boardGameGeekUserId = properties["boardgamegeek.user.id"];
+        }
+        if ("experimental.boardgame.box.rendering" in properties) {
+            this.experimentalBoardGameBoxRendering = properties["experimental.boardgame.box.rendering"];
         }
 
         this.backendUrl = this.backendUrl + ":" + this.backendPort;
@@ -227,10 +232,8 @@ class PropertyManager {
      */
 
     async _load(filename) {
-        const THIS = this; // For referencing root-instance "this" in promise context
-
         // The properties package does not currently support promises natively
-        return new Promise(function(resolve, reject) {
+        return new Promise((resolve, reject) => {
             nodePropertyLoader.parse(filename,
                                      { path: true },
                                      function(error, properties) {
