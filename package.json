@@ -3,6 +3,7 @@
   "version": "2.0.0",
   "description": "Beautifully display your library on the Internet",
   "main": "admin/main.js",
+  "private": true,
   "repository": {
     "type": "git",
     "url": "https://github.com/barrowclift/shelf.git"
@@ -18,17 +19,16 @@
     "disconnect": "^1.2.1",
     "express": "^4.17.1",
     "fs": "0.0.1-security",
-    "fuse.js": "^3.4.6",
-    "goodreads-api-node": "0.0.10",
+    "fuse.js": "^6.4.6",
     "he": "^1.2.0",
-    "liquidjs": "^9.6.2",
+    "liquidjs": "^9.20.1",
     "mongodb": "^3.5.2",
     "ncp": "^2.0.0",
+    "node-fetch": "^2.6.1",
     "npm": "^6.13.6",
     "properties": "^1.2.1",
-    "request-promise": "^4.2.5",
-    "sharp": "^0.24.0",
-    "socket.io": "^2.3.0",
-    "vue": "^2.6.11"
+    "sharp": "^0.27.0",
+    "socket.io": "^3.1.0",
+    "socket.io-client": "^3.1.0"
   }
 }

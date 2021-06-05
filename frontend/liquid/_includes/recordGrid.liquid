@@ -18,5 +18,5 @@
     <ul v-else>
         {% include "record" %}
     </ul>
-    <p v-if="searchString === ''" class="stats"><span>${ records.length } record<span v-if="records.length != 1">s</span> in {{ submenu }}</span></p>
+    <p v-if="searchString === ''" class="stats"><span>${ records.length } Record<span v-if="records.length != 1">s</span> in <span style="text-transform: capitalize;">{{ submenu }}</span></span></p>
 </div>

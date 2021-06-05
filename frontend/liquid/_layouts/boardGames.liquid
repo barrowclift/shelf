@@ -19,12 +19,9 @@
                 "title"
             ]
         };
-
         sortByTitle = function(boardGame1, boardGame2) {
-            return boardGame1.title.localeCompare(boardGame2.title);
+            return boardGame1.sortTitle.localeCompare(boardGame2.sortTitle);
         };
-
-        let socket = io.connect();
 
         /**
          * Default to hidden, otherwise we'll temporarily "flash" it on screen even if
@@ -43,14 +40,15 @@
                 "searchString": "",
                 initialLoadInProgress: false,
                 documentReady: false,
-                loadingSpinnerVisible: false,
+                loadingSpinnerVisible: true,
+                experimentalBoardGameBoxRendering: false
             },
             computed: {
                 sortedAndSearchedBoardGames() {
                     if (!this.searchString) {
                         return this.boardGames.sort(sortByTitle);
                     } else {
-                        return fuse.search(this.searchString).sort(sortByTitle);
+                        return fuse.search(this.searchString).map((wrapper) => wrapper.item).sort(sortByTitle);
                     }
                 }
             },
@@ -64,32 +62,177 @@
             bufferedSearchString = event.srcElement.value.trim();
             setTimeout(function() {
                 boardGamesApp.searchString = bufferedSearchString;
-            }, 1000);
+            }, 200);
         }
 
-        socket.on("connect", function() {
+        /**
+         * Thank you George, https://gmigdos.wordpress.com/2011/01/13/javascript-convert-rgb-values-to-hsl/
+         */
+        function RGBtoHSL({ r, g, b }) {
+            var r1 = r / 255;
+            var g1 = g / 255;
+            var b1 = b / 255;
+         
+            var maxColor = Math.max(r1,g1,b1);
+            var minColor = Math.min(r1,g1,b1);
+            // Calculate L:
+            var L = (maxColor + minColor) / 2 ;
+            var S = 0;
+            var H = 0;
+            if (maxColor != minColor) {
+                // Calculate S:
+                if (L < 0.5) {
+                    S = (maxColor - minColor) / (maxColor + minColor);
+                }else{
+                    S = (maxColor - minColor) / (2.0 - maxColor - minColor);
+                }
+                // Calculate H:
+                if (r1 == maxColor) {
+                    H = (g1 - b1) / (maxColor - minColor);
+                }else if(g1 == maxColor){
+                    H = 2.0 + (b1 - r1) / (maxColor - minColor);
+                }else{
+                    H = 4.0 + (r1 - g1) / (maxColor - minColor);
+                }
+            }
+         
+            L = L * 100;
+            S = S * 100;
+            H = H * 60;
+            if (H < 0) {
+                H += 360;
+            }
+            return { h: H, s: S, l: L };
+        }
+        function getDimensionTier(dimension, ratio) {
+            if (ratio > 1) {
+                return {
+                    baseDimension: dimension,
+                    perspective: dimension * 4,
+
+                    height: dimension / ratio,
+                    width: dimension,
+                    shadowWidth: dimension - 0.2,
+                    halfSmallestSide: (dimension / ratio) / 2,
+                    xCenterOfSmallestSide: dimension - ((dimension / ratio) / 2),
+                    xShadowCenterOfSmallestSide: dimension - ((dimension / ratio) / 2) - 0.08,
+                    xCenterWidth: dimension / 2,
+                    xCenterBaseDimension: dimension / 2,
+                    xShadowCenterBaseDimension: (dimension / 2) + 1,
+                    xWidthStart: (dimension / 2) - ((dimension / ratio) / 2),
+                    xWidthEnd: (dimension / 2) + ((dimension / 2) - ((dimension / ratio) / 2)),
+                    xPadding: 0,
+                    yPadding: dimension - (dimension / ratio)
+                };
+            } else if (ratio < 1) {
+                return {
+                    baseDimension: dimension,
+                    perspective: dimension * 4,
+
+                    height: dimension,
+                    width: dimension * ratio,
+                    shadowWidth: (dimension * ratio) - 0.2,
+                    halfSmallestSide: (dimension * ratio) / 2,
+                    xCenterOfSmallestSide: dimension - ((dimension * ratio) / 2),
+                    xShadowCenterOfSmallestSide: dimension - ((dimension * ratio) / 2) - 0.08,
+                    xCenterWidth: (dimension * ratio) / 2,
+                    xCenterBaseDimension: dimension / 2,
+                    xShadowCenterBaseDimension: (dimension / 2) + 1,
+                    xWidthStart: (dimension / 2) - ((dimension * ratio) / 2),
+                    xWidthEnd: ((dimension * ratio) / 2) + ((dimension / 2) - ((dimension * ratio) / 2)),
+                    xPadding: (dimension / 2) - ((dimension * ratio) / 2),
+                    yPadding: 0
+                };
+            } else {
+                return {
+                    baseDimension: dimension,
+                    perspective: dimension * 4,
+
+                    height: dimension,
+                    width: dimension,
+                    shadowWidth: dimension - 0.2,
+                    halfSmallestSide: dimension / 2,
+                    xCenterOfSmallestSide: dimension - (dimension / 2),
+                    xShadowCenterOfSmallestSide: dimension - (dimension / 2) - 0.08,
+                    xCenterWidth: dimension / 2,
+                    xCenterBaseDimension: dimension / 2,
+                    xShadowCenterBaseDimension: (dimension / 2) + 1,
+                    xWidthStart: 0,
+                    xWidthEnd: dimension / 2,
+                    xPadding: 0,
+                    yPadding: 0
+                };
+            }
+        }
+        // 41vw tiny
+        // 29vw mobile
+        // 21vw tablet
+        // 11em large
+        function construct3dBox(boardGame) {
+            const largeDimension = 11; // 11em
+            const mediumDimension = 21; // 21vw
+            const smallDimension = 29; // 29vw
+            const tinyDimension = 41; // 41vw
+            boardGame.dimensionTiers = {
+                large: getDimensionTier(largeDimension, boardGame.ratio),
+                medium: getDimensionTier(mediumDimension, boardGame.ratio),
+                small: getDimensionTier(smallDimension, boardGame.ratio),
+                tiny: getDimensionTier(tinyDimension, boardGame.ratio)
+            }
+
+            // TODO what if null? Define and use fallback color.
+            const frontAndBackHsl = RGBtoHSL(boardGame.primaryColor);
+            const leftAndRightHsl = { h: frontAndBackHsl.h, s: frontAndBackHsl.s, l: Math.max(0, frontAndBackHsl.l - 6) };
+            const bottomHsl = { h: frontAndBackHsl.h, s: frontAndBackHsl.s, l: Math.max(0, frontAndBackHsl.l - 20) };
+            const topHsl = { h: frontAndBackHsl.h, s: frontAndBackHsl.s, l: Math.max(0, frontAndBackHsl.l + 5) };
+            boardGame.styles = {
+                frontAndBackHsl: `hsl(${frontAndBackHsl.h}, ${frontAndBackHsl.s}%, ${frontAndBackHsl.l}%)`,
+                leftAndRightHsl: `hsl(${leftAndRightHsl.h}, ${leftAndRightHsl.s}%, ${leftAndRightHsl.l}%)`,
+                bottomHsl: `hsl(${bottomHsl.h}, ${bottomHsl.s}%, ${bottomHsl.l}%)`,
+                topHsl: `hsl(${topHsl.h}, ${topHsl.s}%, ${topHsl.l}%)`
+            }
+            return boardGame;
+        }
+
+        let socket = io.connect();
+        socket.on("connect", () => {
             /**
              * So we don't have the collection flash when status changes.
              */
             let isFirstCheck = true;
             socket.emit("{{ initialFetchInProgress }}");
-            socket.on("{{ initialFetchInProgress }}", function(inProgress) {
+            socket.on("{{ initialFetchInProgress }}", function({ inProgress, experimentalBoardGameBoxRendering }) {
+                boardGamesApp.experimentalBoardGameBoxRendering = experimentalBoardGameBoxRendering;
+                if (boardGamesApp.experimentalBoardGameBoxRendering) {
+                    boardGamesApp.loadingSpinnerVisible = true;
+                } else {
+                    boardGamesApp.loadingSpinnerVisible = inProgress;
+                }
+
                 if (isFirstCheck) {
                     boardGamesApp.initialLoadInProgress = inProgress;
                 }
-                boardGamesApp.loadingSpinnerVisible = inProgress;
                 isFirstCheck = false;
+
+                boardGamesApp.documentReady = !inProgress;
             });
 
             // Request the server send the client the "board games" cache
             socket.emit("{{ getAllItems }}");
             socket.on("{{ getAllItems }}", function(data) {
                 if (boardGames.length == 0 && data && data.length > 0) {
-                    for (let boardGame of data) {
-                        boardGames.push(boardGame);
-                    }
+                    data.forEach((item) => {
+                        if (boardGamesApp.experimentalBoardGameBoxRendering) {
+                            boardGames.push(construct3dBox(item));
+                        } else {
+                            boardGames.push(item);
+                        }
+                    });
+                    
                     fuse = new Fuse(boardGames, fuzzySearchOptions);
-                    boardGamesApp.documentReady = true;
+                    if (boardGamesApp.experimentalBoardGameBoxRendering) {
+                        boardGamesApp.loadingSpinnerVisible = false;
+                    }
                 }
             });
 

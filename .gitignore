@@ -64,3 +64,5 @@ typings/
 /backend/config.json
 /fix
 package-lock.json
+/frontend/static/scripts/bundle.js
+/frontend/static/scripts/bundle.js.LICENSE.txt

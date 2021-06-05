@@ -5,8 +5,8 @@
 // External
 let filesystem = require("fs").promises;
 let path = require("path");
-let request = require("request-promise");
-let sharp = require('sharp');
+let fetch = require("node-fetch");
+let sharp = require("sharp");
 // Local
 let Logger = require("../common/Logger");
 
@@ -32,17 +32,6 @@ function _sleepForSeconds(seconds) {
 }
 
 /**
- * Forcing request-promise to return both the image AND the headers (in case
- * an image is not returned as expected)
- */
-exports.includeHeaders = function(body, response, resolveWithFullResponse) {
-    return {
-        headers: response.headers,
-        data: body
-    };
-};
-
-/**
  * Returns the "sortable" version of the provided text. Currently, this just
  * strips the preceeding "The ", if present.
  */
@@ -61,31 +50,27 @@ exports.downloadImage = async function(url,
                                        destinationFilename,
                                        propertyManager,
                                        rateLimiter) {
-    let data = {
+    let options = {
         method: "GET",
-        encoding: "binary",
-        url: url,
         timeout: propertyManager.connectionTimeoutInMillis,
-        transform: exports.includeHeaders
+        headers: {}
     };
     if (headers
      && headers instanceof Object
      && !Array.isArray(headers)) {
-        data.headers = headers;
-    } else {
-        data.headers = {};
+        options.headers = headers;
     }
-    data.headers["User-Agent"] = userAgent;
+    options.headers["User-Agent"] = userAgent;
 
     // Sending the request
     log.info("Downloading image from " + url + "...");
-    let response = await request.get(data);
+    let response = await fetch(url, options);
     if (rateLimiter instanceof Function) {
         await rateLimiter(response.headers, url);
     }
 
-    if ("content-type" in response.headers
-     && response.headers["content-type"].includes("text/html")) {
+    if (response.headers.get("content-type")
+     && response.headers.get("content-type").includes("text/html")) {
         throw "Unexpected server response, got HTML document instead of image";
     }
 
@@ -121,7 +106,7 @@ exports.downloadImage = async function(url,
             withoutEnlargement: false
         };
 
-        let imageBuffer = Buffer.from(response.data, "binary" );
+        let imageBuffer = await response.buffer();
         try {
             await sharp(imageBuffer).resize(propertyManager.maxArtSize, propertyManager.maxArtSize, artOptions).toFile(filepath);
             log.info("Downloaded image, destination=" + filepath + ", content-type=" + response.headers["content-type"] + ", content-length=" + response.headers["content-length"]);

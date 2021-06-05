@@ -20,7 +20,6 @@
                 "title"
             ]
         };
-
         sortByArtistNameAndYearOfRelease = function(recordA, recordB) {
             if (recordA.sortArtist === recordB.sortArtist) {
                 if (recordA.yearOfOriginalRelease < recordB.yearOfOriginalRelease) {
@@ -34,8 +33,6 @@
                 return recordA.sortArtist.localeCompare(recordB.sortArtist);
             }
         };
-
-        let socket = io.connect();
 
         /**
          * Default to hidden, otherwise we'll temporarily "flash" it on screen even if
@@ -61,7 +58,7 @@
                     if (!this.searchString) {
                         return this.records.sort(sortByArtistNameAndYearOfRelease);
                     } else {
-                        return fuse.search(this.searchString).sort(sortByArtistNameAndYearOfRelease);
+                        return fuse.search(this.searchString).map((wrapper) => wrapper.item).sort(sortByArtistNameAndYearOfRelease);
                     }
                 }
             },
@@ -82,12 +79,13 @@
         let bufferedSearchString = "";
         document.getElementById("search").oninput = function(event) {
             bufferedSearchString = event.srcElement.value.trim();
-            setTimeout(function() {
+            // setTimeout(function() {
                 recordsApp.searchString = bufferedSearchString;
-            }, 250);
+            // }, 200);
         };
 
-        socket.on("connect", function() {
+        let socket = io.connect();
+        socket.on("connect", () => {
             let isFirstCheck = true;
             socket.emit("{{ initialFetchInProgress }}");
             socket.on("{{ initialFetchInProgress }}", function(inProgress) {

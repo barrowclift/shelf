@@ -5,8 +5,8 @@
 // External
 let Discogs = require("disconnect").Client; // "disconnect" is the Discogs API 2.0 Library
 let Fuse = require("fuse.js"); // For fuzzy searching
-let request = require("request-promise");
 let path = require("path");
+let fetch = require("node-fetch");
 let socketIo = require("socket.io-client");
 // Local
 let Logger = require("../common/Logger");
@@ -91,8 +91,6 @@ class Fetcher {
     async start() {
         log.info("Starting...");
 
-        const THIS = this; // For referencing root-instance "this" in promise context
-
         // Initial startup (always run fetch as soon as possible on start() call!)
         await this._fetch();
         // For initial startup ONLY, notify the backend server when the fetch has completed
@@ -100,13 +98,13 @@ class Fetcher {
             this.backendSocket.emit(socketCodes.INITIAL_RECORD_COLLECTION_IN_PROGRESS, false);
         }
 
-        this.refreshIntervalId = setInterval(async function() {
-            if (THIS.isStopping) {
+        this.refreshIntervalId = setInterval(async () => {
+            if (this.isStopping) {
                 log.info("Preventing refresh, shutting down");
-            } else if (THIS.currentlyFetching) {
+            } else if (this.currentlyFetching) {
                 log.info("Skipping refresh, still processing previous one");
             } else {
-                await THIS._fetch();
+                await this._fetch();
             }
         }, this.propertyManager.refreshFrequencyInMillis);
     }
@@ -232,7 +230,6 @@ class Fetcher {
     }
 
     async _getDiscogsCollectionPage(pageNumber) {
-        const THIS = this; // for referencing root-instance "this" in promise context
         log.debug("Fetching discogs collection, page=" + pageNumber);
 
         let discogsSettings = {
@@ -241,8 +238,8 @@ class Fetcher {
 
         let data = null;
         try {
-            let collection = THIS.discogsClient.user().collection();
-            data = await collection.getReleases(THIS.discogsUserId,
+            let collection = this.discogsClient.user().collection();
+            data = await collection.getReleases(this.discogsUserId,
                                                 ALL_RECORDS_FOLDER_ID,
                                                 discogsSettings);
             log.debug("Got records from discogs collection, page=" + pageNumber);
@@ -330,7 +327,6 @@ class Fetcher {
     }
 
     async _getDiscogsWishlistPage(pageNumber) {
-        const THIS = this; // for referencing root-instance "this" in promise context
         log.debug("Fetching discogs wishlist, page=" + pageNumber);
 
         let discogsSettings = {
@@ -339,8 +335,8 @@ class Fetcher {
 
         let data = null;
         try {
-            let wishlist = THIS.discogsClient.user().wantlist();
-            data = await wishlist.getReleases(THIS.discogsUserId,
+            let wishlist = this.discogsClient.user().wantlist();
+            data = await wishlist.getReleases(this.discogsUserId,
                                               discogsSettings);
             log.debug("Got records from discogs wishlist, page=" + pageNumber);
         } catch (error) {
@@ -356,7 +352,6 @@ class Fetcher {
      * (with some minor edge cases)
      */
     async _processDiscogsRecord(discogsRecord, context) {
-        const THIS = this; // for referencing root-instance "this" in promise context
         log.debug("Processing Discogs record...");
 
         /**
@@ -399,7 +394,7 @@ class Fetcher {
             title: record.title,
             artist: record.artist
         };
-        let existingRecord = await THIS.mongoClient.findRecord(QUERY);
+        let existingRecord = await this.mongoClient.findRecord(QUERY);
         if (existingRecord) {
             let changesDetected = recordUtil.changesDetected(record, existingRecord);
             if (changesDetected) {
@@ -409,17 +404,17 @@ class Fetcher {
                 // Merge and save the updated record to MongoDB
                 let updatedRecord = recordUtil.merge(record, existingRecord);
                 try {
-                    await THIS.mongoClient.upsertRecord(updatedRecord);
+                    await this.mongoClient.upsertRecord(updatedRecord);
                 } catch (error) {
                     log.error("MongoClient.upsertRecord", error);
                 }
 
                 // Notify the backend server of the update
-                if (THIS.backendSocket) {
+                if (this.backendSocket) {
                     if (record.inWishlist) {
-                        THIS.backendSocket.emit(socketCodes.UPDATED_RECORD_IN_WISHLIST, record);
+                        this.backendSocket.emit(socketCodes.UPDATED_RECORD_IN_WISHLIST, record);
                     } else {
-                        THIS.backendSocket.emit(socketCodes.UPDATED_RECORD_IN_COLLECTION, record);
+                        this.backendSocket.emit(socketCodes.UPDATED_RECORD_IN_COLLECTION, record);
                     }
                 }
             } else {
@@ -439,16 +434,16 @@ class Fetcher {
              * happens occasionally).
              */
             let customHeaders = {
-                Authorization: THIS.discogsAuthorization
+                Authorization: this.discogsAuthorization
             };
             try {
                 await util.downloadImage(record.discogsAlbumArtUrl,
-                                         THIS.userAgent,
+                                         this.userAgent,
                                          customHeaders,
                                          path.join(paths.FRONTEND_RECORD_CACHE_DIRECTORY_PATH, record._id),
                                          DISCOGS_ALBUM_ART_FILE_NAME,
-                                         THIS.propertyManager,
-                                         THIS._respectRateLimits);
+                                         this.propertyManager,
+                                         this._respectRateLimits);
                 record.discogsAlbumArtFilePath = path.join(FRONTEND_ALBUM_ART_DIRECTORY_PATH, record._id, DISCOGS_ALBUM_ART_FILE_NAME);
             } catch(error) {
                 log.error("util.downloadImage", error);
@@ -457,7 +452,7 @@ class Fetcher {
             // 2. Transform the Discogs resource URL to a true discogs page link for the record
             try {
                 let resourceUrl = discogsRecord.basic_information.resource_url;
-                let discogsRecordUrl = await THIS._getDiscogsRecordUrlFromResourceUrl(resourceUrl);
+                let discogsRecordUrl = await this._getDiscogsRecordUrlFromResourceUrl(resourceUrl);
                 record.discogsUrl = discogsRecordUrl;
             } catch(error) {
                 log.error("_getDiscogsRecordUrlFromResourceUrl", error);
@@ -465,7 +460,7 @@ class Fetcher {
 
             // 3. Fetch the iTunes album art and year of original release (but need to get the iTunes record url first)
             try {
-                let [largeAlbumArtUrl, yearOfOriginalRelease] = await THIS._getiTunesAlbumArtAndYearOfOriginalRelease(record.title, record.artist);
+                let [largeAlbumArtUrl, yearOfOriginalRelease] = await this._getiTunesAlbumArtAndYearOfOriginalRelease(record.title, record.artist);
                 // If not set, couldn't find the record in iTunes (but not an error per-say)
                 if (largeAlbumArtUrl || yearOfOriginalRelease) {
                     /**
@@ -487,12 +482,12 @@ class Fetcher {
                         let destinationDirectoryPath = path.join(paths.FRONTEND_RECORD_CACHE_DIRECTORY_PATH, record._id);
                         try {
                             await util.downloadImage(largeAlbumArtUrl,
-                                                     THIS.userAgent,
+                                                     this.userAgent,
                                                      CUSTOM_HEADERS,
                                                      destinationDirectoryPath,
                                                      ITUNES_ALBUM_ART_FILE_NAME,
-                                                     THIS.propertyManager.connectionTimeoutInMillis,
-                                                     THIS._respectRateLimits);
+                                                     this.propertyManager.connectionTimeoutInMillis,
+                                                     this._respectRateLimits);
                             record.iTunesAlbumArtFilePath = path.join(FRONTEND_ALBUM_ART_DIRECTORY_PATH, record._id, ITUNES_ALBUM_ART_FILE_NAME);
                         } catch(error) {
                             log.error("util.downloadImage", error);
@@ -506,55 +501,51 @@ class Fetcher {
             // 4. Save the completed record to MongoDB
             try {
                 log.info("Saving record to Mongo, title=" + record.title + ", id=" + record._id);
-                await THIS.mongoClient.upsertRecord(record);
+                await this.mongoClient.upsertRecord(record);
             } catch(error) {
                 log.error("MongoClient.upsertRecord", error);
             }
 
             // 5. Notify the backend server of the new record
-            if (THIS.backendSocket) {
+            if (this.backendSocket) {
                 if (record.inWishlist) {
-                    THIS.backendSocket.emit(socketCodes.ADDED_RECORD_TO_WISHLIST, record);
+                    this.backendSocket.emit(socketCodes.ADDED_RECORD_TO_WISHLIST, record);
                 } else {
-                    THIS.backendSocket.emit(socketCodes.ADDED_RECORD_TO_COLLECTION, record);
+                    this.backendSocket.emit(socketCodes.ADDED_RECORD_TO_COLLECTION, record);
                 }
             }
         }
     }
 
     async _getDiscogsRecordUrlFromResourceUrl(resourceUrl) {
-        const THIS = this; // for referencing root-instance "this" in promise context
-
         // Building the request
-        let data = {
+        let options = {
             method: "GET",
-            url: resourceUrl,
             timeout: this.propertyManager.connectionTimeoutInMillis,
             headers: {
                 "User-Agent": this.userAgent,
                 "Authorization": this.discogsAuthorization,
                 "Content-Type": "application/json"
-            },
-            transform: util.includeHeaders,
-            json: true
+            }
         };
 
         // Sending the request
         log.debug("Getting discogs record link using resourceUrl=" + resourceUrl + "...");
-        let response = await request.get(data);
-        await THIS._respectRateLimits(response.headers).then(function(){});
+        let response = await fetch(resourceUrl, options);
+        await this._respectRateLimits(response.headers);
 
-        if (!response.headers["content-type"].includes("application/json")) {
-            throw "Unexpected server response, got Content-Type=" + response.headers["content-type"] + " instead of \"application/json\"";
+        if (!response.headers.get("content-type")) {
+            throw "Unknown server response type received, Content-Type not specified";
+        } else if (!response.headers.get("content-type").includes("application/json")) {
+            throw "Unexpected server response, got Content-Type=" + response.headers.get("content-type") + " instead of \"application/json\"";
         } else {
-            log.debug("Got discogsRecordUrl=" + response.data.uri);
-            return response.data.uri;
+            const responseJson = await response.json();
+            log.debug("Got discogsRecordUrl=" + responseJson.uri);
+            return responseJson.uri;
         }
     }
 
     async _getiTunesAlbumArtAndYearOfOriginalRelease(title, artist) {
-        const THIS = this; // for referencing root-instance "this" in promise context
-
         // Building the request
         if (overrides.records.searchAssistance.titles[title]) {
             title = overrides.records.searchAssistance.titles[title];
@@ -563,31 +554,31 @@ class Fetcher {
             artist = overrides.records.searchAssistance.artists[artist];
         }
 
-        let data = {
+        const url = this._createiTunesSearchUrl(title + " " + artist);
+        let options = {
             method: "GET",
-            url: this._createiTunesSearchUrl(title + " " + artist),
             timeout: 5000,
             headers: {
                 "User-Agent": this.userAgent,
                 "Content-Type": "application/json"
-            },
-            transform: util.includeHeaders,
-            json: true
+            }
         };
 
         // Sending the request
-        log.debug("Searching iTunes for title=" + title + ", url=" + data.url + "...");
-        THIS.remainingItunesCalls--;
-        let response = await request.get(data);
-        await THIS._respectRateLimits(response.headers).then(function(){});
+        log.debug("Searching iTunes for title=" + title + ", url=" + url + "...");
+        this.remainingItunesCalls--;
+        let response = await fetch(url, options);
+        await this._respectRateLimits(response.headers);
 
-        if (!response.headers["content-type"].includes("text/javascript")) {
-            throw "Unexpected server response, got Content-Type=" + response.headers["content-type"] + " instead of \"text/javascript\"";
+        if (!response.headers.get("content-type")) {
+            throw "Unknown server response type received, Content-Type not specified";
+        } else if (!response.headers.get("content-type").includes("text/javascript")) {
+            throw "Unexpected server response, got Content-Type=" + response.headers.get("content-type") + " instead of \"text/javascript\"";
         } else {
             let largeAlbumArtUrl = null;
             let yearOfOriginalRelease = null;
 
-            let records = response.data;
+            let records = await response.json();
             if (records.resultCount == 0) {
                 log.warn("No results from iTunes for title=" + title);
             } else {
@@ -615,17 +606,23 @@ class Fetcher {
                 let fuse = new Fuse(records.results, fuzzySearchOptions);
                 let results = fuse.search(artist);
 
-                fuzzySearchOptions.keys = ["collectionName"];
+                fuzzySearchOptions.keys = ["item.collectionName"];
                 fuse = new Fuse(results, fuzzySearchOptions);
                 results = fuse.search(title);
 
-                if (results.length == 0) {
-                    log.warn("Got results back from iTunes for title=" + title + ", but they were all deemed false positives by Fuse.js:");
-                    log.warn(records);
+                /**
+                 * No search matches = []
+                 * Single search match = { item: { ... } }
+                 * More than one search match = [ { item : { ... } }, { item : { ... } }, ... ]
+                 */
+                if (results.constructor === Array && results.length === 0) {
+                    log.warn("_getiTunesAlbumArtAndYearOfOriginalRelease", "Got results back from iTunes for title=" + title + ", but they were all deemed false positives by Fuse.js:");
+                    log.warn("_getiTunesAlbumArtAndYearOfOriginalRelease", records);
                 } else {
-                    largeAlbumArtUrl = results[0].artworkUrl100;
-                    largeAlbumArtUrl = largeAlbumArtUrl.replace("100x100", THIS.propertyManager.maxArtSize + "x" + THIS.propertyManager.maxArtSize);
-                    yearOfOriginalRelease = new Date(results[0].releaseDate).getUTCFullYear();
+                    const result = results.constructor === Array ? results[0].item.item : results.item.item;
+                    largeAlbumArtUrl = result.artworkUrl100;
+                    largeAlbumArtUrl = largeAlbumArtUrl.replace("100x100", this.propertyManager.maxArtSize + "x" + this.propertyManager.maxArtSize);
+                    yearOfOriginalRelease = new Date(result.releaseDate).getUTCFullYear();
                 }
             }
             // Using ES6 array deconstructing to return two variables in the resolve
@@ -634,15 +631,15 @@ class Fetcher {
     }
 
     /**
-     * For the given responseHeader JSON, will determine if fetch should
+     * For the given responseHeaders JSON, will determine if fetch should
      * cease for a cool-off time for any and all rate limits to be respected
      * and refreshed. Currently, the two rate limits being respected are:
      *
      *   - iTunes (~20 calls per minute max)
      *   - Discogs (~70 calls per minute max)
      */
-    async _respectRateLimits(responseHeader, url) {
-        if (responseHeader) {
+    async _respectRateLimits(responseHeaders, url) {
+        if (responseHeaders) {
             /**
              * iTunes doesn't expose API rate limits in the header or
              * response body at all, but rest assured, they exist. In
@@ -654,10 +651,10 @@ class Fetcher {
              * Thus, we must keep a running count of the number of calls
              * made to iTunes and rest for 1 minute before continuing.
              */
-            if ("x-apple-orig-url" in responseHeader) {
+            if (responseHeaders.get("x-apple-orig-url")) {
                 if (this.remainingItunesCalls <= 1) {
                     log.warn("Rate limit met for iTunes, sleeping for the required " + ITUNES_RATE_LIMIT_REFRESH_TIME_IN_SECONDS + " seconds before resuming...");
-                    await util.sleepForSeconds(ITUNES_RATE_LIMIT_REFRESH_TIME_IN_SECONDS).then(function(){});
+                    await util.sleepForSeconds(ITUNES_RATE_LIMIT_REFRESH_TIME_IN_SECONDS);
                     this.remainingItunesCalls = ITUNES_RATE_LIMIT;
                 }
             }
@@ -671,10 +668,10 @@ class Fetcher {
              * rate limits will almost surely not be an issue. But just in
              * case...
              */
-            if ("x-discogs-ratelimit" in responseHeader) {
-                if (responseHeader["x-discogs-ratelimit-remaining"] <= 1) {
+            if (responseHeaders.get("x-discogs-ratelimit")) {
+                if (responseHeaders.get("x-discogs-ratelimit") <= 1) {
                     log.warn("Rate limit met for Discogs, sleeping for the required " + DISCOGS_RATE_LIMIT_REFRESH_TIME_IN_SECONDS + " seconds before resuming...");
-                    await util.sleepForSeconds(DISCOGS_RATE_LIMIT_REFRESH_TIME_IN_SECONDS).then(function(){});
+                    await util.sleepForSeconds(DISCOGS_RATE_LIMIT_REFRESH_TIME_IN_SECONDS);
                 }
             }
         }

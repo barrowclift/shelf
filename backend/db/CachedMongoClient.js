@@ -3,10 +3,12 @@
 // DEPENDENCIES
 // ------------
 // External
+let sharp = require("sharp");
 
 // Local
 let Logger = require("../common/Logger");
 let MongoClient = require("./MongoClient");
+let paths = require("../common/paths");
 
 
 // CONSTANTS
@@ -414,6 +416,29 @@ class CachedMongoClient {
         let boardGamesCache = await this.mongoClient.find(this.propertyManager.boardGamesCollectionName, {});
         if (boardGamesCache) {
             for (let boardGame of boardGamesCache) {
+                if (this.propertyManager.experimentalBoardGameBoxRendering) {
+                    try {
+                        const image = sharp(`${paths.FRONTEND_STATIC_DIRECTORY_PATH}${boardGame.coverArtFilePath}`);
+                        const stats = await image.stats();
+                        const primaryColor = stats.dominant;
+
+                        const metadata = await image.metadata();
+                        const ratio = metadata.width / metadata.height;
+                        
+                        if (boardGame.primaryColor !== primaryColor || boardGame.ratio !== ratio) {
+                            boardGame.primaryColor = primaryColor;
+                            boardGame.ratio = ratio;
+                            try {
+                                await this.upsertBoardGame(boardGame);
+                            } catch (error) {
+                                log.error("MongoClient.upsertBoardGame", error);
+                            }
+                        }
+                    } catch (error) {
+                        log.error("sharp.stats", error);
+                    }
+                }
+
                 if (boardGame.inWishlist) {
                     this.boardGameWishlistCache.set(boardGame._id, boardGame);
                 } else {

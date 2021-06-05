@@ -6,7 +6,6 @@
 let path = require("path");
 // Local
 let BoardGameFetcher = require("../backend/boardGames/Fetcher");
-let BookFetcher = require("../backend/books/Fetcher");
 let CachedMongoClient = require("../backend/db/CachedMongoClient");
 let Logger = require("../backend/common/Logger");
 let paths = require("../backend/common/paths");
@@ -59,10 +58,6 @@ async function startup() {
     if (propertyManager.boardGameShelfEnabled) {
         boardGameFetcher = new BoardGameFetcher(propertyManager, mongoClient);
         boardGameFetcher.start();
-    }
-    if (propertyManager.bookShelfEnabled) {
-        bookFetcher = new BookFetcher(propertyManager, mongoClient, server.getFrontendExpressApp());
-        bookFetcher.start();
     }
 }
 

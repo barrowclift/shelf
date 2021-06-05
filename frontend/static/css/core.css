@@ -12,7 +12,6 @@ TABLE OF CONTENTS:
         - Navbar
     * Elements
         - Entities
-        - Tabs
         - Collection Statistics
         - Footer
         - Vanilla Tilt
@@ -219,7 +218,6 @@ p, ol, ul, ol li, ul li {
 .writing li,
 .writing ul,
 .writing ol {
-    margin-bottom: 0;
     margin-top: 0;
 }
 
@@ -250,7 +248,9 @@ menu ul,
 /* ----- LOGO ----- */
 
 .logo {
-    height: 0.75em;
+    margin-top: -5px;
+    vertical-align: middle;
+    height: 0.8em;
     margin-right: -.25em;
     display: inline-block;
 }
@@ -341,8 +341,7 @@ menu {
         padding-top: 0;
         margin-bottom: 1em;
         height: auto;
-    }
-        menu.sub ul a {
+    }        menu.sub ul a {
             width: 46vw;
             margin-left: 0;
             margin-right: 0;
@@ -357,9 +356,10 @@ menu {
 
 /* ----- ENTITIES ----- */
 
+/* Standard entity rendering (flat) */
 .records,
-.books,
-.board-games {
+.board-games,
+.books {
     width: 100%;
     text-align: center;
     margin: 0 auto;
@@ -367,15 +367,37 @@ menu {
     margin-bottom: 2em;
 }
 .record,
-.boardGame,
+.board-game,
 .book {
-    width: 43vw;
-    max-width: 40.25em;
+    width: 41vw;
     display: inline-block;
     margin: 0.325em 0.73125em;
 }
+.record a .wrapper,
+.record a:active .wrapper,
+.record a:visited .wrapper,
+.record a:focus .wrapper,
+.board-game a .wrapper,
+.board-game a:active .wrapper,
+.board-game a:visited .wrapper,
+.board-game a:focus .wrapper,
+.book a .wrapper,
+.book a:active .wrapper,
+.book a:visited .wrapper,
+.book a:focus .wrapper,
+.record .art,
+.board-game .art,
+.book .art {
+    max-height: 41vw;
+    max-width: 41vw;
+}
+.record a .wrapper,
+.board-game a .wrapper,
+.book a .wrapper {
+    display: inline-block;
+}
     .record .wrapper .center,
-    .boardGame .wrapper .center,
+    .board-game .wrapper .center,
     .book .wrapper .center {
         display: inline-block;
         text-align: center;
@@ -386,7 +408,7 @@ menu {
         transform: perspective(1000px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1);
     }
     .record .metadata,
-    .boardGame .metadata,
+    .board-game .metadata,
     .book .metadata {
         display: inline-block;
         font-size: 0.833em;
@@ -395,13 +417,13 @@ menu {
     .record .metadata {
         text-align: left;
     }
-    .boardGame .metadata,
+    .board-game .metadata,
     .book .metadata {
         text-align: center;
     }
         .record .metadata .title,
         .record .metadata .artist,
-        .boardGame .metadata .title,
+        .board-game .metadata .title,
         .book .metadata .title,
         .book .metadata .author {
             white-space: nowrap;
@@ -409,52 +431,123 @@ menu {
             text-overflow: ellipsis;
         }
         .record .metadata .title,
-        .boardGame .metadata .title,
+        .board-game .metadata .title,
         .book .metadata .title {
             font-weight: bold;
         }
         .record .metadata .artist,
         .book .metadata .author {
             font-size: 0.833em;
-            margin-top: -0.5em;
+            margin-top: -0.75em;
         }
     .record .art,
-    .boardGame .art,
+    .board-game .art,
     .book .art {
         border: 1px solid black;
         border-radius: 0.25em;
         display: block;
-        max-width: 43vw;
-        max-height: 43vw;
         width: auto;
         height: auto;
     }
 
-/* ----- TABS ----- */
+/* Experimental 3D entity rendering */
+.box-wrapper {
+  perspective: 44em;
+  perspective-origin: 50% 5.5em;
+}
+.box-faces {
+  position: relative;
+  width: 11em;
+  transform-style: preserve-3d;
+}
+.box-faces p {
+  padding: 40px 0;
+}
+.box-face {
+  outline: 1px solid rgba(0, 0, 0, 0.375);
+  position: absolute;
+  width: 11em;
+  height: 11em;
+  box-shadow: inset 0px 0px 5.5em rgba(255, 255, 255, 0.05);
+}
+    .box-face--is-back {
+      transform: translateZ(-5.5em) rotateY(180deg);
+    }
+    .box-face--is-top {
+      transform: rotateX(-90deg) translateY(-5.5em);
+      transform-origin: top center;
+    }
+    .box-face--is-bottom {
+      transform: rotateX(90deg) translateY(5.5em);
+      transform-origin: bottom center;
+    }
+    .box-face--is-right {
+      transform: rotateY(-270deg) translateX(5.5em);
+      transform-origin: top right;
+    }
+    .box-face--is-left {
+      transform: rotateY(270deg) translateX(-5.5em);
+      transform-origin: center left;
+    }
+    .box-face--is-front {
+      transform: translateZ(5.5em);
+    }
+.box-faces,
+.box-shadow {
+    transform: rotateX(-12deg) rotateY(12deg) translateX(-1em);
+}
+.board-game a:hover .box-faces,
+.board-game a:hover .box-shadow {
+    transform: rotateX(0deg) rotateY(0deg) translateY(1.3em);
+}
+.shadow-wrapper {
+  perspective: 44em;
+  perspective-origin: 50% 5.5em;
+}
+.box-shadow {
+  position: relative;
+  width: 11em;
+  transform-style: preserve-3d;
+}
+.box-shadow div {
+  position: absolute;
+  width: 11em;
+  height: 11em;
+  top: 0px;
+  opacity: 0.98;
+  box-shadow: 0px 0px 5.5em #000;
+  transform: rotateX(90deg) translateY(5.5em);
+  transform-origin: bottom center;
+}
+/*https://davidwalsh.name/css-cube*/
+/* Uncomment to have box auto-rotate */
+/*@keyframes spin {
+    from { transform: rotateY(0) rotateX(360deg); }
+    to { transform: rotateY(360deg) rotateX(0); }
+}
 
-.tab-control {
-    margin-bottom: 2.6em;
+.box-faces {
+    animation: spin 10s infinite linear;
+}*/
+/*.box-faces {
+    transform: rotateY(80deg) rotateX(25deg);
+}*/
+
+.threeDBoxes {
+    margin-right: -0.5em;
 }
-.tab {
-    width: 31.5vw;
-    display: inline-block;
-    margin-left: -2px;
-    margin-right: -2px;
-    border-radius: 0em;
-    cursor: pointer;
-    margin-bottom: 0;
+.board-game.threeDBox {
+    margin: 0.325em 0.975em;
 }
-.tab:focus {
-    outline: 0;
+.board-game {
+    margin: 0.325em 0.73125em;
 }
-    .tab.left {
-        border-top-left-radius: 0.25em;
-        border-bottom-left-radius: 0.25em;
-    }
-    .tab.right {
-        border-top-right-radius: 0.25em;
-        border-bottom-right-radius: 0.25em;
-    }
+.shadow-and-box-wrapper {
+    transform: scale(0.875);
+}
+.board-game .metadata {
+    margin-top: 2.75em;
+}
 
 /* ----- COLLECTION STATISTICS ----- */
 
@@ -465,30 +558,6 @@ menu {
     .stats > span {
         display: inline-block;
         position: relative;
-    }
-    .stats > span:before,
-    .stats > span:after {
-        content: "";
-        position: absolute;
-        height: 1px;
-        top: 0.5em;
-        width: 15vw;
-    }
-    .stats > span:before {
-        right: 100%;
-        margin-right: 1em;
-        background-image: -webkit-gradient(linear, 0 0, 100% 0, from(#F8F9FA), to(#E9ECEF));
-        background-image: -webkit-linear-gradient(left, #F8F9FA, #E9ECEF);
-        background-image: -moz-linear-gradient(left, #F8F9FA, #E9ECEF);
-        background-image: -o-linear-gradient(left, #F8F9FA, #E9ECEF);
-    }
-    .stats > span:after {
-        left: 100%;
-        margin-left: 1em;
-        background-image: -webkit-gradient(linear, 0 0, 100% 0, from(#E9ECEF), to(#F8F9FA));
-        background-image: -webkit-linear-gradient(left, #E9ECEF, #F8F9FA);
-        background-image: -moz-linear-gradient(left, #E9ECEF, #F8F9FA);
-        background-image: -o-linear-gradient(left, #E9ECEF, #F8F9FA);
     }
 
 /* ----- FOOTER ----- */
@@ -513,8 +582,8 @@ menu {
     }
     #footer li {
         display: inline-block;
-        margin-left: 5vw;
-        margin-right: 5vw;
+        margin-left: 1em;
+        margin-right: 1em;
         width: auto;
         margin-bottom: 0;
     }
@@ -522,13 +591,26 @@ menu {
 /* ----- VANILLA TILT ----- */
 
 .js-tilt-glare-inner {
+    /**
+     * For abnormally sized items (like board games), the glare hover "spills"
+     * beyond the actual item itself to fill the complete square cell the
+     * given item has to display. We can prevent this by making each item an
+     * inline-display element, but this unfortunately breaks the JS tilt glare
+     * size determination, resulting in teeny tiny glare squares.
+     *
+     * To correct this, have it be x2 the size of the item in question. Since
+     * the glare is already overflow:hidden, this is sufficient to achieve the
+     * desired effect.
+     */
+    width: 200% !important;
+    height: 200% !important;
+
     background-image: linear-gradient(0deg, rgba(248, 249, 250, 0) 0%, rgb(248, 249, 250) 100%) !important;
 }
 .js-tilt-glare {
-    width: 102% !important;
-    height: 102% !important;
-    top: -1px !important;
-    left: -1px !important;
+    left: 1px !important;
+    height: calc(100% - 2px) !important;
+    top: 1px !important
 }
 .js-tilt-glare ~ .js-tilt-glare {
     display: none;
@@ -639,7 +721,7 @@ button,
     .spinner:after {
         animation: loading .5s infinite linear,
                    colors 4s ease-in-out infinite;
-        border: .15rem solid #868E96;
+        border: .15rem solid rgba(0, 0, 0, 0.4);
         border-radius: 50%;
         border-right-color: transparent;
         border-top-color: transparent;
@@ -715,50 +797,6 @@ button,
     transition: transform 0.5s;
 }
 
-@-webkit-keyframes fadeInUp {
-    from {
-        opacity: 0;
-        -webkit-transform: translate3d(0, 100%, 0);
-        transform: translate3d(0, 100%, 0);
-    }
-    to {
-        opacity: 1;
-        -webkit-transform: translate3d(0, 0, 0);
-        transform: translate3d(0, 0, 0);
-    }
-}
-@keyframes fadeInUp {
-    from {
-        opacity: 0;
-        -webkit-transform: translate3d(0, 100%, 0);
-        transform: translate3d(0, 100%, 0);
-    }
-    to {
-        opacity: 1;
-        -webkit-transform: translate3d(0, 0, 0);
-        transform: translate3d(0, 0, 0);
-    }
-}
-@-webkit-keyframes fadeOutDown {
-    from {
-        opacity: 1;
-    }
-    to {
-        opacity: 0;
-        -webkit-transform: translate3d(0, 100%, 0);
-        transform: translate3d(0, 100%, 0);
-    }
-}
-@keyframes fadeOutDown {
-    from {
-        opacity: 1;
-    }
-    to {
-        opacity: 0;
-        -webkit-transform: translate3d(0, 100%, 0);
-        transform: translate3d(0, 100%, 0);
-    }
-}
 @-webkit-keyframes fadeInDown {
     from {
         opacity: 0;
@@ -836,7 +874,7 @@ button,
 }
 
 .record a .metadata,
-.boardGame a .metadata,
+.board-game a .metadata,
 .book a .metadata,
 menu a {
     transition: color 0.25s ease, background-color 0.25s ease, border 0.25s ease;
@@ -852,12 +890,22 @@ button,
     transition: color 0.25s ease;
 }
 .record .art,
-.boardGame .art,
-.book .art {
-    transition: box-shadow 338ms ease, transform 338ms ease;
+.board-game .art,
+.book .art,
+.js-tilt-glare {
+    transition: transform 338ms ease;
+}
+.board-game .box-faces,
+.board-game .box-shadow,
+.board-game .box-wrapper,
+.board-game a:hover .metadata .title {
+    transition: transform 338ms ease;
+}
+.board-game a .metadata {
+    transition: color 0.25s ease, background-color 0.25s ease, border 0.25s ease, transform 338ms ease;
 }
 menu input {
-    transition: border-color 0.25s ease;
+    transition: border-color 0.25s ease, background-color 0.25s ease;
 }
 
 
@@ -865,87 +913,97 @@ menu input {
 
 
 menu {
-    background-color: white;
-    border-bottom-color: rgba(199, 199, 199, 0.5);
+    background-color: transparent;
+    border-bottom-color: rgba(0, 0, 0, 0.1);
 }
 menu ul a.active,
 menu ul a.active:hover {
-    background-color: #F1F3F5;
-    border-color: #E9ECEF;
+    background-color: rgba(0, 0, 0, 0.0375);
+    border-color: rgba(0, 0, 0, 0.05);
 }
 menu ul a:hover {
-    border-color: #E9ECEF;
-}
-menu h3 a:active,
-menu h3 a:hover {
-    color: #868E96;
+    border-color: rgba(0, 0, 0, 0.1);
 }
 menu input {
-    border-color: #C7C7C7;
+    border-color: rgba(0, 0, 0, 0.1);
+}
+menu input:hover {
+    background-color: rgba(0, 0, 0, 0.0175);
 }
 menu input:focus {
-    border-color: #495057;
+    background-color: rgba(0, 0, 0, 0.0375);
+    border-color: rgba(0, 0, 0, 0.1);
 }
 menu.sub ul a.active,
 menu.sub ul a.active:hover {
-    background-color: #E9ECEF;
-    border-color: #DEE2E6;
+    background-color: rgba(0, 0, 0, 0.0375);
+    border-color: rgba(0, 0, 0, 0.05);
 }
 menu.sub ul a:hover {
-    border-color: #DEE2E6;
+    border-color: rgba(0, 0, 0, 0.1);
 }
 html {
-    color: #212529;
-    background-color: #F8F9FA;
+    color: rgba(0, 0, 0, 0.95);
+    background-color: #FFFFFF;
 }
 .record a .metadata,
-.boardGame a .metadata,
+.board-game a .metadata,
 .book a .metadata,
 menu a {
-    color: #212529;
+    color: rgba(0, 0, 0, 0.95);
 }
 .record a .wrapper,
 .record a:active .wrapper,
 .record a:visited .wrapper,
 .record a:focus .wrapper,
-.boardGame a .wrapper,
-.boardGame a:active .wrapper,
-.boardGame a:visited .wrapper,
-.boardGame a:focus .wrapper,
+.board-game a .wrapper,
+.board-game a:active .wrapper,
+.board-game a:visited .wrapper,
+.board-game a:focus .wrapper,
 .book a .wrapper,
 .book a:active .wrapper,
 .book a:visited .wrapper,
 .book a:focus .wrapper,
 .record .art,
-.boardGame .art,
+.board-game .art,
 .book .art {
     color: transparent;
     border-color: #ECECEC;
 }
+.record .shadow,
+.book .shadow,
+.board-game .shadow {
+    box-shadow: rgba(0, 0, 0, 0.06) 0px 0px 7.6px, rgba(0, 0, 0, 0.043) 0px 0px 18.3px, rgba(0, 0, 0, 0.035) 0px 0px 34.4px, rgba(0, 0, 0, 0.03) 0px 0px 61.4px, rgba(0, 0, 0, 0.024) 0px 0px 114.9px, rgba(0, 0, 0, 0.016) 0px 0px 275px;
+}
+.record a:hover .shadow,
+.book a:hover .shadow,
+.board-game a:hover .shadow {
+    box-shadow: 0 1.4px 7.6px rgba(0, 0, 0, 0.02), 0 3.3px 18.3px rgba(0, 0, 0, 0.028), 0 6.3px 34.4px rgba(0, 0, 0, 0.035), 0 11.2px 61.4px rgba(0, 0, 0, 0.042), 0 20.9px 114.9px rgba(0, 0, 0, 0.05), 0 50px 275px rgba(0, 0, 0, 0.07);
+}
 .record .metadata .artist,
 .book .metadata .author {
-    color: #868E96;
+    color: rgba(0, 0, 0, 0.4);
 }
 .writing a {
-    color: #339AF0;
-}
-.writing a:hover,
-.writing a:active {
-    color: #1C7ED6;
-}
+        color: #408AE6;
+    }
+    .writing a:active,
+    .writing a:hover {
+        color: #0067E6;
+    }
 .stats {
-    color: #CED4DA;
+    color: rgba(0, 0, 0, 0.2);
 }
 #footer {
-    color: #868E96;
-    border-color: rgba(199, 199, 199, 0.5);
+    color: rgba(0, 0, 0, 0.4);
+    border-color: rgba(0, 0, 0, 0.1);
 }
     #footer a {
-        color: #868E96;
+        color: rgba(0, 0, 0, 0.4);
     }
     #footer a:hover,
     #footer a:active {
-        color: #1C7ED6;
+        color: black;
     }
 .tab {
     background: linear-gradient(#FA5252, #E03131);
@@ -954,10 +1012,10 @@ menu a {
         background: linear-gradient(#C92A2A, #F03E3E);
     }
 ::selection {
-    background: #E9ECEF;
+    background: rgba(0, 0, 0, 0.1);
 }
 ::-moz-selection {
-    background: #E9ECEF;
+    background: rgba(0, 0, 0, 0.1);
 }
 button,
 .button {
@@ -1005,15 +1063,6 @@ button,
     display: block;
 }
 
-.github-logo {
-    width: 1.3em;
-    margin-bottom: -0.25em;
-    padding-right: 0.25em;
-}
-    .github-logo .fill-color {
-        fill: rgba(0, 0, 0, 0.5);
-    }
-
 .progress-text,
 #errorMessage {
     margin: 0 auto;
@@ -1021,7 +1070,7 @@ button,
     display: inline-block;
     text-align: center;
     width: auto;
-    color: #868E96;
+    color: rgba(0, 0, 0, 0.4);
     padding-left: 2rem;
     padding-right: 2rem;
 }
@@ -1051,34 +1100,14 @@ button,
             height: 7.25em;
         }
     .record .metadata,
-    .boardGame .metadata,
+    .board-game .metadata,
     .book .metadata {
         font-size: 0.75em;
     }
-        .record .metadata .artist,
-        .book .metadata .author {
-            margin-top: -0.75em;
-        }
-}
-@media (min-width: 414px) {
-    .record,
-    .boardGame,
-    .book {
-        width: 27vw;
-    }
-        .record .art,
-        .record .wrapper,
-        .boardGame .art,
-        .boardGame .wrapper,
-        .book .art,
-        .book .wrapper {
-            max-height: 27vw;
-            max-width: 27vw;
-        }
 }
 @media (max-width: 524px) {
     .record .wrapper,
-    .boardGame .wrapper,
+    .board-game .wrapper,
     .book .wrapper {
         display: inline;
     }
@@ -1086,7 +1115,6 @@ button,
         display: none !important;
     }
 }
-/* Medium devices (iPads) */
 @media (min-width: 525px) {
     .sk-fading-circle {
         margin: 100px auto;
@@ -1097,37 +1125,45 @@ button,
     }
 
     .record,
-    .boardGame,
+    .board-game,
     .book {
         width: 29vw;
     }
-    .record,
-    .boardGame {
-        margin: 0.75vw 1.6875vw;
+    .record a .wrapper,
+    .record a:active .wrapper,
+    .record a:visited .wrapper,
+    .record a:focus .wrapper,
+    .board-game a .wrapper,
+    .board-game a:active .wrapper,
+    .board-game a:visited .wrapper,
+    .board-game a:focus .wrapper,
+    .book a .wrapper,
+    .book a:active .wrapper,
+    .book a:visited .wrapper,
+    .book a:focus .wrapper,
+    .record .art,
+    .board-game .art,
+    .book .art {
+        max-height: 29vw;
+        max-width: 29vw;
     }
         .record a:hover .art,
-        .boardGame a:hover .art,
-        .book a:hover .art {
+        .board-game a:hover .art,
+        .book a:hover .art,
+        .record a:hover .js-tilt-glare,
+        .board-game a:hover .js-tilt-glare,
+        .book a:hover .js-tilt-glare {
             transform: scale(1.025);
         }
-        .record .art,
-        .record .wrapper,
-        .boardGame .art,
-        .boardGame .wrapper,
-        .book .art,
-        .book .wrapper {
-            max-height: 29vw;
-            max-width: 29vw;
+        .board-game a:hover .box-wrapper,
+        .board-game a:hover .metadata {
+            transform: scale(1.075);
         }
         .record .metadata,
-        .boardGame .metadata,
+        .board-game .metadata,
         .book .metadata {
             font-size: 0.75em;
         }
-            .record .metadata .artist,
-            .book .metadata .author {
-                margin-top: -0.75em;
-            }
 
     menu,
     menu.with-search-bar {
@@ -1183,9 +1219,11 @@ button,
     #footer {
         margin-top: -29px;
     }
+        #footer li {
+            margin-left: 5vw;
+            margin-right: 5vw;
+        }
 }
-
-/* Medium devices (iPads) */
 @media (min-width: 700px) {
     html {
         font-size: 19px;
@@ -1221,23 +1259,28 @@ button,
     }
 
     .record,
-    .boardGame,
+    .board-game,
     .book {
         width: 21vw;
     }
-    .record,
-    .boardGame {
-        margin: 0.75vw 1.6875vw;
+    .record a .wrapper,
+    .record a:active .wrapper,
+    .record a:visited .wrapper,
+    .record a:focus .wrapper,
+    .board-game a .wrapper,
+    .board-game a:active .wrapper,
+    .board-game a:visited .wrapper,
+    .board-game a:focus .wrapper,
+    .book a .wrapper,
+    .book a:active .wrapper,
+    .book a:visited .wrapper,
+    .book a:focus .wrapper,
+    .record .art,
+    .board-game .art,
+    .book .art {
+        max-height: 21vw;
+        max-width: 21vw;
     }
-        .record .art,
-        .record .wrapper,
-        .boardGame .art,
-        .boardGame .wrapper,
-        .book .art,
-        .book .wrapper {
-            max-height: 21vw;
-            max-width: 21vw;
-        }
 
     #footer {
         font-size: 0.833em;
@@ -1264,23 +1307,28 @@ button,
     }
 
     .record,
-    .boardGame {
-        margin: 0.325em 0.73125em;
-    }
-    .record,
-    .boardGame,
+    .board-game,
     .book {
         width: 11em;
     }
-        .record .art,
-        .record .wrapper,
-        .boardGame .art,
-        .boardGame .wrapper,
-        .book .art,
-        .book .wrapper {
-            max-height: 11em;
-            max-width: 11em;
-        }
+    .record a .wrapper,
+    .record a:active .wrapper,
+    .record a:visited .wrapper,
+    .record a:focus .wrapper,
+    .board-game a .wrapper,
+    .board-game a:active .wrapper,
+    .board-game a:visited .wrapper,
+    .board-game a:focus .wrapper,
+    .book a .wrapper,
+    .book a:active .wrapper,
+    .book a:visited .wrapper,
+    .book a:focus .wrapper,
+    .record .art,
+    .board-game .art,
+    .book .art {
+        max-width: 11em;
+        max-height: 11em;
+    }
 
     menu input {
         max-width: 20em;
@@ -1294,7 +1342,11 @@ button,
         height: 9em;
     }
         menu.with-search-bar {
-            height: 11.75em;
+            height: auto;
+            padding-bottom: 1em;
+        }
+        menu input {
+            float: none;
         }
         menu ul li {
             display: block;
@@ -1307,4 +1359,116 @@ button,
             width: 100%;
             padding: unset;
         }
+}
+
+@media (prefers-color-scheme: dark) {
+    html {
+        background-color: #1c1c1c;
+    }
+    .record a .metadata,
+    .board-game a .metadata,
+    .book a .metadata,
+    menu a,
+    html {
+        color: rgba(255, 255, 255, 0.85);
+    }
+    menu,
+    #footer {
+        background-color: transparent;
+        border-color: rgba(0, 0, 0, 0.375);
+    }
+    .spinner:after {
+        border-color: #212121;
+    }
+    .record .metadata .artist,
+    .book .metadata .author,
+    #footer,
+    #footer a,
+    .progress-text,
+    #errorMessage {
+        color: rgba(255, 255, 255, 0.55);
+    }
+    menu ul a.active,
+    menu ul a.active:hover,
+    menu ul a:hover {
+        border-color: rgba(255, 255, 255, 0.1);
+    }
+    menu.sub ul a.active,
+    menu.sub ul a.active:hover {
+        background-color: rgba(255, 255, 255, 0.05);
+        border-color: rgba(255, 255, 255, 0.05);
+    }
+    menu.sub ul a:hover {
+        border-color: rgba(255, 255, 255, 0.1);
+    }
+    ::selection {
+        background: rgba(255, 255, 255, 0.1);
+    }
+    ::-moz-selection {
+        background: rgba(255, 255, 255, 0.1);
+    }
+    .record a .wrapper,
+    .record a:active .wrapper,
+    .record a:visited .wrapper,
+    .record a:focus .wrapper,
+    .board-game a .wrapper,
+    .board-game a:active .wrapper,
+    .board-game a:visited .wrapper,
+    .board-game a:focus .wrapper,
+    .book a .wrapper,
+    .book a:active .wrapper,
+    .book a:visited .wrapper,
+    .book a:focus .wrapper,
+    .record .art,
+    .board-game .art,
+    .book .art {
+        border-color: #191919;
+    }
+    .js-tilt-glare {
+        opacity: 0.4;
+    }
+    .stats {
+        color: rgba(255, 255, 255, 0.275);
+    }
+    menu ul a.active,
+    menu ul a.active:hover {
+        background-color: rgba(255, 255, 255, 0.05);
+        border-color: rgba(255, 255, 255, 0.05);
+    }
+    menu h3 a:hover {
+        color:  white;
+    }
+    #footer a:hover,
+    #footer a:active {
+        color: white;
+    }
+    menu input {
+        color: rgba(255, 255, 255, 0.85);
+        background-color: transparent;
+        border-color: rgba(255, 255, 255, 0.1);
+    }
+    menu input:hover {
+        background-color: rgba(255, 255, 255, 0.025);
+    }
+    menu input:focus {
+        border-color: rgba(255, 255, 255, 0.05);
+        background-color: rgba(255, 255, 255, 0.05);
+    }
+    .writing a {
+        color: #408AE6;
+    }
+    .writing a:active,
+    .writing a:hover {
+        color: #73A6E6;
+    }
+    .record .shadow,
+    .book .shadow,
+    .board-game .shadow {
+        box-shadow: rgba(0, 0, 0, 0.12) 0px 0px 7.6px, rgba(0, 0, 0, 0.086) 0px 0px 18.3px, rgba(0, 0, 0, 0.07) 0px 0px 34.4px, rgba(0, 0, 0, 0.06) 0px 0px 61.4px, rgba(0, 0, 0, 0.048) 0px 0px 114.9px, rgba(0, 0, 0, 0.032) 0px 0px 275px;
+    }
+    .record a:hover .shadow,
+    .book a:hover .shadow,
+    .board-game a:hover .shadow {
+        box-shadow: 0 1.4px 7.6px rgba(0, 0, 0, 0.04), 0 3.3px 18.3px rgba(0, 0, 0, 0.056), 0 6.3px 34.4px rgba(0, 0, 0, 0.07), 0 11.2px 61.4px rgba(0, 0, 0, 0.084), 0 20.9px 114.9px rgba(0, 0, 0, 0.1), 0 50px 275px rgba(0, 0, 0, 0.14);
+    }
 }

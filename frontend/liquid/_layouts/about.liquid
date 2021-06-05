@@ -10,9 +10,13 @@
 
             <div id="browserSupported" class="content clearfix">
                 <div class="writing">
-                    <img class="logo-banner" src="images/logo/shelf.png" />
+                    <h1 style="margin-top:0;">
+                        <style>h1 .logo{margin-top:-8px;}</style>
+                        {% include "logo" %}
+                        <span>{{ siteTitle }}</span>
+                    </h1>
                     <p>This is {% if twitterHandle %}<a href="https://twitter.com/{{ twitterHandle }}">{{ name }}</a>{% else %}{{ name }}{% endif %}&rsquo;s library, proudly presented by Shelf.</p>
-<p>Shelf is an open source app for beautifully displaying your library on the Internet. Libraries are a physical representation of our interests&mdash;and by extension&mdash;our personalities. However, until now, those gorgious libraries have been locked away behind physical walls and cluttered catelog sites online. Shelf strives to break past the walls and ugly catelog sites to deliver the joy of sharing our libraries to everyone.</p>
+<p>Shelf is an open source app for beautifully displaying your library on the Internet. Libraries are a physical representation of our interests&mdash;and by extension&mdash;our personalities. However, until now, those gorgeous libraries remained locked behind physical walls or obfuscated by data-focused cataloging websites. Shelf strives to break past those walls and noisy catalogs to deliver a taste of the intimate joy in browsing physical libraries, right in your browser.</p>
                 </div>
             </div>
         </div>

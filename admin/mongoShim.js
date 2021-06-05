@@ -5,7 +5,6 @@
 // External
 let path = require("path");
 let Properties = require("properties");
-let request = require("request-promise");
 let socketIo = require("socket.io-client");
 // Local
 const SHELF_ROOT_DIRECTORY_PATH = path.join(__dirname, "..");
