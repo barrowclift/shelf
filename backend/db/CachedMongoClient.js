@@ -416,7 +416,7 @@ class CachedMongoClient {
         let boardGamesCache = await this.mongoClient.find(this.propertyManager.boardGamesCollectionName, {});
         if (boardGamesCache) {
             for (let boardGame of boardGamesCache) {
-                if (this.propertyManager.experimentalBoardGameBoxRendering) {
+                if (this.propertyManager.experimentalBoardGameBoxRendering && !("primaryColor" in boardGame)) {
                     try {
                         const image = sharp(`${paths.FRONTEND_STATIC_DIRECTORY_PATH}${boardGame.coverArtFilePath}`);
                         const stats = await image.stats();
