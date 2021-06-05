@@ -534,10 +534,10 @@ menu {
 }*/
 
 .threeDBoxes {
-    margin-right: -0.5em;
+    margin-left: 0.75em;
 }
 .board-game.threeDBox {
-    margin: 0.325em 0.975em;
+    margin: 0.325em 0.75em;
 }
 .board-game {
     margin: 0.325em 0.73125em;
@@ -1163,6 +1163,9 @@ button,
         .board-game .metadata,
         .book .metadata {
             font-size: 0.75em;
+        }
+        .board-game.threeDBox {
+            margin: 0.325em 0.975em;
         }
 
     menu,
