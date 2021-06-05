@@ -1,4 +1,4 @@
-<h1><a href="#"><img height="25" src="https://raw.githubusercontent.com/barrowclift/shelf/master/frontend/static/images/logo/logo.png" /> Shelf</a></h1>
+<h1><img height="25" src="https://raw.githubusercontent.com/barrowclift/shelf/master/frontend/static/images/logo/logo.png" /> Shelf</h1>
 
 ### Beautifully display your library on the Internet
 
