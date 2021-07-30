@@ -357,6 +357,12 @@ menu {
 /* ----- ENTITIES ----- */
 
 /* Standard entity rendering (flat) */
+#records,
+#board-games,
+#books {
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+}
 .records,
 .board-games,
 .books {
@@ -366,7 +372,11 @@ menu {
     margin-top: 2em;
     margin-bottom: 2em;
 }
-.record,
+.record {
+    width: 42vw;
+    display: inline-block;
+    margin: 0.325em 0.73125em;
+}
 .board-game,
 .book {
     width: 41vw;
@@ -377,6 +387,10 @@ menu {
 .record a:active .wrapper,
 .record a:visited .wrapper,
 .record a:focus .wrapper,
+.record .art {
+    max-height: 42vw;
+    max-width: 42vw;
+}
 .board-game a .wrapper,
 .board-game a:active .wrapper,
 .board-game a:visited .wrapper,
@@ -385,7 +399,6 @@ menu {
 .book a:active .wrapper,
 .book a:visited .wrapper,
 .book a:focus .wrapper,
-.record .art,
 .board-game .art,
 .book .art {
     max-height: 41vw;
@@ -537,7 +550,7 @@ menu {
     margin-left: 0.75em;
 }
 .board-game.threeDBox {
-    margin: 0.325em 0.75em;
+    margin: 0.325em 1em;
 }
 .board-game {
     margin: 0.325em 0.73125em;
@@ -572,6 +585,7 @@ menu {
     height: 57px;
     clear: both;
     text-align: center;
+    padding-bottom: 5em;
 }
     #footer ul,
     #footer ul li {
@@ -1038,9 +1052,11 @@ button,
 /* MISC --------------------------------------------------------------------------- */
 
 
-#browserNotSupported,
-#browserSupported {
+#browserNotSupported {
     padding-bottom: 57px;
+}
+#browserSupported {
+    padding-bottom: 1em;
 }
 #browserNotSupported {
     display: none;
@@ -1173,7 +1189,7 @@ button,
         height: auto;
 
         padding-left: 1em;
-        padding-right: 1em;
+        padding-right: max(1em, env(safe-area-inset-right));
         padding-top: 0.75em;
         padding-bottom: 0.75em;
     }
@@ -1221,6 +1237,7 @@ button,
 
     #footer {
         margin-top: -29px;
+        padding-bottom: 0;
     }
         #footer li {
             margin-left: 5vw;
