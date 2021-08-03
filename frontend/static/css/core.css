@@ -1188,7 +1188,7 @@ button,
     menu.with-search-bar {
         height: auto;
 
-        padding-left: 1em;
+        padding-left: max(1em, env(safe-area-inset-left));
         padding-right: max(1em, env(safe-area-inset-right));
         padding-top: 0.75em;
         padding-bottom: 0.75em;
@@ -1281,7 +1281,7 @@ button,
     .record,
     .board-game,
     .book {
-        width: 21vw;
+        width: 19vw;
     }
     .record a .wrapper,
     .record a:active .wrapper,
@@ -1298,8 +1298,8 @@ button,
     .record .art,
     .board-game .art,
     .book .art {
-        max-height: 21vw;
-        max-width: 21vw;
+        max-height: 19vw;
+        max-width: 19vw;
     }
 
     #footer {
