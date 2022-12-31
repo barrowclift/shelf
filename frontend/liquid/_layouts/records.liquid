@@ -84,9 +84,9 @@
             // }, 200);
         };
 
+        let isFirstCheck = true;
         let socket = io.connect();
         socket.on("connect", () => {
-            let isFirstCheck = true;
             socket.emit("{{ initialFetchInProgress }}");
             socket.on("{{ initialFetchInProgress }}", function(inProgress) {
                 if (isFirstCheck) {

@@ -14,7 +14,6 @@
   "author": "Marc Barrowclift",
   "license": "MIT",
   "dependencies": {
-    "bgg": "^1.0.1",
     "compression": "^1.7.4",
     "disconnect": "^1.2.1",
     "express": "^4.17.1",
@@ -25,10 +24,11 @@
     "mongodb": "^3.5.2",
     "ncp": "^2.0.0",
     "node-fetch": "^2.6.1",
-    "npm": "^6.13.6",
+    "npm": "^8.19.2",
     "properties": "^1.2.1",
-    "sharp": "^0.27.0",
-    "socket.io": "^3.1.0",
-    "socket.io-client": "^3.1.0"
+    "sharp": "^0.31.1",
+    "socket.io": "^4.5.4",
+    "socket.io-client": "^3.1.0",
+    "xml2json": "^0.12.0"
   }
 }

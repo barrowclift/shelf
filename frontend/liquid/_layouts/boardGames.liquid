@@ -194,20 +194,16 @@
             return boardGame;
         }
 
+        let isFirstCheck = true;
         let socket = io.connect();
         socket.on("connect", () => {
             /**
              * So we don't have the collection flash when status changes.
              */
-            let isFirstCheck = true;
             socket.emit("{{ initialFetchInProgress }}");
             socket.on("{{ initialFetchInProgress }}", function({ inProgress, experimentalBoardGameBoxRendering }) {
                 boardGamesApp.experimentalBoardGameBoxRendering = experimentalBoardGameBoxRendering;
-                if (boardGamesApp.experimentalBoardGameBoxRendering) {
-                    boardGamesApp.loadingSpinnerVisible = true;
-                } else {
-                    boardGamesApp.loadingSpinnerVisible = inProgress;
-                }
+                boardGamesApp.loadingSpinnerVisible = inProgress;
 
                 if (isFirstCheck) {
                     boardGamesApp.initialLoadInProgress = inProgress;
@@ -238,7 +234,11 @@
 
             socket.on("{{ addItem }}", function(newBoardGame) {
                 if (newBoardGame) {
-                    boardGames.push(newBoardGame);
+                    if (boardGamesApp.experimentalBoardGameBoxRendering) {
+                        boardGames.push(construct3dBox(item));
+                    } else {
+                        boardGames.push(item);
+                    }
                     fuse = new Fuse(boardGames, fuzzySearchOptions);
                 }
             });

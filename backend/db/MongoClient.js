@@ -46,8 +46,8 @@ class MongoClient {
      */
 
     connect() {
-        log.debug("Connecting to Mongo...");
         let mongoServerUrl = "mongodb://" + this.propertyManager.mongoHost + ":" + this.propertyManager.mongoPort + "/" + this.propertyManager.mongoDbName;
+        log.info("Connecting to Mongo at " + mongoServerUrl);
         return new Promise((resolve, reject) => {
             mongodb.MongoClient.connect(
                 mongoServerUrl,

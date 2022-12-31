@@ -253,7 +253,7 @@ class Server {
             socket.on(socketCodes.INITIAL_BOARD_GAME_COLLECTION_IN_PROGRESS, () => {
                 log.debug("Received frontend socket request to send initialBoardGameFetchInProgress=" + this.initialBoardGameFetchInProgress + " to client");
                 socket.emit(socketCodes.INITIAL_BOARD_GAME_COLLECTION_IN_PROGRESS, {
-                    initialBoardGameFetchInProgress: this.initialBoardGameFetchInProgress,
+                    inProgress: this.initialBoardGameFetchInProgress,
                     experimentalBoardGameBoxRendering: this.propertyManager.experimentalBoardGameBoxRendering
                 });
             });
