@@ -27,7 +27,7 @@ const DEFAULT_USER_AGENT_BASE = "Shelf/2.0 +https://github.com/barrowclift/shelf
 
 // Mongo
 const DEFAULT_MONGO_DBNAME = "shelfDb";
-const DEFAULT_MONGO_HOST = "localhost";
+const DEFAULT_MONGO_HOST = "0.0.0.0";
 const DEFAULT_MONGO_PORT = 27017;
 
 // Records

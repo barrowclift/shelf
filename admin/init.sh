@@ -13,6 +13,6 @@ export RECORD_IMAGE_CACHE_DIR="${FRONTEND_STATIC_DIR}"/images/records
 export BOARD_GAME_IMAGE_CACHE_DIR="${FRONTEND_STATIC_DIR}"/images/board-games
 export BOOK_IMAGE_CACHE_DIR="${FRONTEND_STATIC_DIR}"/images/books
 export LOGS_DIR="${REPO}"/logs
-export MONGO_DB=/var/lib/mongo
+export MONGO_DB=/opt/homebrew/var/mongodb
 
-export USE_PM2=true
+export USE_PM2=false

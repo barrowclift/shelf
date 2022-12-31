@@ -3,11 +3,12 @@
 // DEPENDENCIES
 // ------------
 // External
-let BoardGameGeek = require("bgg"); // "bgg" is the BoardGameGeek API 2 Library
 let htmlEntities = require("he");
 let path = require("path");
 let socketIo = require("socket.io-client");
 let sharp = require("sharp");
+let fetch = require("node-fetch");
+let xml2json = require('xml2json');
 // Local
 let BoardGameBuilder = require("./Builder");
 let boardGameUtil = require("./util");
@@ -59,7 +60,6 @@ class Fetcher {
 
         // BoardGameGeek setup
         this.userAgent = propertyManager.boardGameGeekUserId + " " + propertyManager.userAgentBase;
-        this.boardGameGeekClient = BoardGameGeek();
 
         // Connect to backend server for communicating changes
         this.backendSocket = socketIo.connect(this.propertyManager.backendUrl, { reconnect: true });
@@ -162,8 +162,8 @@ class Fetcher {
             };
             do {
                 let results = await this._getBoardGameCollection();
-                if (results == null) {
-                    log.error("_processBoardGameCollection", "Received null response from BoardGameGeek client")
+                if (results == null || Object.keys(results).length == 0) {
+                    log.error("_processBoardGameCollection", "Received null or empty response from BoardGameGeek client")
                     break;
                 } else if ("errors" in results) {
                     log.error("_processBoardGameCollection", results.errors.error.message);
@@ -226,7 +226,7 @@ class Fetcher {
             } while(context.awaitingAccessCount < MAX_NUMBER_OF_AWAITING_ACCESS_CHECKS);
 
             if (context.awaitingAccessCount >= MAX_NUMBER_OF_AWAITING_ACCESS_CHECKS) {
-                log.warn("BoardGameGeek still doesn't have the request response ready, will check again next fetch time");
+                log.warn("_processBoardGameCollection", "BoardGameGeek still doesn't have the request response ready, will check again next fetch time");
             } else {
                 if (util.pageContextReportsChanges(context)) {
                     log.info("Change detected, fetch stats:");
@@ -258,21 +258,29 @@ class Fetcher {
                 }
             }
         } catch (error) {
-            log.error("_processBoardGameCollection", "An unrecoverable error occured while executing this fetch cycle, will try again next fetch.");
+            log.error("_processBoardGameCollection", "An unrecoverable error occured while executing this fetch cycle, error=" + error);
         }
     }
 
     async _getBoardGameCollection() {
         log.debug("Fetching BoardGameGeek collection");
 
-        let query = {
+        let params = {
             "username": this.propertyManager.boardGameGeekUserId,
             "stats": 1
         };
-
+        let options = {
+            method: "GET",
+            timeout: this.propertyManager.connectionTimeoutInMillis,
+            headers: {
+                "User-Agent": this.userAgent
+            }
+        };
         let data = null;
         try {
-            data = await this.boardGameGeekClient("collection", query);
+            let response = await fetch("https://api.geekdo.com/xmlapi2/collection?" + new URLSearchParams(params), options);
+            let xmlBody = await response.text();
+            data = xml2json.toJson(xmlBody, { object: true });
             log.debug("Got board games from BoardGameGeek collection");
         } catch (error) {
             if ("error" in error) {
@@ -365,7 +373,7 @@ class Fetcher {
             } while(context.awaitingAccessCount < MAX_NUMBER_OF_AWAITING_ACCESS_CHECKS);
 
             if (context.awaitingAccessCount >= MAX_NUMBER_OF_AWAITING_ACCESS_CHECKS) {
-                log.warn("BoardGameGeek still doesn't have the request response ready, will check again next recollection");
+                log.warn("_processBoardGameCollection", "BoardGameGeek still doesn't have the request response ready, will check again next recollection");
             } else {
                 if (util.pageContextReportsChanges(context)) {
                     log.info("Change detected, fetch stats:");
@@ -404,16 +412,24 @@ class Fetcher {
     async _getBoardGameWishlist() {
         log.debug("Fetching BoardGameGeek wishlist");
 
-        let query = {
+        let params = {
             "username": this.propertyManager.boardGameGeekUserId,
             "subtype": "boardgame",
             "wishlist": 1,
             "stats": 1
         };
-
+        let options = {
+            method: "GET",
+            timeout: this.propertyManager.connectionTimeoutInMillis,
+            headers: {
+                "User-Agent": this.userAgent
+            }
+        };
         let data = null;
         try {
-            data = await this.boardGameGeekClient("collection", query);
+            let response = await fetch("https://api.geekdo.com/xmlapi2/collection?" + new URLSearchParams(params), options);
+            let xmlBody = await response.text();
+            data = xml2json.toJson(xmlBody, { object: true });
             log.debug("Got board games from BoardGameGeek wishlist");
         } catch (error) {
             if ("error" in error) {

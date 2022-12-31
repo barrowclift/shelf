@@ -247,12 +247,16 @@ class CachedMongoClient {
 
     removeCollectionBoardGameById(boardGameId) {
         this.boardGameCollectionCache.delete(boardGameId);
-        return this.mongoClient.deleteById(this.propertyManager.boardGamesCollectionName, boardGameId);
+        if (!this.boardGameWishlistCache.has(boardGameId)) {
+            return this.mongoClient.deleteById(this.propertyManager.boardGamesCollectionName, boardGameId);
+        }
     }
 
     removeWishlistBoardGameById(boardGameId) {
-        this.boardGameCollectionCache.delete(boardGameId);
-        return this.mongoClient.deleteById(this.propertyManager.boardGamesCollectionName, boardGameId);
+        this.boardGameWishlistCache.delete(boardGameId);
+        if (!this.boardGameCollectionCache.has(boardGameId)) {
+            return this.mongoClient.deleteById(this.propertyManager.boardGamesCollectionName, boardGameId);
+        }
     }
 
     findBoardGames(query) {
@@ -270,9 +274,17 @@ class CachedMongoClient {
          * If the board game already exists in the cache, update it.
          */
         if (this.boardGameWishlistCache.has(upsertedBoardGame._id)) {
-            this.boardGameWishlistCache.set(upsertedBoardGame._id, upsertedBoardGame);
+            if (upsertedBoardGame.inWishlist) {
+                this.boardGameWishlistCache.set(upsertedBoardGame._id, upsertedBoardGame);
+            } else {
+                this.boardGameCollectionCache.set(upsertedBoardGame._id, upsertedBoardGame);
+            }
         } else if (this.boardGameCollectionCache.has(upsertedBoardGame._id)) {
-            this.boardGameCollectionCache.set(upsertedBoardGame._id, upsertedBoardGame);
+            if (upsertedBoardGame.inWishlist) {
+                this.boardGameWishlistCache.set(upsertedBoardGame._id, upsertedBoardGame);
+            } else {
+                this.boardGameCollectionCache.set(upsertedBoardGame._id, upsertedBoardGame);
+            }
         } else {
             if (upsertedBoardGame.inWishlist) {
                 this.boardGameWishlistCache.set(upsertedBoardGame._id, upsertedBoardGame);

@@ -33,7 +33,7 @@ if [ -z "$MONGODB_NOHUP_RUNNING" ] && [ -z "$MONGODB_SERVICE_RUNNING" ]; then
         sudo systemctl start mongod
         SUCCESS=$?
     else
-        nohup mongod --dbpath "$MONGO_DB" > "$LOGS_DIR"/mongodb.log 2>&1 &
+        nohup mongod --dbpath "$MONGO_DB" --bind_ip 127.0.0.1 > "$LOGS_DIR"/mongodb.log 2>&1 &
         SUCCESS=$?
     fi
 
