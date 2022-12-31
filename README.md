@@ -7,7 +7,7 @@
   <img type="image/jpeg" alt="Promotional screenshots of Shelf, demonstrating both Light and Dark Mode" title="Promotional screenshots of Shelf, demonstrating both Light and Dark Mode" src="https://dropbox.barrowclift.me/assets/projects/code/shelf/shelf-promo.jpg">
 </picture>
 
-You can download the latest release [here](https://github.com/barrowclift/shelf/releases/tag/v3.0.0)
+You can download the latest release [here](https://github.com/barrowclift/shelf/releases/latest)
 
 1. [FAQ](#faq)
     * [Why use shelf?](#why-use-shelf)
