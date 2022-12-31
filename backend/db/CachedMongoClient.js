@@ -428,26 +428,41 @@ class CachedMongoClient {
         let boardGamesCache = await this.mongoClient.find(this.propertyManager.boardGamesCollectionName, {});
         if (boardGamesCache) {
             for (let boardGame of boardGamesCache) {
-                if (this.propertyManager.experimentalBoardGameBoxRendering && !("primaryColor" in boardGame)) {
-                    try {
-                        const image = sharp(`${paths.FRONTEND_STATIC_DIRECTORY_PATH}${boardGame.coverArtFilePath}`);
-                        const stats = await image.stats();
-                        const primaryColor = stats.dominant;
-
-                        const metadata = await image.metadata();
-                        const ratio = metadata.width / metadata.height;
-                        
-                        if (boardGame.primaryColor !== primaryColor || boardGame.ratio !== ratio) {
-                            boardGame.primaryColor = primaryColor;
-                            boardGame.ratio = ratio;
-                            try {
-                                await this.upsertBoardGame(boardGame);
-                            } catch (error) {
-                                log.error("MongoClient.upsertBoardGame", error);
+                if (this.propertyManager.experimentalBoardGameBoxRendering) {
+                    if (!("primaryColor" in boardGame)) {
+                        try {
+                            const image = sharp(`${paths.FRONTEND_STATIC_DIRECTORY_PATH}${boardGame.coverArtFilePath}`);
+                            const stats = await image.stats();
+                            const primaryColor = stats.dominant;
+                            if (boardGame.primaryColor !== primaryColor) {
+                                boardGame.primaryColor = primaryColor;
+                                try {
+                                    await this.upsertBoardGame(boardGame);
+                                } catch (error) {
+                                    log.error("MongoClient.upsertBoardGame", error);
+                                }
                             }
+                        } catch (error) {
+                            log.error("sharp.stats", error);
                         }
-                    } catch (error) {
-                        log.error("sharp.stats", error);
+                    }
+                    if (!("ratio" in boardGame)) {
+                        try {
+                            const image = sharp(`${paths.FRONTEND_STATIC_DIRECTORY_PATH}${boardGame.coverArtFilePath}`);
+                            const metadata = await image.metadata();
+                            const ratio = metadata.width / metadata.height;
+
+                            if (boardGame.ratio !== ratio) {
+                                boardGame.ratio = ratio;
+                                try {
+                                    await this.upsertBoardGame(boardGame);
+                                } catch (error) {
+                                    log.error("MongoClient.upsertBoardGame", error);
+                                }
+                            }
+                        } catch (error) {
+                            log.error("sharp.metadata", error);
+                        }
                     }
                 }
 
