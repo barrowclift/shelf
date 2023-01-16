@@ -20,7 +20,7 @@
     "fs": "0.0.1-security",
     "fuse.js": "^6.4.6",
     "he": "^1.2.0",
-    "liquidjs": "^9.20.1",
+    "liquidjs": "^10.4.0",
     "mongodb": "^3.5.2",
     "ncp": "^2.0.0",
     "node-fetch": "^2.6.1",
