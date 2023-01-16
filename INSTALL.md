@@ -20,7 +20,7 @@ Since this is a development environment, there's no need to setup Nginx, Shelf c
 * In the cloned repo, `npm install`
 * If you don't already have `pm2` for node process management installed, do so with `npm install pm2 -g`
 * (Optional) Should you wish Shelf to automatically start on startup, see [this short guide](http://pm2.keymetrics.io/docs/usage/startup/) or execute `pm2 startup` to let `pm2` handle the settings for you.
-* Shelf uses MongoDB to manage its data. When starting the MongoDB server, it expects permissions to create a DB at `/var/lib/mongo`. If this location is not desired or if you have a MongoDB server already running for other projects, update the `MONGO_DB` variable in `admin/init.sh` to your desired path.
+* Shelf uses MongoDB to manage its data. When starting the MongoDB server, it expects permissions to create a DB at `/var/lib/mongodb`. If this location is not desired or if you have a MongoDB server already running for other projects, update the `MONGO_DB` variable in `admin/init.sh` to your desired path.
 * Edit `backend/resources/shelf.properties` with your Discogs and/or BoardGameGeek information. Shelf uses these services to display your library. See the ["Setup"](https://github.com/barrowclift/shelf/blob/master/README.md#setup) section of the [README](https://github.com/barrowclift/shelf/blob/master/README.md) for more information.
 * Finally, continue editing `backend/resources/shelf.properties`, replacing all instances of `SET_ME` with the appropriate information
 
