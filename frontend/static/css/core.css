@@ -456,11 +456,17 @@ menu {
     .record .art,
     .board-game .art,
     .book .art {
-        border: 1px solid black;
-        border-radius: 0.25em;
         display: block;
         width: auto;
         height: auto;
+        border-radius: 0.25em;
+        border: 1px solid black;
+    }
+    .record div.wrapper,
+    .board-game div.wrapper,
+    .book div.wrapper {
+        border-radius: 0.25em;
+        overflow: hidden;
     }
 
 /* Experimental 3D entity rendering */
@@ -558,8 +564,12 @@ menu {
 .shadow-and-box-wrapper {
     transform: scale(0.875);
 }
-.board-game .metadata {
+.board-game .shadow-and-box-wrapper .metadata {
     margin-top: 2.75em;
+}
+.board-game .wrapper .metadata {
+    margin-top: 1em;
+    margin-bottom: 2em;
 }
 
 /* ----- COLLECTION STATISTICS ----- */
@@ -623,8 +633,7 @@ menu {
 }
 .js-tilt-glare {
     left: 1px !important;
-    height: calc(100% - 2px) !important;
-    top: 1px !important
+    top: 1px !important;
 }
 .js-tilt-glare ~ .js-tilt-glare {
     display: none;
@@ -1163,14 +1172,6 @@ button,
         max-height: 29vw;
         max-width: 29vw;
     }
-        .record a:hover .art,
-        .board-game a:hover .art,
-        .book a:hover .art,
-        .record a:hover .js-tilt-glare,
-        .board-game a:hover .js-tilt-glare,
-        .book a:hover .js-tilt-glare {
-            transform: scale(1.025);
-        }
         .board-game a:hover .box-wrapper,
         .board-game a:hover .metadata {
             transform: scale(1.075);
@@ -1179,6 +1180,19 @@ button,
         .board-game .metadata,
         .book .metadata {
             font-size: 0.75em;
+        }
+        .record .metadata,
+        .book .metadata {
+            margin-bottom: 0.5em;
+        }
+        .board-game .metadata {
+            margin-bottom: 1em;
+        }
+        .board-game.threeDBox .metadata {
+            margin-top: 2.75em;
+        }
+        .metadata .title {
+            margin-bottom: 0;
         }
         .board-game.threeDBox {
             margin: 0.325em 0.975em;
@@ -1445,7 +1459,7 @@ button,
         border-color: #191919;
     }
     .js-tilt-glare {
-        opacity: 0.4;
+        opacity: 0.5;
     }
     .stats {
         color: rgba(255, 255, 255, 0.275);
