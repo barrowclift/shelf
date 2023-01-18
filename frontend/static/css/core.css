@@ -998,6 +998,9 @@ menu a {
 .board-game .shadow {
     box-shadow: rgba(0, 0, 0, 0.06) 0px 0px 7.6px, rgba(0, 0, 0, 0.043) 0px 0px 18.3px, rgba(0, 0, 0, 0.035) 0px 0px 34.4px, rgba(0, 0, 0, 0.03) 0px 0px 61.4px, rgba(0, 0, 0, 0.024) 0px 0px 114.9px, rgba(0, 0, 0, 0.016) 0px 0px 275px;
 }
+.shadow {
+    line-height: 0;
+}
 .record a:hover .shadow,
 .book a:hover .shadow,
 .board-game a:hover .shadow {
