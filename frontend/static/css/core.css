@@ -564,12 +564,12 @@ menu {
 .shadow-and-box-wrapper {
     transform: scale(0.875);
 }
-.board-game .shadow-and-box-wrapper .metadata {
-    margin-top: 2.75em;
-}
 .board-game .wrapper .metadata {
     margin-top: 1em;
     margin-bottom: 2em;
+}
+.board-game.threeDBox .metadata {
+    margin-top: 2.75em;
 }
 
 /* ----- COLLECTION STATISTICS ----- */
