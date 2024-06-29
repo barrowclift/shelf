@@ -6,5 +6,6 @@ source "${ADMIN_DIR}"/init.sh
 rm "${LOGS_DIR}"/mongodb.log 2> /dev/null
 rm "${LOGS_DIR}"/backend.log 2> /dev/null
 rm "${LOGS_DIR}"/clean-mongodb.log 2> /dev/null
+rm "${LOGS_DIR}"/drop-cache.log 2> /dev/null
 
 echo "Log directory cleaned"

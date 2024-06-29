@@ -5,8 +5,8 @@
 // External
 
 // Local
-let overrides = require("../resources/overrides");
-let util = require("../common/util");
+import overrides from "../resources/overrides.json" with { type: "json" };
+import util from "../common/util.js";
 
 
 // CONSTANTS
@@ -47,7 +47,7 @@ const DEFAULT_YEAR_PUBLISHED = 0; // yearpublished
  *     }
  *
  */
-class Builder {
+export default class Builder {
 
     /**
      * Sets all "settable" fields for the pending new board game to it's
@@ -164,5 +164,3 @@ class Builder {
     }
 
 }
-
-module.exports = Builder;

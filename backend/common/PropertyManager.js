@@ -3,10 +3,10 @@
 // DEPENDENCIES
 // ------------
 // External
-let nodePropertyLoader = require("properties");
+import nodePropertyLoader from "properties";
 // Local
-let Logger = require("./Logger");
-let util = require("./util");
+import Logger from "./Logger.js";
+import util from "./util.js";
 
 
 // CONSTANTS
@@ -16,7 +16,7 @@ const CLASS_NAME = "PropertyManager";
 // Assorted, base properties
 const DEFAULT_FRONTEND_PORT = 10800;
 const DEFAULT_BACKEND_PORT = 10801;
-const DEFAULT_CONNECTION_TIMEOUT_IN_SECONDS = 5;
+const DEFAULT_REQUEST_TIMEOUT_IN_SECONDS = 5;
 const DEFAULT_NAME = "Anonymous";
 const DEFAULT_MAX_ART_SIZE = 512;
 const DEFAULT_REFRESH_FREQUENCY_IN_MINUTES = 1;
@@ -63,7 +63,7 @@ let log = new Logger(CLASS_NAME);
  * calling code get back to what's *actually* important to them: their own
  * work.
  */
-class PropertyManager {
+export default class PropertyManager {
 
     /**
      * Does not automatically load any properties file, but simply initializes
@@ -72,7 +72,7 @@ class PropertyManager {
      */
     constructor() {
         // Assorted, base properties
-        this.connectionTimeoutInMillis = DEFAULT_CONNECTION_TIMEOUT_IN_SECONDS;
+        this.requestTimeoutInMillis = DEFAULT_REQUEST_TIMEOUT_IN_SECONDS;
         this.name = DEFAULT_NAME;
         this.maxArtSize = DEFAULT_MAX_ART_SIZE;
         this.refreshFrequencyInMillis = DEFAULT_REFRESH_FREQUENCY_IN_MINUTES;
@@ -122,9 +122,9 @@ class PropertyManager {
 
         // Assorted, base properties
 
-        if ("connection.timeout.in.seconds" in properties) {
-            let connectionTimeoutInSeconds = properties["connection.timeout.in.seconds"];
-            this.connectionTimeoutInMillis = util.secondsToMillis(connectionTimeoutInSeconds);
+        if ("request.timeout.in.seconds" in properties) {
+            let requestTimeoutInSeconds = properties["request.timeout.in.seconds"];
+            this.requestTimeoutInMillis = util.secondsToMillis(requestTimeoutInSeconds);
         }
         if ("max.art.size" in properties) {
             this.maxArtSize = properties["max.art.size"];
@@ -249,5 +249,3 @@ class PropertyManager {
     }
 
 }
-
-module.exports = PropertyManager;

@@ -3,19 +3,21 @@
 // DEPENDENCIES
 // ------------
 // External
-let Discogs = require("disconnect").Client; // "disconnect" is the Discogs API 2.0 Library
-let Fuse = require("fuse.js"); // For fuzzy searching
-let path = require("path");
-let fetch = require("node-fetch");
-let socketIo = require("socket.io-client");
+import pkg from "disconnect";
+const { Client: Discogs } = pkg; // "disconnect" is the Discogs API 2.0 Library
+import Fuse from "fuse.js"; // For fuzzy searching
+import path from "path";
+import fetch from "node-fetch";
+import socketIo from "socket.io-client";
+import timeoutSignal from "timeout-signal";
 // Local
-let Logger = require("../common/Logger");
-let overrides = require("../resources/overrides");
-let paths = require("../common/paths");
-let RecordBuilder = require("./Builder");
-let recordUtil = require("./util");
-let socketCodes = require("../common/socketCodes");
-let util = require("../common/util");
+import Logger from "../common/Logger.js";
+import overrides from "../resources/overrides.json" with { type: "json" };
+import paths from "../common/paths.js";
+import RecordBuilder from "./Builder.js";
+import recordUtil from "./util.js";
+import socketCodes from "../common/socketCodes.js";
+import util from "../common/util.js";
 
 
 // CONSTANTS
@@ -49,7 +51,7 @@ let log = new Logger(CLASS_NAME);
  * Used to fetch records from discogs.com, transform to suit Shelf's needs,
  * and keep Shelf's local cache in sync with any changes.
  */
-class Fetcher {
+export default class Fetcher {
 
     /**
      * Initializes the fetcher, but does not automatically kick off the
@@ -373,11 +375,10 @@ class Fetcher {
         if ("folder_id" in discogsRecord) {
             recordBuilder.setDiscogsFolderId(discogsRecord.folder_id);
         }
-        // The album art is saved under a different field name for collection and wishlist records
-        if ("thumb" in discogsRecord.basic_information) {
-            recordBuilder.setDiscogsAlbumArtUrl(discogsRecord.basic_information.thumb);
-        } else {
+        if ("cover_image" in discogsRecord.basic_information) {
             recordBuilder.setDiscogsAlbumArtUrl(discogsRecord.basic_information.cover_image);
+        } else if ("thumb" in discogsRecord.basic_information) {
+            recordBuilder.setDiscogsAlbumArtUrl(discogsRecord.basic_information.thumb);
         }
         // If there's no rating, the rating field isn't returned
         if ("rating" in discogsRecord) {
@@ -486,7 +487,7 @@ class Fetcher {
                                                      CUSTOM_HEADERS,
                                                      destinationDirectoryPath,
                                                      ITUNES_ALBUM_ART_FILE_NAME,
-                                                     this.propertyManager.connectionTimeoutInMillis,
+                                                     this.propertyManager,
                                                      this._respectRateLimits);
                             record.iTunesAlbumArtFilePath = path.join(FRONTEND_ALBUM_ART_DIRECTORY_PATH, record._id, ITUNES_ALBUM_ART_FILE_NAME);
                         } catch(error) {
@@ -521,7 +522,7 @@ class Fetcher {
         // Building the request
         let options = {
             method: "GET",
-            timeout: this.propertyManager.connectionTimeoutInMillis,
+            signal: timeoutSignal(this.propertyManager.requestTimeoutInMillis),
             headers: {
                 "User-Agent": this.userAgent,
                 "Authorization": this.discogsAuthorization,
@@ -557,7 +558,7 @@ class Fetcher {
         const url = this._createiTunesSearchUrl(title + " " + artist);
         let options = {
             method: "GET",
-            timeout: 5000,
+            signal: timeoutSignal(this.propertyManager.requestTimeoutInMillis),
             headers: {
                 "User-Agent": this.userAgent,
                 "Content-Type": "application/json"
@@ -580,7 +581,7 @@ class Fetcher {
 
             let records = await response.json();
             if (records.resultCount == 0) {
-                log.warn("No results from iTunes for title=" + title);
+                log.warn("_getiTunesAlbumArtAndYearOfOriginalRelease", "No results from iTunes for title=" + title);
             } else {
                 /**
                  * We *may* get back a couple or more artists that
@@ -653,7 +654,7 @@ class Fetcher {
              */
             if (responseHeaders.get("x-apple-orig-url")) {
                 if (this.remainingItunesCalls <= 1) {
-                    log.warn("Rate limit met for iTunes, sleeping for the required " + ITUNES_RATE_LIMIT_REFRESH_TIME_IN_SECONDS + " seconds before resuming...");
+                    log.warn("_respectRateLimits", "Rate limit met for iTunes, sleeping for the required " + ITUNES_RATE_LIMIT_REFRESH_TIME_IN_SECONDS + " seconds before resuming...");
                     await util.sleepForSeconds(ITUNES_RATE_LIMIT_REFRESH_TIME_IN_SECONDS);
                     this.remainingItunesCalls = ITUNES_RATE_LIMIT;
                 }
@@ -670,7 +671,7 @@ class Fetcher {
              */
             if (responseHeaders.get("x-discogs-ratelimit")) {
                 if (responseHeaders.get("x-discogs-ratelimit") <= 1) {
-                    log.warn("Rate limit met for Discogs, sleeping for the required " + DISCOGS_RATE_LIMIT_REFRESH_TIME_IN_SECONDS + " seconds before resuming...");
+                    log.warn("_respectRateLimits", "Rate limit met for Discogs, sleeping for the required " + DISCOGS_RATE_LIMIT_REFRESH_TIME_IN_SECONDS + " seconds before resuming...");
                     await util.sleepForSeconds(DISCOGS_RATE_LIMIT_REFRESH_TIME_IN_SECONDS);
                 }
             }
@@ -687,5 +688,3 @@ class Fetcher {
     }
 
 }
-
-module.exports = Fetcher;

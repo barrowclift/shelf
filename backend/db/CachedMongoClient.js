@@ -3,12 +3,12 @@
 // DEPENDENCIES
 // ------------
 // External
-let sharp = require("sharp");
+import sharp from "sharp";
 
 // Local
-let Logger = require("../common/Logger");
-let MongoClient = require("./MongoClient");
-let paths = require("../common/paths");
+import Logger from "../common/Logger.js";
+import MongoClient from "./MongoClient.js";
+import paths from "../common/paths.js";
 
 
 // CONSTANTS
@@ -36,7 +36,7 @@ let log = new Logger(CLASS_NAME);
  * (for example, instead of `upsertOne("records", document)`, you can call
  * `upsertRecord(document)`).
  */
-class CachedMongoClient {
+export default class CachedMongoClient {
 
     /**
      * @param {PropertyManager} propertyManager
@@ -446,7 +446,8 @@ class CachedMongoClient {
                             log.error("sharp.stats", error);
                         }
                     }
-                    if (!("ratio" in boardGame)) {
+                    // Otherwise, image replacements don't have their ratios recalculated
+                    //if (!("ratio" in boardGame)) {
                         try {
                             const image = sharp(`${paths.FRONTEND_STATIC_DIRECTORY_PATH}${boardGame.coverArtFilePath}`);
                             const metadata = await image.metadata();
@@ -463,7 +464,7 @@ class CachedMongoClient {
                         } catch (error) {
                             log.error("sharp.metadata", error);
                         }
-                    }
+                    //}
                 }
 
                 if (boardGame.inWishlist) {
@@ -486,5 +487,3 @@ class CachedMongoClient {
     }
 
 }
-
-module.exports = CachedMongoClient;

@@ -5,7 +5,7 @@
 // External
 
 // Local
-let Logger = require("../common/Logger");
+import Logger from "../common/Logger.js";
 
 
 // CONSTANTS
@@ -22,7 +22,7 @@ let log = new Logger(CLASS_NAME);
  * To be used in conjunction with changesDetected(), will merge over all fields
  * that are "updatable" from the newBoardGame to the existingBoardGame.
  */
-exports.merge = function(fromBoardGame, intoBoardGame) {
+let merge = function(fromBoardGame, intoBoardGame) {
     intoBoardGame.inWishlist = fromBoardGame.inWishlist;
     intoBoardGame.rating = fromBoardGame.rating;
     return intoBoardGame;
@@ -35,7 +35,7 @@ exports.merge = function(fromBoardGame, intoBoardGame) {
  * For example, the BoardGameGeek "thing" ID cannot change once shelf has
  * accepted it, for protection of our own internal models.
  */
-exports.changesDetected = function(newBoardGame, existingBoardGame) {
+let changesDetected = function(newBoardGame, existingBoardGame) {
     let changesDetected = false;
     try {
         if (newBoardGame.inWishlist != existingBoardGame.inWishlist
@@ -47,3 +47,8 @@ exports.changesDetected = function(newBoardGame, existingBoardGame) {
     }
     return changesDetected;
 };
+
+export default {
+    merge,
+    changesDetected
+}

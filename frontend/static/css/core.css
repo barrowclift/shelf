@@ -61,6 +61,10 @@ body,
     margin-top: 0;
 }
 
+.visible {
+    transition: opacity 0.5s ease-in;
+    opacity: 1 !important;
+}
 
 /* TYPOGRAPHY ----------------------------------------------------------------------- */
 
@@ -80,7 +84,19 @@ body,
 }
 html,
 textarea {
-    font-family: "Pangram", "San Francisco", system, -apple-system, BlinkMacSystemFont, helvetica, roboto, segoe ui, arial, sans-serif;
+    /* Many thanks to Craig Hockenberry https://furbo.org/2018/03/28/system-fonts-in-css/ */
+    font-family: system-ui,
+                 -apple-system,
+                 BlinkMacSystemFont,
+                 "Segoe UI",
+                 "Roboto",
+                 "Oxygen",
+                 "Ubuntu",
+                 "Cantarell",
+                 "Fira Sans",
+                 "Droid Sans",
+                 "Helvetica Neue",
+                 sans-serif;
     text-rendering: optimizeLegibility;
     -moz-osx-font-smoothing: grayscale;
     -webkit-font-smoothing: antialiased;
@@ -248,7 +264,7 @@ menu ul,
 /* ----- LOGO ----- */
 
 .logo {
-    margin-top: -5px;
+    margin-top: -3px;
     vertical-align: middle;
     height: 0.8em;
     margin-right: -.25em;
@@ -496,16 +512,12 @@ menu {
       transform: rotateX(-90deg) translateY(-5.5em);
       transform-origin: top center;
     }
-    .box-face--is-bottom {
-      transform: rotateX(90deg) translateY(5.5em);
-      transform-origin: bottom center;
-    }
     .box-face--is-right {
-      transform: rotateY(-270deg) translateX(5.5em);
+      transform: rotateY(-270.1deg) translateX(5.5em);
       transform-origin: top right;
     }
     .box-face--is-left {
-      transform: rotateY(270deg) translateX(-5.5em);
+      transform: rotateY(269.9deg) translateX(-5.5em);
       transform-origin: center left;
     }
     .box-face--is-front {
@@ -1150,6 +1162,9 @@ button,
         height: 40px;
         position: relative;
         margin-top: 150px;
+    }
+    .logo {
+        padding-right: 0.5em;
     }
 
     .record,

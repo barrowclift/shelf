@@ -5,7 +5,7 @@
 // External
 
 // Local
-let Logger = require("../common/Logger");
+import Logger from "../common/Logger.js";
 
 
 // CONSTANTS
@@ -22,7 +22,7 @@ let log = new Logger(CLASS_NAME);
  * To be used in conjunction with changesDetected(), will merge over all fields
  * that are "updatable" from the newBook to the existingBook.
  */
-exports.merge = function(fromBook, intoBook) {
+let merge = function(fromBook, intoBook) {
     intoBook.inWishlist = fromBook.inWishlist;
     intoBook.rating = fromBook.rating;
     return intoBook;
@@ -35,7 +35,7 @@ exports.merge = function(fromBook, intoBook) {
  * For example, the Goodreads book ID cannot change once shelf has accepted
  * it, for protection of our own internal models.
  */
-exports.changesDetected = function(newBook, existingBook) {
+let changesDetected = function(newBook, existingBook) {
     var changesDetected = false;
     try {
         if (newBook.inWishlist != existingBook.inWishlist
@@ -47,3 +47,8 @@ exports.changesDetected = function(newBook, existingBook) {
     }
     return changesDetected;
 };
+
+export default {
+    merge,
+    changesDetected
+}

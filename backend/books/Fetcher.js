@@ -3,17 +3,17 @@
 // DEPENDENCIES
 // ------------
 // External
-let Goodreads = require("goodreads-api-node");
-let path = require("path");
-let socketIo = require("socket.io-client");
+import Goodreads from "goodreads-api-node";
+import path from "path";
+import socketIo from "socket.io-client";
 // Local
-let BookBuilder = require("./Builder");
-let bookUtil = require("./util");
-let Logger = require("../common/Logger");
-let overrides = require("../resources/overrides");
-let paths = require("../common/paths");
-let socketCodes = require("../common/socketCodes");
-let util = require("../common/util");
+import BookBuilder from "./Builder.js";
+import bookUtil from "./util.js";
+import Logger from "../common/Logger.js";
+import overrides from "../resources/overrides.json" with { type: "json" };
+import paths from "../common/paths.js";
+import socketCodes from "../common/socketCodes.js";
+import util from "../common/util.js";
 
 
 // CONSTANTS
@@ -45,7 +45,7 @@ let remainingOpenLibraryCalls = OPEN_LIBRARY_RATE_LIMIT;
  * Used to fetch records from goodreads.com, transform to suit Shelf's needs,
  * and keep Shelf's local cache in sync with any changes.
  */
-class Fetcher {
+export default class Fetcher {
 
     /**
      * Initializes the fetcher, but does not automatically kick off the
@@ -567,5 +567,3 @@ class Fetcher {
     }
 
 }
-
-module.exports = Fetcher;

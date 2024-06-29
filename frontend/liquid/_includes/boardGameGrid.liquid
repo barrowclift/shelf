@@ -1,34 +1,36 @@
 <div id="board-games">
-    <ul v-if="initialLoadInProgress"
-        v-bind:class="{ 'threeDBoxes': experimentalBoardGameBoxRendering }">
-        <transition-group name="zoom">
-            <div v-if="loadingSpinnerVisible" id="loading-spinner" :key="theSpinner">
-                <div class="progress-text">
-                    <span>Loading board games from BoardGameGeek...</span>
-                    <div class="spinner"></div>
+    <div style="opacity: 0;" :class="{ 'visible' : vueLoaded === true}">
+        <ul v-if="initialLoadInProgress"
+            v-bind:class="{ 'threeDBoxes': experimentalBoardGameBoxRendering }">
+            <transition-group name="zoom">
+                <div v-if="loadingSpinnerVisible" id="loading-spinner" :key="theSpinner">
+                    <div class="progress-text">
+                        <span>Loading board games from BoardGameGeek...</span>
+                        <div class="spinner"></div>
+                    </div>
                 </div>
-            </div>
+                {% include "boardGame" %}
+            </transition-group>
+        </ul>
+        <div v-else-if="loadingSpinnerVisible">
+            <transition-group name="search-animation">
+                <div id="loading-spinner" :key="theSpinner">
+                    <div class="progress-text">
+                        <div class="spinner"></div>
+                    </div>
+                </div>
+            </transition-group>
+        </div>
+        <ul v-else-if="documentReady"
+            v-bind:class="{ 'threeDBoxes': experimentalBoardGameBoxRendering }">
+            <transition-group name="search-animation">
+                {% include "boardGame" %}
+            </transition-group>
+        </ul>
+        <ul v-else
+            v-bind:class="{ 'threeDBoxes': experimentalBoardGameBoxRendering }">
             {% include "boardGame" %}
-        </transition-group>
-    </ul>
-    <div v-else-if="loadingSpinnerVisible">
-        <transition-group name="search-animation">
-            <div id="loading-spinner" :key="theSpinner">
-                <div class="progress-text">
-                    <div class="spinner"></div>
-                </div>
-            </div>
-        </transition-group>
+        </ul>
+        <p v-if="searchString === '' && !loadingSpinnerVisible" class="stats"><span>${ boardGames.length } Board Game<span v-if="boardGames.length != 1">s</span> in <span style="text-transform: capitalize;">{{ submenu }}</span></span></p>
     </div>
-    <ul v-else-if="documentReady"
-        v-bind:class="{ 'threeDBoxes': experimentalBoardGameBoxRendering }">
-        <transition-group name="search-animation">
-            {% include "boardGame" %}
-        </transition-group>
-    </ul>
-    <ul v-else
-        v-bind:class="{ 'threeDBoxes': experimentalBoardGameBoxRendering }">
-        {% include "boardGame" %}
-    </ul>
-    <p v-if="searchString === '' && !loadingSpinnerVisible" class="stats"><span>${ boardGames.length } Board Game<span v-if="boardGames.length != 1">s</span> in <span style="text-transform: capitalize;">{{ submenu }}</span></span></p>
 </div>

@@ -3,12 +3,13 @@
 // DEPENDENCIES
 // ------------
 // External
-let filesystem = require("fs").promises;
-let path = require("path");
-let fetch = require("node-fetch");
-let sharp = require("sharp");
+import fetch from "node-fetch";
+import { promises as filesystem } from "fs";
+import path from "path";
+import sharp from "sharp";
+import timeoutSignal from "timeout-signal";
 // Local
-let Logger = require("../common/Logger");
+import Logger from "../common/Logger.js";
 
 
 // GLOBALS
@@ -16,7 +17,7 @@ let Logger = require("../common/Logger");
 let log = new Logger("util");
 
 
-exports.sleepForSeconds = function(seconds) {
+let sleepForSeconds = function(seconds) {
     log.debug("Sleeping for " + seconds + " seconds...");
     return new Promise(function(resolve, reject) {
         _sleepForSeconds(
@@ -35,7 +36,7 @@ function _sleepForSeconds(seconds) {
  * Returns the "sortable" version of the provided text. Currently, this just
  * strips the preceeding "The ", if present.
  */
-exports.getSortText = function(text) {
+let getSortText = function(text) {
     let sortText = text.toUpperCase();
     if (sortText.indexOf("THE ") == 0) {
         sortText = sortText.substring("THE ".length, sortText.length);
@@ -43,16 +44,16 @@ exports.getSortText = function(text) {
     return sortText;
 }
 
-exports.downloadImage = async function(url,
-                                       userAgent,
-                                       headers,
-                                       destinationDirectoryPath,
-                                       destinationFilename,
-                                       propertyManager,
-                                       rateLimiter) {
+let downloadImage = async function(url,
+                                   userAgent,
+                                   headers,
+                                   destinationDirectoryPath,
+                                   destinationFilename,
+                                   propertyManager,
+                                   rateLimiter) {
     let options = {
         method: "GET",
-        timeout: propertyManager.connectionTimeoutInMillis,
+        signal: timeoutSignal(propertyManager.requestTimeoutInMillis),
         headers: {}
     };
     if (headers
@@ -119,7 +120,7 @@ exports.downloadImage = async function(url,
     return filepath;
 };
 
-exports.getMainPart = function(title) {
+let getMainPart = function(title) {
     // e.g. "僕のヒーローアカデミア 3 [Boku No Hero Academia 3] (My Hero Academia, #3)"
     if (title.indexOf("[") > 0
      && title.indexOf("]") > 0
@@ -151,14 +152,25 @@ exports.getMainPart = function(title) {
     return title;
 }
 
-exports.pageContextReportsChanges = function(pageContext) {
+let pageContextReportsChanges = function(pageContext) {
     return pageContext.newCount > 0
         || pageContext.updatedCount > 0;
 };
 
-exports.minutesToMillis = function(minutes) {
+let minutesToMillis = function(minutes) {
     return minutes * 60000;
 };
-exports.secondsToMillis = function(minutes) {
+let secondsToMillis = function(minutes) {
     return minutes * 1000;
 };
+
+
+export default {
+    sleepForSeconds,
+    getSortText,
+    downloadImage,
+    getMainPart,
+    pageContextReportsChanges,
+    minutesToMillis,
+    secondsToMillis
+}

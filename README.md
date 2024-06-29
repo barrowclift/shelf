@@ -3,8 +3,8 @@
 ### Beautifully display your library on the Internet
 
 <picture>
-  <source type="image/webp" srcset="https://dropbox.barrowclift.me/assets/projects/code/shelf/shelf-promo.webp">
-  <img type="image/jpeg" alt="Promotional screenshots of Shelf, demonstrating both Light and Dark Mode" title="Promotional screenshots of Shelf, demonstrating both Light and Dark Mode" src="https://dropbox.barrowclift.me/assets/projects/code/shelf/shelf-promo.jpg">
+  <source type="image/webp" srcset="https://cargo.barrowclift.me/projects/code/shelf/shelf-promo.webp">
+  <img type="image/jpeg" alt="Promotional screenshots of Shelf, demonstrating both Light and Dark Mode" title="Promotional screenshots of Shelf, demonstrating both Light and Dark Mode" src="https://cargo.barrowclift.me/projects/code/shelf/shelf-promo.jpg">
 </picture>
 
 You can download the latest release [here](https://github.com/barrowclift/shelf/releases/latest)

@@ -3,20 +3,21 @@
 // DEPENDENCIES
 // ------------
 // External
-let htmlEntities = require("he");
-let path = require("path");
-let socketIo = require("socket.io-client");
-let sharp = require("sharp");
-let fetch = require("node-fetch");
-let xml2json = require('xml2json');
+import fetch from "node-fetch";
+import htmlEntities from "he";
+import path from "path";
+import sharp from "sharp";
+import socketIo from "socket.io-client";
+import timeoutSignal from "timeout-signal";
+import xmlConverter from "xml-js";
 // Local
-let BoardGameBuilder = require("./Builder");
-let boardGameUtil = require("./util");
-let Logger = require("../common/Logger");
-let overrides = require("../resources/overrides");
-let paths = require("../common/paths");
-let socketCodes = require("../common/socketCodes");
-let util = require("../common/util");
+import BoardGameBuilder from "./Builder.js";
+import boardGameUtil from "./util.js";
+import Logger from "../common/Logger.js";
+import overrides from "../resources/overrides.json" with { type: "json" };
+import paths from "../common/paths.js";
+import socketCodes from "../common/socketCodes.js";
+import util from "../common/util.js";
 
 
 // CONSTANTS
@@ -41,7 +42,7 @@ let log = new Logger(CLASS_NAME);
  * Used to fetch board games from boardgamegeek.com, transform to suit Shelf's
  * needs, and keep the Shelf's local cache in sync with any changes.
  */
-class Fetcher {
+export default class Fetcher {
 
     /**
      * Initializes the fetcher, but does not automatically kick off the
@@ -173,7 +174,7 @@ class Fetcher {
                     log.debug("BoardGameGeek is processing the request, checking for completion in a few seconds...");
                     context.awaitingAccessCount++;
                     await util.sleepForSeconds(BOARD_GAME_GEEK_AWAITING_ACCESS_WAIT_TIME_IN_SECONDS);
-                } else if (results.items.totalitems > 0) {
+                } else if (results.items._attributes.totalitems > 0) {
                     context.awaitingAccessCount = 0;
                     let boardGames = results.items.item;
                     if (Array.isArray(boardGames)) {
@@ -183,18 +184,18 @@ class Fetcher {
                              * that apparently strips out the stats node (which contains the "rating" field,
                              * which we need). So, we'll perform the filtering manually here.
                              */
-                            if (boardGame.subtype != "boardgame") {
+                            if (boardGame._attributes.subtype != "boardgame") {
                                 continue;
                             }
                             /**
                              * Same thing: If we filtered by specific collection types in the client query,
                              * the rating field gets dropped. So, we need to filter manually here.
                              */
-                            if (boardGame.status.own == 0) {
+                            if (boardGame.status._attributes.own == 0) {
                                 continue;
                             }
 
-                            currentBoardGameIds.add("boardgame" + boardGame.objectid);
+                            currentBoardGameIds.add("boardgame" + boardGame._attributes.objectid);
                             if (!this.isStopping) {
                                 try {
                                     await this._processBggBoardGame(boardGame, context);
@@ -204,9 +205,9 @@ class Fetcher {
                             }
                         }
                     } else {
-                        if (boardGames.subtype == "boardgame"
-                         && boardGames.status.own > 0) {
-                            currentBoardGameIds.add("boardgame" + boardGames.objectid);
+                        if (boardGames._attributes.subtype == "boardgame"
+                         && boardGames.status._attributes.own > 0) {
+                            currentBoardGameIds.add("boardgame" + boardGames._attributes.objectid);
                             if (!this.isStopping) {
                                 try {
                                     await this._processBggBoardGame(boardGames, context);
@@ -271,7 +272,7 @@ class Fetcher {
         };
         let options = {
             method: "GET",
-            timeout: this.propertyManager.connectionTimeoutInMillis,
+            signal: timeoutSignal(this.propertyManager.requestTimeoutInMillis),
             headers: {
                 "User-Agent": this.userAgent
             }
@@ -280,7 +281,15 @@ class Fetcher {
         try {
             let response = await fetch("https://api.geekdo.com/xmlapi2/collection?" + new URLSearchParams(params), options);
             let xmlBody = await response.text();
-            data = xml2json.toJson(xmlBody, { object: true });
+            data = xmlConverter.xml2js(
+                xmlBody,
+                {
+                    "compact":true,
+                    "ignoreDeclaration": true,
+                    "nativeType": true,
+                    "nativeTypeAttributes": true
+                }
+            );
             log.debug("Got board games from BoardGameGeek collection");
         } catch (error) {
             if ("error" in error) {
@@ -328,7 +337,7 @@ class Fetcher {
                     log.debug("BoardGameGeek is processing the request, checking for completion in a few seconds...");
                     context.awaitingAccessCount++;
                     await util.sleepForSeconds(BOARD_GAME_GEEK_AWAITING_ACCESS_WAIT_TIME_IN_SECONDS);
-                } else if (results.items.totalitems > 0) {
+                } else if (results.items._attributes.totalitems > 0) {
                     context.awaitingAccessCount = 0;
                     let boardGames = results.items.item;
                     if (Array.isArray(boardGames)) {
@@ -338,26 +347,26 @@ class Fetcher {
                              * that apparently strips out the stats node (which contains the "rating" field,
                              * which we need). So, we'll perform the filtering manually here.
                              */
-                            if (boardGame.subtype != "boardgame") {
+                            if (boardGame._attributes.subtype != "boardgame") {
                                 continue;
                             }
                             /**
                              * Same thing: If we filtered by specific collection types in the client query,
                              * the rating field gets dropped. So, we need to filter manually here.
                              */
-                            if (boardGame.status.own > 0) {
+                            if (boardGame.status._attributes.own > 0) {
                                 continue;
                             }
 
-                            currentBoardGameIds.add("boardgame" + boardGame.objectid);
+                            currentBoardGameIds.add("boardgame" + boardGame._attributes.objectid);
                             if (!this.isStopping) {
                                 await this._processBggBoardGame(boardGame, context);
                             }
                         }
                     } else {
-                        if (boardGames.subtype == "boardgame"
-                         && boardGames.status.own == 0) {
-                            currentBoardGameIds.add("boardgame" + boardGames.objectid);
+                        if (boardGames._attributes.subtype == "boardgame"
+                         && boardGames.status._attributes.own == 0) {
+                            currentBoardGameIds.add("boardgame" + boardGames._attributes.objectid);
                             if (!this.isStopping) {
                                 await this._processBggBoardGame(boardGames, context);
                             }
@@ -420,7 +429,7 @@ class Fetcher {
         };
         let options = {
             method: "GET",
-            timeout: this.propertyManager.connectionTimeoutInMillis,
+            signal: timeoutSignal(this.propertyManager.requestTimeoutInMillis),
             headers: {
                 "User-Agent": this.userAgent
             }
@@ -429,7 +438,15 @@ class Fetcher {
         try {
             let response = await fetch("https://api.geekdo.com/xmlapi2/collection?" + new URLSearchParams(params), options);
             let xmlBody = await response.text();
-            data = xml2json.toJson(xmlBody, { object: true });
+            data = xmlConverter.xml2js(
+                xmlBody,
+                {
+                    "compact":true,
+                    "ignoreDeclaration": true,
+                    "nativeType": true,
+                    "nativeTypeAttributes": true
+                }
+            );
             log.debug("Got board games from BoardGameGeek wishlist");
         } catch (error) {
             if ("error" in error) {
@@ -457,19 +474,18 @@ class Fetcher {
         let boardGameBuilder = new BoardGameBuilder();
 
         // Required & expected fields
-        boardGameBuilder.setId(bggBoardGame.objectid);
-        let decodedCoverArtUrl = htmlEntities.decode(bggBoardGame.image);
+        boardGameBuilder.setId(bggBoardGame._attributes.objectid);
+        let decodedCoverArtUrl = htmlEntities.decode(bggBoardGame.image._text);
         decodedCoverArtUrl = decodedCoverArtUrl.replace("&&#35;40;", "(");
         decodedCoverArtUrl = decodedCoverArtUrl.replace("&&#35;41;", ")");
         boardGameBuilder.setCoverArtUrl(decodedCoverArtUrl);
-        let decodedTitle = htmlEntities.decode(bggBoardGame.name["$t"]);
+        let decodedTitle = htmlEntities.decode(bggBoardGame.name._text);
         boardGameBuilder.setTitle(decodedTitle);
-        boardGameBuilder.setYearPublished(bggBoardGame.yearpublished);
+        boardGameBuilder.setYearPublished(bggBoardGame.yearpublished._text);
 
-        if ("stats" in bggBoardGame
-         && "rating" in bggBoardGame.stats
-         && "value" in bggBoardGame.stats.rating) {
-            boardGameBuilder.setRating(bggBoardGame.stats.rating.value);
+        let possibleRatingValue = bggBoardGame?.stats?.rating?._attributes?.value;
+        if (typeof possibleRatingValue !== "undefined") {
+            boardGameBuilder.setRating(possibleRatingValue);
         }
 
         // Custom fields
@@ -565,5 +581,3 @@ class Fetcher {
     }
 
 }
-
-module.exports = Fetcher;

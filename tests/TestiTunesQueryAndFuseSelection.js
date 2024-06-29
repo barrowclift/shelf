@@ -1,6 +1,9 @@
+"use strict";
+
 let fetch = require("node-fetch");
 let Fuse = require("fuse.js"); // For fuzzy searching
 let Logger = require("../backend/common/Logger");
+import timeoutSignal from 'timeout-signal';
 
 let log = new Logger("TestiTunesQueryAndFuseSelection");
 
@@ -19,7 +22,7 @@ async function main() {
     const url = createiTunesSearchUrl(`${title} ${artist}`);
     let options = {
         method: "GET",
-        timeout: 5000,
+        signal: timeoutSignal(5000),
         headers: {
             "User-Agent": "Shelf v2 Testing, https://github.com/barrowclift/shelf",
             "Content-Type": "application/json"

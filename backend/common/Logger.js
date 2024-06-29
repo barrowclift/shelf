@@ -3,10 +3,10 @@
 // DEPENDENCIES
 // ------------
 // External
-let path = require("path");
-let properties = require("properties");
+import path from "path";
+import properties from "properties";
 // Local
-let paths = require("../common/paths");
+import paths from "../common/paths.js";
 
 
 // CONSTANTS
@@ -19,7 +19,7 @@ const DEFAULT_LOG_LEVEL = "INFO";
 let propertiesFileName = path.join(paths.BACKEND_RESOURCES_DIRECTORY_PATH, "shelf.properties");
 
 
-class Logger {
+export default class Logger {
 
     /**
      * Initializes a new Logger instance for a particular class
@@ -90,5 +90,3 @@ class Logger {
         }
     }
 }
-
-module.exports = Logger;

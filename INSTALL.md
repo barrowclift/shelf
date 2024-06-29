@@ -9,7 +9,7 @@ The following instructions have been tested and verified on [macOS](https://www.
 Just use [brew](https://brew.sh), trust me.
 
 * `brew install nginx`
-* `brew install mongo`
+* `brew install mongodb-community`
 * `brew install node`
 
 ### Shelf Setup
@@ -19,24 +19,24 @@ Since this is a development environment, there's no need to setup Nginx, Shelf c
 * Clone the repository (`git clone git@github.com:barrowclift/shelf.git`)
 * In the cloned repo, `npm install`
 * If you don't already have `pm2` for node process management installed, do so with `npm install pm2 -g`
-* (Optional) Should you wish Shelf to automatically start on startup, see [this short guide](http://pm2.keymetrics.io/docs/usage/startup/) or execute `pm2 startup` to let `pm2` handle the settings for you.
+* (Optional) Should you wish Shelf to automatically start on startup, see [this short guide](http://pm2.keymetrics.io/docs/usage/startup/) or execute `pm2 startup` after having already started Shelf with pm2 enabled in `init.sh`.
 * Shelf uses MongoDB to manage its data. When starting the MongoDB server, it expects permissions to create a DB at `/var/lib/mongodb`. If this location is not desired or if you have a MongoDB server already running for other projects, update the `MONGO_DB` variable in `admin/init.sh` to your desired path.
 * Edit `backend/resources/shelf.properties` with your Discogs and/or BoardGameGeek information. Shelf uses these services to display your library. See the ["Setup"](https://github.com/barrowclift/shelf/blob/master/README.md#setup) section of the [README](https://github.com/barrowclift/shelf/blob/master/README.md) for more information.
 * Finally, continue editing `backend/resources/shelf.properties`, replacing all instances of `SET_ME` with the appropriate information
 
 To spin up Shelf, execute `admin/start.sh`. Be sure to check the `logs/` directory to see if there are any errors.
 
-## CentOS 7.X - Installation for Production
+## Rocky Linux - Installation for Production
 
 ### Install Dependencies
 
-* [Follow the steps here to install Nginx](https://www.digitalocean.com/community/tutorials/how-to-install-nginx-on-centos-7)
-* [Follow the relevant steps outlined here to install MongoDB](https://www.liquidweb.com/kb/how-to-install-mongodb-on-centos-6/). It's for CentOS 6, but the steps still apply.
-* [Follow the relevant steps outlined here to install Node.js](https://www.digitalocean.com/community/tutorials/how-to-install-and-run-a-node-js-app-on-centos-6-4-64bit). Again, it's for CentOS 6, but the steps still apply. __NOTE__: Building Node from scratch takes a LONG time. Please get up to make some tea or bake a pie while it's churning. Trust me, you'll have the time.
+* [Follow the steps here to install Nginx](https://www.digitalocean.com/community/tutorials/how-to-install-nginx-on-rocky-linux-8)
+* [Follow the relevant steps outlined here to install MongoDB](https://www.mongodb.com/docs/manual/tutorial/install-mongodb-on-red-hat/)
+* [Follow the relevant steps outlined here to install Node.js](https://www.digitalocean.com/community/tutorials/how-to-install-node-js-on-rocky-linux-8)
 
 ### Nginx Configuration
 
-There's one minor tweak that needs to be made to the `/etc/nginx/nginx.conf` file that's not mentioned in the [DigitalOcean](https://www.digitalocean.com) guide linked above to install Nginx. You need to have Nginx act as a reverse proxy for Shelf, so you should edit your `server` block to look something like this.
+There's one minor tweak that needs to be made to the `/etc/nginx/nginx.conf` file to have your newly installed Nginx server act as a reverse proxy for Shelf, so you should edit your `server` block to look something like this.
 
 ```
 server {

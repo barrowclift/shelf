@@ -5,8 +5,8 @@
 // External
 
 // Local
-let overrides = require("../resources/overrides");
-let util = require("../common/util");
+import overrides from "../resources/overrides.json" with { type: "json" };
+import util from "../common/util.js";
 
 
 // CONSTANTS
@@ -61,7 +61,7 @@ const DEFAULT_YEAR_OF_PRESSING = 0; // release.basic_information.year
  *         "yearOfPressing" : 2018
  *     }
  */
-class Builder {
+export default class Builder {
 
     /**
      * Sets all "settable" fields for the pending new record to it's default
@@ -200,5 +200,3 @@ class Builder {
     }
 
 }
-
-module.exports = Builder;

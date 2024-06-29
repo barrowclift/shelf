@@ -5,8 +5,8 @@
 // External
 
 // Local
-let overrides = require("../resources/overrides");
-let util = require("../common/util");
+import overrides from "../resources/overrides.json" with { type: "json" };
+import util from "../common/util.js";
 
 
 // CONSTANTS
@@ -62,7 +62,7 @@ const DEFAULT_TITLE = "Untitled"; // book.title
  *     }
  *
  */
-class Builder {
+export default class Builder {
 
     /**
      * Sets all "settable" fields for the pending new book to it's default
@@ -228,5 +228,3 @@ class Builder {
     }
 
 }
-
-module.exports = Builder;

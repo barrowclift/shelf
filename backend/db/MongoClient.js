@@ -3,9 +3,9 @@
 // DEPENDENCIES
 // ------------
 // External
-let mongodb = require("mongodb");
+import mongodb from "mongodb";
 // Local
-let Logger = require("../common/Logger");
+import Logger from "../common/Logger.js";
 
 
 // CONSTANTS
@@ -23,11 +23,21 @@ let log = new Logger(CLASS_NAME);
 
 
 /**
- * A relatively low-level MongoDB client. Used instead of the generic
- * `mongodb` client to abstract away establishing the initial connection and
- * bake in preferred error handling.
+ * This was originally a "wrapper" to the old v3 `mongodb` client primarily to
+ * sidestep the absolutely nightmare that was callback handling and instead
+ * wrap everything in Promises so callers could simply `await` the necessary
+ * calls.
+ *
+ * However, modern `mongodb` client versions (thankfully!) migrated natively
+ * to Promises, so the vast majority of the value this wrapper class provided
+ * is now moot.
+ *
+ * I'm keeping it around mostly for legacy reasons (it's more work to fully
+ * remove than to remove the now unnecessary Promise wrapping). If this was
+ * being written from scratch today with the modern `mongodb` package, I
+ * wouldn't have made this class at all.
  */
-class MongoClient {
+export default class MongoClient {
 
     /**
      * @param {PropertyManager} propertyManager
@@ -45,38 +55,18 @@ class MongoClient {
      * ==============
      */
 
-    connect() {
+    async connect() {
         let mongoServerUrl = "mongodb://" + this.propertyManager.mongoHost + ":" + this.propertyManager.mongoPort + "/" + this.propertyManager.mongoDbName;
         log.info("Connecting to Mongo at " + mongoServerUrl);
-        return new Promise((resolve, reject) => {
-            mongodb.MongoClient.connect(
-                mongoServerUrl,
-                {
-                    useNewUrlParser: true,
-                    useUnifiedTopology: true
-                }
-            ).then((connection) => {
-                log.info("Connection to Mongo server at " + this.propertyManager.mongoHost + ":" + this.propertyManager.mongoPort + " established");
-                this.connection = connection;
-                this.mongo = connection.db(this.propertyManager.mongoDbName);
-                resolve();
-            }).catch((error) => {
-                reject(Error(error));
-            });
-        });
+        this.connection = new mongodb.MongoClient(mongoServerUrl);
+        await this.connection.connect();
+        this.mongo = this.connection.db(this.propertyManager.mongoDbName);
     }
 
-    close() {
+    async close() {
         log.debug("Closing Mongo connection...");
-        return new Promise((resolve, reject) => {
-            if (this.connection) {
-                this.connection.close();
-                log.info("Closed Mongo connection");
-            } else {
-                log.warn("Connection already closed");
-            }
-            resolve();
-        });
+        await this.connection.close();
+        log.info("Closed Mongo connection");
     }
 
     /**
@@ -87,26 +77,11 @@ class MongoClient {
      */
     find(collectionName, query) {
         let collection = this.mongo.collection(collectionName);
-        return new Promise(function(resolve, reject) {
-            if (collection && query != null) {
-                collection.find(query).toArray(function(error, documents) {
-                    if (error) {
-                        reject(Error(error));
-                    } else if (!documents || documents.length == 0) {
-                        log.debug("Found no results for query='" + JSON.stringify(query) + "', collectionName=" + collectionName);
-                        resolve(null);
-                    } else {
-                        if (!query) {
+        if (collection == null || query == null) {
+            throw "Invalid find arguments, query='" + JSON.stringify(query) + "', collectionName=" + collectionName;
+        }
 
-                        }
-                        log.debug("Found 1+ documents for query='" + JSON.stringify(query) + "', collectionName=" + collectionName);
-                        resolve(documents);
-                    }
-                });
-            } else {
-                reject(Error("Invalid find arguments, query=" + JSON.stringify(query)) + ", collectionName=" + collectionName);
-            }
-        });
+        return collection.find(query).toArray();
     }
 
     /**
@@ -115,24 +90,11 @@ class MongoClient {
      */
     findOne(collectionName, query) {
         let collection = this.mongo.collection(collectionName);
-        return new Promise(function(resolve, reject) {
-            if (collection && query) {
-                collection.findOne(
-                    query
-                ).then(function(document) {
-                    if (document == null) {
-                        log.debug("Found no existing document, query=" + JSON.stringify(query) + ", collectionName=" + collectionName);
-                    } else {
-                        log.debug("Found one document, _id=" + document._id + ", collectionName=" + collectionName);
-                    }
-                    resolve(document);
-                }).catch(function(error) {
-                    reject(Error(error));
-                });
-            } else {
-                reject(Error("Invalid findOne arguments, query=" + JSON.stringify(query)) + ", collectionName=" + collectionName);
-            }
-        });
+        if (collection == null || query == null) {
+            throw "Invalid findOne arguments, query='" + JSON.stringify(query) + "', collectionName=" + collectionName;
+        }
+
+        return collection.findOne(query);
     }
 
     /**
@@ -142,27 +104,17 @@ class MongoClient {
      */
     upsertOne(collectionName, document) {
         let collection = this.mongo.collection(collectionName);
-        return new Promise(function(resolve, reject) {
-            if (collection && document) {
-                if ("_id" in document) {
-                    collection.updateOne({ _id: document._id },
-                                         { $set: document },
-                                         { upsert: true},
-                                         function(error) {
-                        if (error) {
-                            reject(Error(error));
-                        } else {
-                            log.debug("Upserted one document, _id=" + document._id + ", collectionName=" + collectionName);
-                            resolve();
-                        }
-                    });
-                } else {
-                    reject(Error("Invalid document, missing required '_id' field"));
-                }
-            } else {
-                reject(Error("Invalid updateOne arguments, document=" + document + ", collectionName=" + collectionName));
-            }
-        });
+        if (collection == null || document == null) {
+            throw "Invalid upsertOne arguments, document='" + document + "', collectionName=" + collectionName;
+        }
+        if (!("_id" in document)) {
+            throw "Invalid document, missing required '_id' field";
+        }
+        return collection.updateOne(
+            { _id: document._id },
+            { $set: document },
+            { upsert: true}
+        );
     }
 
     /**
@@ -172,25 +124,13 @@ class MongoClient {
      */
     insertOne(collectionName, document) {
         let collection = this.mongo.collection(collectionName);
-        return new Promise(function(resolve, reject) {
-            if (collection && document) {
-                if ("_id" in document) {
-                    collection.insertOne(document,
-                                         function(error) {
-                        if (error) {
-                            reject(Error(error));
-                        } else {
-                            log.debug("Inserted one document, _id=" + document._id + ", collectionName=" + collectionName);
-                            resolve();
-                        }
-                    })
-                } else {
-                    reject(Error("Invalid document, missing required '_id' field"));
-                }
-            } else {
-                reject(Error("Invalid updateOne arguments, document=" + document + ", collectionName=" + collectionName));
-            }
-        });
+        if (collection == null || document == null) {
+            throw "Invalid insertOne arguments, document='" + document + "', collectionName=" + collectionName;
+        }
+        if (!("_id" in document)) {
+            throw "Invalid document, missing required '_id' field";
+        }
+        return collection.insertOne(document);
     }
 
     /**
@@ -200,49 +140,22 @@ class MongoClient {
      */
     deleteById(collectionName, id) {
         let collection = this.mongo.collection(collectionName);
-        return new Promise(function(resolve, reject) {
-            if (collection && id) {
-                collection.deleteOne({_id:id},
-                                     function(error) {
-                    if (error) {
-                        reject(Error(error));
-                    } else {
-                        log.debug("Deleted document, _id=" + id + ", collectionName=" + collectionName);
-                        resolve();
-                    }
-                });
-            } else {
-                reject(Error("Invalid deleteById arguments, _id=" + id + ", collectionName=" + collectionName));
-            }
-        });
+        if (collection == null || id == null) {
+            "Invalid deleteById arguments, _id=" + id + ", collectionName=" + collectionName;
+        }
+        return collection.deleteOne({ _id: id });
     }
 
     /**
      * Like Mongo's drop, but wrapping up tiresome boilerplate for increased
      * safety and ease of use. This method will drop empty or full
-     * collections, and will consider it a success if no collection exists
-     * with the provided name.
+     * collections.
      */
     dropCollection(collectionName) {
         let collection = this.mongo.collection(collectionName);
-        return new Promise(function(resolve, reject) {
-            if (collection) {
-                collection.drop(function(error) {
-                    if (error) {
-                        if (error.code == 26) {
-                            resolve("Collection doesn't exist, collectionName=" + collectionName);
-                        } else {
-                            reject(Error(error));
-                        }
-                    } else {
-                        resolve("Dropped collectionName=" + collectionName);
-                    }
-                });
-            } else {
-                reject(Error("Cannot drop collection, collectionName=" + collectionName));
-            }
-        });
+        if (collection == null) {
+            "Cannot drop 'null' collection";
+        }
+        return collection.drop();
     }
 }
-
-module.exports = MongoClient;

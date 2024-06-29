@@ -1,6 +1,7 @@
 {
   "name": "shelf",
-  "version": "2.0.0",
+  "version": "3.2",
+  "type": "module",
   "description": "Beautifully display your library on the Internet",
   "main": "admin/main.js",
   "private": true,
@@ -15,20 +16,19 @@
   "license": "MIT",
   "dependencies": {
     "compression": "^1.7.4",
-    "disconnect": "^1.2.1",
-    "express": "^4.17.1",
-    "fs": "0.0.1-security",
-    "fuse.js": "^6.4.6",
+    "disconnect": "^1.2.2",
+    "express": "^4.19.2",
+    "fuse.js": "^7.0.0",
     "he": "^1.2.0",
-    "liquidjs": "^10.4.0",
-    "mongodb": "^3.5.2",
+    "liquidjs": "^10.14.0",
+    "mongodb": "^6.7.0",
     "ncp": "^2.0.0",
-    "node-fetch": "^2.6.1",
-    "npm": "^8.19.2",
+    "node-fetch": "^3.3.2",
     "properties": "^1.2.1",
-    "sharp": "^0.31.1",
-    "socket.io": "^4.5.4",
-    "socket.io-client": "^3.1.0",
-    "xml2json": "^0.12.0"
+    "sharp": "^0.33.4",
+    "socket.io": "^4.7.5",
+    "socket.io-client": "^4.7.5",
+    "timeout-signal": "^2.0.0",
+    "xml-js": "^1.6.11"
   }
 }

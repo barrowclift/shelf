@@ -3,15 +3,15 @@
 // DEPENDENCIES
 // ------------
 // External
-let path = require("path");
+import path from "path";
 // Local
-let BoardGameFetcher = require("../backend/boardGames/Fetcher");
-let CachedMongoClient = require("../backend/db/CachedMongoClient");
-let Logger = require("../backend/common/Logger");
-let paths = require("../backend/common/paths");
-let RecordFetcher = require("../backend/records/Fetcher");
-let Server = require("../backend/Server");
-let PropertyManager = require("../backend/common/PropertyManager");
+import BoardGameFetcher from "../backend/boardGames/Fetcher.js";
+import CachedMongoClient from "../backend/db/CachedMongoClient.js";
+import Logger from "../backend/common/Logger.js";
+import paths from "../backend/common/paths.js";
+import RecordFetcher from "../backend/records/Fetcher.js";
+import Server from "../backend/Server.js";
+import PropertyManager from "../backend/common/PropertyManager.js";
 
 
 // CONSTANTS

@@ -3,15 +3,17 @@
 // DEPENDENCIES
 // ------------
 // External
-let path = require("path");
-let Properties = require("properties");
-let socketIo = require("socket.io-client");
+import path from "path";
+import url from "url";
+import Properties from "properties";
+import socketIo from "socket.io-client";
 // Local
-const SHELF_ROOT_DIRECTORY_PATH = path.join(__dirname, "..");
-let CachedMongoClient = require(path.join(SHELF_ROOT_DIRECTORY_PATH, "backend/db/CachedMongoClient"));
-let PropertyManager = require(path.join(SHELF_ROOT_DIRECTORY_PATH, "backend/common/PropertyManager"));
-let socketCodes = require(path.join(SHELF_ROOT_DIRECTORY_PATH, "backend/common/socketCodes"));
-let util = require(path.join(SHELF_ROOT_DIRECTORY_PATH, "backend/common/util"));
+const FILENAME = url.fileURLToPath(import.meta.url);
+const SHELF_ROOT_DIRECTORY_PATH = path.join(path.dirname(FILENAME), "..");
+const CachedMongoClient = await import (path.join(SHELF_ROOT_DIRECTORY_PATH, "backend/db/CachedMongoClient.js"));
+const PropertyManager = await import (path.join(SHELF_ROOT_DIRECTORY_PATH, "backend/common/PropertyManager.js"));
+const socketCodes = await import (path.join(SHELF_ROOT_DIRECTORY_PATH, "backend/common/socketCodes.js"));
+const util = await import (path.join(SHELF_ROOT_DIRECTORY_PATH, "backend/common/util.js"));
 
 
 // CONSTANTS
@@ -25,7 +27,7 @@ var propertyManager = null;
 
 
 async function cleanDbAndClose() {
-    var mongoClient = new CachedMongoClient(propertyManager);
+    var mongoClient = new CachedMongoClient.default(propertyManager);
     await mongoClient.connect();
     await mongoClient.dropRecords();
     await mongoClient.dropBoardGames();
@@ -49,7 +51,7 @@ async function sendClearCacheRequest() {
 }
 
 async function main() {
-    propertyManager = new PropertyManager();
+    propertyManager = new PropertyManager.default();
     await propertyManager.load(PROPERTIES_FILE_NAME);
 
     let command = process.argv[2]
