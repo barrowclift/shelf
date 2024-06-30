@@ -1,6 +1,6 @@
 {
   "name": "shelf",
-  "version": "3.2",
+  "version": "3.2.1",
   "type": "module",
   "description": "Beautifully display your library on the Internet",
   "main": "admin/main.js",
