@@ -1417,6 +1417,9 @@ button,
     html {
         background-color: #1c1c1c;
     }
+    .logo .fill {
+        fill: rgba(255, 255, 255, 0.85);
+    }
     .record a .metadata,
     .board-game a .metadata,
     .book a .metadata,
