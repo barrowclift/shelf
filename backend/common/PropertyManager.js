@@ -72,10 +72,10 @@ export default class PropertyManager {
      */
     constructor() {
         // Assorted, base properties
-        this.requestTimeoutInMillis = DEFAULT_REQUEST_TIMEOUT_IN_SECONDS;
+        this.requestTimeoutInMillis = util.secondsToMillis(DEFAULT_REQUEST_TIMEOUT_IN_SECONDS);
         this.name = DEFAULT_NAME;
         this.maxArtSize = DEFAULT_MAX_ART_SIZE;
-        this.refreshFrequencyInMillis = DEFAULT_REFRESH_FREQUENCY_IN_MINUTES;
+        this.refreshFrequencyInMillis = util.minutesToMillis(DEFAULT_REFRESH_FREQUENCY_IN_MINUTES);
         this.title = DEFAULT_SITE_TITLE;
         this.twitterHandle = DEFAULT_TWITTER_HANDLE;
         this.frontendUrl = DEFAULT_URL;
