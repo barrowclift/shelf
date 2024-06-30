@@ -266,7 +266,7 @@ menu ul,
 .logo {
     margin-top: -3px;
     vertical-align: middle;
-    height: 0.8em;
+    height: 0.82em;
     margin-right: -.25em;
     display: inline-block;
 }
@@ -1165,6 +1165,7 @@ button,
     }
     .logo {
         padding-right: 0.5em;
+        height: 0.8em;
     }
 
     .record,
