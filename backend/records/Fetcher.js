@@ -370,6 +370,11 @@ export default class Fetcher {
         recordBuilder.setYearOfPressing(discogsRecord.basic_information.year);
         recordBuilder.setDiscogsAddedOn(discogsRecord.date_added);
         recordBuilder.setArtist(discogsRecord.basic_information.artists[0].name);
+        // Don't process any record returned by Discogs without an Artist
+        if (!("name" in discogsRecord.basic_information.artists[0])) {
+            log.debug("Record found missing artist, skipping title=" + record.title);
+            return;
+        }
 
         // There is not an associated folder if getting wishlist items
         if ("folder_id" in discogsRecord) {
@@ -380,8 +385,8 @@ export default class Fetcher {
         } else if ("thumb" in discogsRecord.basic_information) {
             recordBuilder.setDiscogsAlbumArtUrl(discogsRecord.basic_information.thumb);
         }
-        // If there's no rating, the rating field isn't returned
-        if ("rating" in discogsRecord) {
+        // If there's no rating, the rating field is returned as "0"
+        if ("rating" in discogsRecord && discogsRecord.rating != 0) {
             recordBuilder.setRating(discogsRecord.rating);
         }
 
@@ -413,9 +418,9 @@ export default class Fetcher {
                 // Notify the backend server of the update
                 if (this.backendSocket) {
                     if (record.inWishlist) {
-                        this.backendSocket.emit(socketCodes.UPDATED_RECORD_IN_WISHLIST, record);
+                        this.backendSocket.emit(socketCodes.UPDATED_RECORD_IN_WISHLIST, updatedRecord);
                     } else {
-                        this.backendSocket.emit(socketCodes.UPDATED_RECORD_IN_COLLECTION, record);
+                        this.backendSocket.emit(socketCodes.UPDATED_RECORD_IN_COLLECTION, updatedRecord);
                     }
                 }
             } else {
