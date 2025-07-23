@@ -36,16 +36,8 @@ let merge = function(fromRecord, intoRecord) {
  * it, for protection of our own internal models.
  */
 let changesDetected = function(newRecord, existingRecord) {
-    let changesDetected = false;
-    try {
-        if (newRecord.inWishlist != existingRecord.inWishlist
-         || newRecord.rating != existingRecord.rating) {
-            changesDetected = true;
-        }
-    } catch(error) {
-        changesDetected = true;
-    }
-    return changesDetected
+    return newRecord.inWishlist != existingRecord.inWishlist
+        || newRecord.rating != existingRecord.rating;
 };
 
 export default {

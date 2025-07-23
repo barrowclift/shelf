@@ -402,10 +402,12 @@ export default class Fetcher {
         };
         let existingRecord = await this.mongoClient.findRecord(QUERY);
         if (existingRecord) {
-            let changesDetected = recordUtil.changesDetected(record, existingRecord);
-            if (changesDetected) {
-                context.updatedCount++;
+            if (record._id != existingRecord._id) {
+                log.debug("Different pressing of record already processed, skipping title=" + record.title);
+                context.knownCount++;
+            } else if (recordUtil.changesDetected(record, existingRecord)) {
                 log.info("Changes detected for record, title=" + record.title + ", id=" + record._id);
+                context.updatedCount++;
 
                 // Merge and save the updated record to MongoDB
                 let updatedRecord = recordUtil.merge(record, existingRecord);
