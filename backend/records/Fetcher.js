@@ -370,11 +370,6 @@ export default class Fetcher {
         recordBuilder.setYearOfPressing(discogsRecord.basic_information.year);
         recordBuilder.setDiscogsAddedOn(discogsRecord.date_added);
         recordBuilder.setArtist(discogsRecord.basic_information.artists[0].name);
-        // Don't process any record returned by Discogs without an Artist
-        if (!("name" in discogsRecord.basic_information.artists[0])) {
-            log.debug("Record found missing artist, skipping title=" + record.title);
-            return;
-        }
 
         // There is not an associated folder if getting wishlist items
         if ("folder_id" in discogsRecord) {
@@ -394,6 +389,11 @@ export default class Fetcher {
         recordBuilder.setInWishlist(context.recordsFieldName === WISHLIST_RECORDS_FIELD_NAME);
 
         let record = recordBuilder.build();
+        // Don't process any record returned by Discogs without an Artist
+        if (!record.artist) {
+            log.debug("Record found missing artist, skipping title=" + record.title);
+            return;
+        }
 
         // Searching to see if we've already processed this record before
         const QUERY = {
